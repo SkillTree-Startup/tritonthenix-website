@@ -13,9 +13,16 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@tamagui/config": "^1.123.5",
+    "@tamagui/core": "^1.123.5",
+    "@tamagui/shorthands": "^1.123.5",
+    "@tamagui/themes": "^1.123.5",
+    "@tamagui/vite-plugin": "^1.123.5",
     "gh-pages": "^6.3.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-native-web": "^0.19.13",
+    "tamagui": "^1.123.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -29,5 +36,6 @@
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
