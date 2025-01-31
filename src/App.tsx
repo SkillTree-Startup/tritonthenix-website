@@ -9,6 +9,8 @@ const WHITELISTED_EMAILS = [
   'admin@tritonthenix.com',
   // Add more emails here
   'cskeoch@ucsd.edu',
+  'jweston@ucsd.edu',
+  'r1wan@ucsd.edu',
 ];
 
 // Type for user data
