@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages --dist dist --branch main --message 'Deploy from feature branch' --repo https://github.com/SkillTree-Startup/tritonthenix-website.git"
   },
   "dependencies": {
     "@tamagui/config": "^1.123.5",
