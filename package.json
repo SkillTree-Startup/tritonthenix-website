@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -b main -m 'Deploy from feature branch'"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@tamagui/config": "^1.123.5",
