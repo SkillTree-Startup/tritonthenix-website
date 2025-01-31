@@ -116,16 +116,17 @@ function App() {
                 <Text color="$color">Signed in as {userData?.email}</Text>
                 {userData?.isAdmin && (
                   <Text 
-                    color="$green10" 
+                    color="$color"
                     fontSize="$4" 
                     fontWeight="bold"
+                    style={{ color: '#22c55e' }}
                   >
                     You have admin access
                   </Text>
                 )}
                 <Button
                   backgroundColor="$background"
-                  borderColor="$borderColor"
+                  borderColor="$color"
                   borderWidth={1}
                   padding="$4"
                   onPress={handleSignOut}

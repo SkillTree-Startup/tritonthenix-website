@@ -1,19 +1,30 @@
 import { createTamagui } from 'tamagui'
 import { shorthands } from '@tamagui/shorthands'
-import { tokens } from '@tamagui/themes'
+import { tokens, themes } from '@tamagui/themes'
 
 const config = createTamagui({
   defaultTheme: 'light',
   themes: {
     light: {
+      ...themes.light,
       background: '#FFFFFF',
       color: '#000000',
+      borderColor: '#e2e8f0',
+      green10: '#22c55e'
     },
+    dark: {
+      ...themes.dark,
+      background: '#000000',
+      color: '#FFFFFF',
+      borderColor: '#2d3748',
+      green10: '#22c55e'
+    }
   },
   tokens,
   shorthands,
-  settings: {
-    allowedStyleValues: 'strict'
+  media: {
+    sm: { maxWidth: 860 },
+    gtSm: { minWidth: 860 + 1 },
   }
 })
 
