@@ -73,18 +73,19 @@ function App() {
     <TamaguiProvider config={config}>
       <Theme name="light">
         <YStack backgroundColor="$background" minHeight={800}>
-          {/* Gradient Overlay */}
+          {/* Gradient Overlay - Updated */}
           <YStack
             position="absolute"
             top={0}
             left={0}
             right={0}
             height={200}
-            backgroundColor="$background"
-            opacity={0.8}
+            style={{
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)'
+            }}
           />
 
-          {/* Header */}
+          {/* Header - Updated */}
           <XStack 
             padding="$4" 
             justifyContent="space-between" 
@@ -93,7 +94,7 @@ function App() {
             zIndex={1}
           >
             <Image
-              source={logoSource}
+              source={{ uri: logoSvg }}  // Changed to use uri
               alt="Triton Phenix Logo"
               width={150}
               height={40}
