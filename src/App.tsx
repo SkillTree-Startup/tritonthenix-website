@@ -2,10 +2,6 @@ import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text } from 'tam
 import config from './tamagui.config'
 import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
-import { ImageSourcePropType } from 'react-native'
-
-// Convert SVG import to proper Image source type
-const logoSource = logoSvg as unknown as ImageSourcePropType
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
