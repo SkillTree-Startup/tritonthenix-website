@@ -2,6 +2,10 @@ import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text } from 'tam
 import config from './tamagui.config'
 import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
+import { ImageSourcePropType } from 'react-native'
+
+// Convert SVG import to proper Image source type
+const logoSource = logoSvg as unknown as ImageSourcePropType
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -65,38 +69,10 @@ function App() {
     setUserData(null);
   };
 
-  const renderUserContent = () => {
-    if (!userData) return null;
-
-    return (
-      <YStack space={16} alignItems="center">
-        <Text color="black">Signed in as {userData.email}</Text>
-        {userData.isAdmin && (
-          <Text 
-            color="green" 
-            fontSize={16} 
-            fontWeight="bold"
-          >
-            Admin Access Granted
-          </Text>
-        )}
-        <Button
-          backgroundColor="white"
-          borderColor="#e2e8f0"
-          borderWidth={1}
-          padding={16}
-          onPress={handleSignOut}
-        >
-          <Text>Sign Out</Text>
-        </Button>
-      </YStack>
-    );
-  };
-
   return (
     <TamaguiProvider config={config}>
       <Theme name="light">
-        <YStack backgroundColor="#FFFFFF" minHeight="100vh">
+        <YStack backgroundColor="$background" minHeight={800}>
           {/* Gradient Overlay */}
           <YStack
             position="absolute"
@@ -104,20 +80,20 @@ function App() {
             left={0}
             right={0}
             height={200}
-            backgroundColor="transparent"
-            backgroundImage="linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)"
+            backgroundColor="$background"
+            opacity={0.8}
           />
 
           {/* Header */}
           <XStack 
-            padding={16} 
+            padding="$4" 
             justifyContent="space-between" 
             alignItems="center"
             position="relative"
             zIndex={1}
           >
             <Image
-              source={logoSvg}
+              source={logoSource}
               alt="Triton Phenix Logo"
               width={150}
               height={40}
@@ -130,12 +106,34 @@ function App() {
             flex={1} 
             justifyContent="center" 
             alignItems="center"
-            padding={16}
+            padding="$4"
             position="relative"
             zIndex={1}
-            space={16}
+            space="$4"
           >
-            {isSignedIn ? renderUserContent() : (
+            {isSignedIn ? (
+              <YStack space="$4" alignItems="center">
+                <Text color="$color">Signed in as {userData?.email}</Text>
+                {userData?.isAdmin && (
+                  <Text 
+                    color="$green10" 
+                    fontSize="$4" 
+                    fontWeight="bold"
+                  >
+                    You have admin access
+                  </Text>
+                )}
+                <Button
+                  backgroundColor="$background"
+                  borderColor="$borderColor"
+                  borderWidth={1}
+                  padding="$4"
+                  onPress={handleSignOut}
+                >
+                  <Text>Sign Out</Text>
+                </Button>
+              </YStack>
+            ) : (
               <div id="googleSignInDiv"></div>
             )}
           </YStack>
