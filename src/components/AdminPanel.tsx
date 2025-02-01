@@ -351,7 +351,7 @@ export const AdminPanel = () => {
           borderBottomWidth={1}
           borderBottomColor="$borderColor"
         >
-          Past Events
+          Recent Activity
         </Text>
         <ScrollView 
           height={isDesktop ? 600 : 400} 

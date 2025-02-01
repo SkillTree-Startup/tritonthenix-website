@@ -98,6 +98,9 @@ function App() {
     setActivePage(page)
     // Update URL without reload
     window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`)
+    // Dispatch a custom event for URL changes
+    window.dispatchEvent(new Event('urlchange'))
+    setIsMenuOpen(false)
   }
 
   const MenuItem = ({ label, page }: { label: string, page: string }) => (
@@ -186,8 +189,8 @@ function App() {
               zIndex={3}
               space="$1"
             >
-              <MenuItem label="Workouts" page="workouts" />
-              <MenuItem label="Events" page="events" />
+              <MenuItem label="Workouts" page="schedule/workouts" />
+              <MenuItem label="Events" page="schedule/events" />
               <MenuItem label="Profile" page="profile" />
               {userData?.isAdmin && (
                 <MenuItem label="Admin Panel" page="admin" />
@@ -206,12 +209,12 @@ function App() {
             zIndex={1}
             space="$4"
           >
-            {activePage === 'privacy' ? (
+            {activePage.startsWith('schedule') ? (
+              <Schedule />
+            ) : activePage === 'privacy' ? (
               <PrivacyPolicy />
             ) : activePage === 'admin' ? (
               <AdminPanel />
-            ) : activePage === 'workouts' || activePage === 'events' ? (
-              <Schedule />
             ) : (
               isSignedIn ? (
                 <YStack space="$4" alignItems="center">
