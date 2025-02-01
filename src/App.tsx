@@ -32,7 +32,13 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activePage, setActivePage] = useState<string>('home')
+  const [activePage, setActivePage] = useState<string>(() => {
+    // Get initial page from URL path
+    const path = window.location.pathname
+    if (path === '/privacy') return 'privacy'
+    if (path === '/admin') return 'admin'
+    return 'home'
+  })
 
   useEffect(() => {
     window.google?.accounts.id.initialize({
@@ -83,14 +89,23 @@ function App() {
   }
 
   const handleLogoClick = () => {
-    setActivePage('home')
+    handleNavigate('home')
   }
 
-  const MenuItem = ({ label, onClick }: { label: string, onClick: () => void }) => (
+  const handleNavigate = (page: string) => {
+    setActivePage(page)
+    // Update URL without reload
+    window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`)
+  }
+
+  const MenuItem = ({ label, page }: { label: string, page: string }) => (
     <Button
       backgroundColor="transparent"
       padding="$4"
-      onPress={onClick}
+      onPress={() => {
+        handleNavigate(page)
+        setIsMenuOpen(false)
+      }}
       width="100%"
       justifyContent="flex-start"
       hoverStyle={{ backgroundColor: '$gray4' }}
@@ -169,25 +184,13 @@ function App() {
               zIndex={3}
               space="$1"
             >
-              <MenuItem label="Workouts" onClick={() => console.log('Workouts')} />
-              <MenuItem label="Events" onClick={() => console.log('Events')} />
-              <MenuItem label="Profile" onClick={() => console.log('Profile')} />
+              <MenuItem label="Workouts" page="workouts" />
+              <MenuItem label="Events" page="events" />
+              <MenuItem label="Profile" page="profile" />
               {userData?.isAdmin && (
-                <MenuItem 
-                  label="Admin Panel" 
-                  onClick={() => {
-                    setActivePage('admin')
-                    setIsMenuOpen(false)
-                  }} 
-                />
+                <MenuItem label="Admin Panel" page="admin" />
               )}
-              <MenuItem 
-                label="Privacy Policy" 
-                onClick={() => {
-                  setActivePage('privacy')
-                  setIsMenuOpen(false)
-                }}
-              />
+              <MenuItem label="Privacy Policy" page="privacy" />
             </YStack>
           )}
 
