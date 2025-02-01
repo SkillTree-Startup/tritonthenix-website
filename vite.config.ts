@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     tamaguiExtractPlugin(),
   ],
-  base: mode === 'production' ? '/tritonthenix-website/' : '/',
+  base: '/',
   define: {
     'process.env': {
       TEST_NATIVE_PLATFORM: JSON.stringify(process.env.TEST_NATIVE_PLATFORM),
