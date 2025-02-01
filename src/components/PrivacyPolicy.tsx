@@ -13,7 +13,7 @@ export const PrivacyPolicy = () => {
 
       <YStack space="$3">
         <Text color="$color">
-          At Triton Phenix, we take your privacy seriously. This policy describes what personal information we collect and how we use it.
+          At TritonThenix, we take your privacy seriously. This policy describes what personal information we collect and how we use it.
         </Text>
 
         <Text fontWeight="bold" color="$color" marginTop="$4">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Event } from '../types/Event';
 
@@ -45,22 +45,7 @@ const MOCK_EVENTS: Event[] = [
 
 const Schedule = () => {
   const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>('Workouts');
-  const [events, setEvents] = useState<Event[]>(MOCK_EVENTS); // Use mock data for now
-
-  // Comment out or remove this useEffect when using mock data
-  /*useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/api/events');
-        const data = await response.json();
-        setEvents(data);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      }
-    };
-
-    fetchEvents();
-  }, []);*/
+  const events = MOCK_EVENTS;
 
   const sortedEvents = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const now = new Date();

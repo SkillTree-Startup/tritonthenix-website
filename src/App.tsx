@@ -147,7 +147,7 @@ function App() {
             >
               <Image
                 source={{ uri: logoSvg }}
-                alt="Triton Phenix Logo"
+                alt="TritonThenix Logo"
                 width={150}
                 height={40}
                 resizeMode="contain"
