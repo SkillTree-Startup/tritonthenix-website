@@ -5,11 +5,14 @@ import config from './tamagui.config'
 import App from './App'
 import '@tamagui/core/reset.css'
 import './index.css'
+import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <TamaguiProvider config={config}>
-      <App />
-    </TamaguiProvider>
+    <BrowserRouter>
+      <TamaguiProvider config={config}>
+        <App />
+      </TamaguiProvider>
+    </BrowserRouter>
   </React.StrictMode>
 )
