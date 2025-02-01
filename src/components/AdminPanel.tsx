@@ -63,9 +63,6 @@ export const AdminPanel = () => {
   const timeOptions = generateTimeOptions()
   const dateOptions = generateDateOptions()
 
-  // Format today's date as YYYY-MM-DD for the date input min value
-  const today = new Date().toISOString().split('T')[0]
-
   const handleSubmit = async () => {
     try {
       // Create a new document in the events collection
@@ -148,11 +145,8 @@ export const AdminPanel = () => {
             <Select
               value={eventData.date}
               onValueChange={(value) => setEventData(prev => ({ ...prev, date: value }))}
-              borderWidth={1}
-              borderColor="$borderColor"
-              backgroundColor="white"
             >
-              <Select.Trigger width="100%" padding="$3">
+              <Select.Trigger width="100%" padding="$3" borderWidth={1} borderColor="$borderColor" backgroundColor="white">
                 <Select.Value placeholder="Select date" />
               </Select.Trigger>
 
@@ -160,8 +154,8 @@ export const AdminPanel = () => {
                 <Select.ScrollUpButton />
                 <Select.Viewport>
                   <Select.Group>
-                    {dateOptions.map((date) => (
-                      <Select.Item key={date.value} value={date.value}>
+                    {dateOptions.map((date, index) => (
+                      <Select.Item key={date.value} value={date.value} index={index}>
                         <Select.ItemText>{date.label}</Select.ItemText>
                       </Select.Item>
                     ))}
@@ -175,11 +169,8 @@ export const AdminPanel = () => {
             <Select
               value={eventData.time}
               onValueChange={(value) => setEventData(prev => ({ ...prev, time: value }))}
-              borderWidth={1}
-              borderColor="$borderColor"
-              backgroundColor="white"
             >
-              <Select.Trigger width="100%" padding="$3">
+              <Select.Trigger width="100%" padding="$3" borderWidth={1} borderColor="$borderColor" backgroundColor="white">
                 <Select.Value placeholder="Select time" />
               </Select.Trigger>
 
@@ -187,8 +178,8 @@ export const AdminPanel = () => {
                 <Select.ScrollUpButton />
                 <Select.Viewport>
                   <Select.Group>
-                    {timeOptions.map((time) => (
-                      <Select.Item key={time.value} value={time.value}>
+                    {timeOptions.map((time, index) => (
+                      <Select.Item key={time.value} value={time.value} index={index}>
                         <Select.ItemText>{time.label}</Select.ItemText>
                       </Select.Item>
                     ))}
