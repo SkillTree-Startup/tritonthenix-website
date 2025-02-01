@@ -171,7 +171,7 @@ export const AdminPanel = () => {
           fontWeight="bold" 
           color="$color"
         >
-          ADMIN PANEL
+          Admin Panel
         </Text>
 
         {/* Name Input */}

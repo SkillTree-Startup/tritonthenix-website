@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
 import { AdminPanel } from './components/AdminPanel'
 import { PrivacyPolicy } from './components/PrivacyPolicy'
+import Schedule from './components/Schedule'
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -209,6 +210,8 @@ function App() {
               <PrivacyPolicy />
             ) : activePage === 'admin' ? (
               <AdminPanel />
+            ) : activePage === 'workouts' || activePage === 'events' ? (
+              <Schedule />
             ) : (
               isSignedIn ? (
                 <YStack space="$4" alignItems="center">
