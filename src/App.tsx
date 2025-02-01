@@ -39,6 +39,7 @@ function App() {
     if (path === '/admin') return 'admin'
     return 'home'
   })
+  const [tempAdminMode, setTempAdminMode] = useState(false)
 
   useEffect(() => {
     window.google?.accounts.id.initialize({
@@ -233,7 +234,28 @@ function App() {
                   </Button>
                 </YStack>
               ) : (
-                <div id="googleSignInDiv"></div>
+                <YStack space="$4" alignItems="center">
+                  <div id="googleSignInDiv"></div>
+                  <Button
+                    backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
+                    borderColor="$color"
+                    borderWidth={1}
+                    padding="$4"
+                    marginTop="$4"
+                    onPress={() => {
+                      setTempAdminMode(!tempAdminMode)
+                      setUserData({
+                        email: 'temp@admin.com',
+                        isAdmin: !tempAdminMode
+                      })
+                      setIsSignedIn(!tempAdminMode)
+                    }}
+                  >
+                    <Text color="$color">
+                      {tempAdminMode ? 'Disable' : 'Enable'} Temp Admin Mode
+                    </Text>
+                  </Button>
+                </YStack>
               )
             )}
           </YStack>
