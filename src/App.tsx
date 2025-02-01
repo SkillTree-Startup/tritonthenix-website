@@ -1,7 +1,9 @@
-import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text } from 'tamagui'
+import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack } from 'tamagui'
 import config from './tamagui.config'
 import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
+import { AdminPanel } from './components/AdminPanel'
+import { PrivacyPolicy } from './components/PrivacyPolicy'
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -29,19 +31,30 @@ declare global {
 function App() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [activePage, setActivePage] = useState<string>('home')
 
   useEffect(() => {
-    // Initialize Google Sign-In
     window.google?.accounts.id.initialize({
+      // Use the client ID from your Firebase project
       client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
-      callback: handleCredentialResponse
+      callback: handleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
     });
 
-    // Render the button
     if (!isSignedIn) {
       window.google?.accounts.id.renderButton(
         document.getElementById("googleSignInDiv"),
-        { theme: "outline", size: "large" }
+        {
+          type: "standard",
+          theme: "filled_blue",
+          size: "large",
+          shape: "pill",
+          text: "signin_with",
+          width: 250,
+          locale: "en"
+        }
       );
     }
   }, [isSignedIn]);
@@ -65,6 +78,27 @@ function App() {
     setUserData(null);
   };
 
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
+
+  const handleLogoClick = () => {
+    setActivePage('home')
+  }
+
+  const MenuItem = ({ label, onClick }: { label: string, onClick: () => void }) => (
+    <Button
+      backgroundColor="transparent"
+      padding="$4"
+      onPress={onClick}
+      width="100%"
+      justifyContent="flex-start"
+      hoverStyle={{ backgroundColor: '$gray4' }}
+    >
+      <Text color="$color">{label}</Text>
+    </Button>
+  )
+
   return (
     <TamaguiProvider config={config}>
       <Theme name="light">
@@ -81,22 +115,81 @@ function App() {
             }}
           />
 
-          {/* Header - Updated */}
+          {/* Header with Hamburger */}
           <XStack 
             padding="$4" 
             justifyContent="space-between" 
             alignItems="center"
             position="relative"
-            zIndex={1}
+            zIndex={2}
           >
-            <Image
-              source={{ uri: logoSvg }}  // Changed to use uri
-              alt="Triton Phenix Logo"
-              width={150}
-              height={40}
-              resizeMode="contain"
-            />
+            <Button
+              backgroundColor="transparent"
+              padding={0}
+              onPress={handleLogoClick}
+              aria-label="Go to home"
+            >
+              <Image
+                source={{ uri: logoSvg }}
+                alt="Triton Phenix Logo"
+                width={150}
+                height={40}
+                resizeMode="contain"
+              />
+            </Button>
+
+            {/* Hamburger Menu Button */}
+            <Button
+              backgroundColor="transparent"
+              padding="$2"
+              onPress={handleMenuToggle}
+              aria-label="Menu"
+            >
+              <YStack space="$1.5">
+                <Stack height={2} width={24} backgroundColor="white" />
+                <Stack height={2} width={24} backgroundColor="white" />
+                <Stack height={2} width={24} backgroundColor="white" />
+              </YStack>
+            </Button>
           </XStack>
+
+          {/* Menu Overlay */}
+          {isMenuOpen && (
+            <YStack
+              position="absolute"
+              right={0}
+              top={70}
+              width={250}
+              backgroundColor="$background"
+              borderRadius="$4"
+              borderWidth={1}
+              borderColor="$borderColor"
+              elevation={10}
+              padding="$2"
+              zIndex={3}
+              space="$1"
+            >
+              <MenuItem label="Workouts" onClick={() => console.log('Workouts')} />
+              <MenuItem label="Events" onClick={() => console.log('Events')} />
+              <MenuItem label="Profile" onClick={() => console.log('Profile')} />
+              {userData?.isAdmin && (
+                <MenuItem 
+                  label="Admin Panel" 
+                  onClick={() => {
+                    setActivePage('admin')
+                    setIsMenuOpen(false)
+                  }} 
+                />
+              )}
+              <MenuItem 
+                label="Privacy Policy" 
+                onClick={() => {
+                  setActivePage('privacy')
+                  setIsMenuOpen(false)
+                }}
+              />
+            </YStack>
+          )}
 
           {/* Content */}
           <YStack 
@@ -108,31 +201,37 @@ function App() {
             zIndex={1}
             space="$4"
           >
-            {isSignedIn ? (
-              <YStack space="$4" alignItems="center">
-                <Text color="$color">Signed in as {userData?.email}</Text>
-                {userData?.isAdmin && (
-                  <Text 
-                    color="$color"
-                    fontSize="$4" 
-                    fontWeight="bold"
-                    style={{ color: '#22c55e' }}
-                  >
-                    You have admin access
-                  </Text>
-                )}
-                <Button
-                  backgroundColor="$background"
-                  borderColor="$color"
-                  borderWidth={1}
-                  padding="$4"
-                  onPress={handleSignOut}
-                >
-                  <Text>Sign Out</Text>
-                </Button>
-              </YStack>
+            {activePage === 'privacy' ? (
+              <PrivacyPolicy />
+            ) : activePage === 'admin' ? (
+              <AdminPanel />
             ) : (
-              <div id="googleSignInDiv"></div>
+              isSignedIn ? (
+                <YStack space="$4" alignItems="center">
+                  <Text color="$color">Signed in as {userData?.email}</Text>
+                  {userData?.isAdmin && (
+                    <Text 
+                      color="$color"
+                      fontSize="$4" 
+                      fontWeight="bold"
+                      style={{ color: '#22c55e' }}
+                    >
+                      You have admin access
+                    </Text>
+                  )}
+                  <Button
+                    backgroundColor="$background"
+                    borderColor="$color"
+                    borderWidth={1}
+                    padding="$4"
+                    onPress={handleSignOut}
+                  >
+                    <Text>Sign Out</Text>
+                  </Button>
+                </YStack>
+              ) : (
+                <div id="googleSignInDiv"></div>
+              )
             )}
           </YStack>
         </YStack>
