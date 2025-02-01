@@ -322,27 +322,12 @@ function App() {
             >
               {isSignedIn || tempAdminMode ? (
                 <>
-                  {/* User Email Display */}
-                  <YStack 
-                    padding="$2" 
-                    borderBottomWidth={1} 
-                    borderBottomColor="$borderColor"
-                    marginBottom="$2"
-                  >
-                    <Text 
-                      color="$color" 
-                      fontSize="$2" 
-                      opacity={0.7}
-                      numberOfLines={1}
-                      ellipsizeMode="middle"
-                    >
-                      {isSignedIn ? userEmail : "Temp Admin"}
-                    </Text>
-                  </YStack>
-
                   {/* Signed In Menu Items */}
-                  <MenuItem label="Profile" page="profile" />
-                  {userData?.isAdmin && (
+                  <MenuItem 
+                    label={`Profile: ${tempAdminMode ? "temp@admin.com" : userEmail}`} 
+                    page="profile" 
+                  />
+                  {(userData?.isAdmin || tempAdminMode) && (
                     <MenuItem label="Admin Panel" page="admin" />
                   )}
                   <MenuItem label="Privacy Policy" page="privacy" />
