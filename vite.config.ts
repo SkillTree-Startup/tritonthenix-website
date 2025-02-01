@@ -9,6 +9,15 @@ export default defineConfig(({ mode }) => ({
     tamaguiExtractPlugin(),
   ],
   base: '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
   define: {
     'process.env': {
       TEST_NATIVE_PLATFORM: JSON.stringify(process.env.TEST_NATIVE_PLATFORM),
