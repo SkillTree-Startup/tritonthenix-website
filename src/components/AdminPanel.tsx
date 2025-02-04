@@ -41,6 +41,13 @@ const generateDateOptions = () => {
   return dates
 }
 
+// Add this helper function at the top of the file
+const formatEventDate = (dateStr: string) => {
+  // Add Pacific Time zone offset to ensure correct date
+  const date = new Date(`${dateStr}T00:00:00-08:00`);
+  return date.toLocaleDateString();
+};
+
 interface EventData {
   name: string
   type: 'Workout' | 'Event'
@@ -384,7 +391,7 @@ export const AdminPanel = () => {
                   </Button>
                 </XStack>
                 <Text color="$color" fontSize="$3">
-                  {new Date(event.date).toLocaleDateString()} at {event.time}
+                  {formatEventDate(event.date)} at {event.time}
                 </Text>
                 <Text color="$color" numberOfLines={2}>
                   {event.description}

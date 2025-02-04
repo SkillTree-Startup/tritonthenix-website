@@ -96,6 +96,8 @@ const Schedule = () => {
 
   // Filter events based on active tab and date
   const now = new Date();
+  const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+
   const filteredEvents = events.filter(event => {
     const isCorrectType = activeTab === 'Events' ? 
       event.type === 'Event' : 
@@ -104,16 +106,18 @@ const Schedule = () => {
     if (activeTab === 'Events') {
       return isCorrectType;
     } else {
-      // For workouts, filter by selected date
-      const eventDate = new Date(event.date);
+      // For workouts, convert both dates to Pacific Time for comparison
+      const eventDate = new Date(`${event.date}T00:00:00-08:00`);
+      const selectedPacificDate = new Date(selectedDate.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
       return isCorrectType && 
-        eventDate.toDateString() === selectedDate.toDateString();
+        eventDate.toDateString() === selectedPacificDate.toDateString();
     }
   });
 
-  const upcomingEvents = filteredEvents.filter(event => 
-    new Date(event.date) >= now
-  );
+  const upcomingEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(`${event.date}T00:00:00-08:00`);
+    return eventDate >= today;
+  });
 
   const pastEvents = filteredEvents.filter(event => 
     new Date(event.date) < now
@@ -285,50 +289,59 @@ const Schedule = () => {
 };
 
 // Event Card Component
-const EventCard = ({ event }: { event: Event }) => (
-  <YStack
-    backgroundColor="$cardBackground"
-    padding="$4"
-    borderRadius="$4"
-    borderWidth={1}
-    borderColor="$borderColor"
-    space="$2"
-  >
-    <XStack justifyContent="space-between" alignItems="flex-start">
-      <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-        {event.name}
-      </Text>
-      <Text color="$textSecondary">
-        {event.time}
-      </Text>
-    </XStack>
-    
-    <XStack space="$2" alignItems="center">
-      <Text fontWeight="500" color="$color">
-        {event.instructor}
-      </Text>
-      <Text color="$color" opacity={0.7}>•</Text>
-      <Text color="$color">
-        {event.location}
-      </Text>
-    </XStack>
+const EventCard = ({ event }: { event: Event }) => {
+  // Convert the date string to a Date object in Pacific Time
+  const formatEventDate = (dateStr: string) => {
+    // Add Pacific Time zone offset to ensure correct date
+    const date = new Date(`${dateStr}T00:00:00-08:00`);
+    return date.toLocaleDateString();
+  };
 
-    {event.subLocation && (
-      <Text color="$color" opacity={0.8}>
-        {event.subLocation}
-      </Text>
-    )}
+  return (
+    <YStack
+      backgroundColor="$cardBackground"
+      padding="$4"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="$borderColor"
+      space="$2"
+    >
+      <XStack justifyContent="space-between" alignItems="flex-start">
+        <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+          {event.name}
+        </Text>
+        <Text color="$textSecondary">
+          {event.time}
+        </Text>
+      </XStack>
+      
+      <XStack space="$2" alignItems="center">
+        <Text fontWeight="500" color="$color">
+          {formatEventDate(event.date)}
+        </Text>
+        <Text color="$color" opacity={0.7}>•</Text>
+        <Text color="$color">
+          {event.instructor}
+        </Text>
+      </XStack>
 
-    <Text color="$color" marginTop="$2">
-      {event.description}
-    </Text>
+      {event.subLocation && (
+        <Text color="$color" opacity={0.8}>
+          {event.subLocation}
+        </Text>
+      )}
 
-    {event.tags && (
-      <Text color="$color" fontSize="$3" opacity={0.7} marginTop="$2">
-        Tags: {event.tags}
+      <Text color="$color" marginTop="$2">
+        {event.description}
       </Text>
-    )}
-  </YStack>
-);
+
+      {event.tags && (
+        <Text color="$color" fontSize="$3" opacity={0.7} marginTop="$2">
+          Tags: {event.tags}
+        </Text>
+      )}
+    </YStack>
+  );
+};
 
 export default Schedule; 
