@@ -1,4 +1,4 @@
-import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack } from 'tamagui'
+import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack, useTheme } from 'tamagui'
 import config from './tamagui.config'
 import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
@@ -8,6 +8,7 @@ import Schedule from './components/Schedule'
 import backgroundImage from './assets/image.png'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AppRoutes from './components/Routes'
+import { Moon, Sun } from '@tamagui/lucide-icons'
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -54,6 +55,7 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState<string>("")
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   useEffect(() => {
     window.google?.accounts.id.initialize({
@@ -141,9 +143,14 @@ function App() {
     </Button>
   )
 
+  // Add theme toggle handler
+  const handleThemeToggle = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }
+
   return (
     <TamaguiProvider config={config}>
-      <Theme name="light">
+      <Theme name={theme}>
         <YStack 
           backgroundColor="$background" 
           minHeight="100vh"
@@ -151,43 +158,45 @@ function App() {
           width="100vw"
           overflow="hidden"
         >
-          {/* Background Image */}
-          <YStack
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            overflow="hidden"
-            width="100vw"
-            height="100vh"
-          >
-            <Image
-              source={{ uri: backgroundImage }}
-              alt="Background"
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
-              style={{
-                width: '100vw',
-                height: '100vh',
-                objectFit: 'cover',
-                opacity: 0.7,
-              }}
-            />
+          {/* Background Image - Only show in dark mode */}
+          {theme === 'dark' && (
             <YStack
               position="absolute"
               top={0}
               left={0}
               right={0}
               bottom={0}
-              backgroundColor="rgba(0,0,0,0.6)"
-            />
-          </YStack>
+              overflow="hidden"
+              width="100vw"
+              height="100vh"
+            >
+              <Image
+                source={{ uri: backgroundImage }}
+                alt="Background"
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                style={{
+                  width: '100vw',
+                  height: '100vh',
+                  objectFit: 'cover',
+                  opacity: 0.7,
+                }}
+              />
+              <YStack
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                backgroundColor="rgba(0,0,0,0.6)"
+              />
+            </YStack>
+          )}
 
-          {/* Original Header with Navigation */}
+          {/* Navigation Bar - Always Black */}
           <XStack 
             padding="$4" 
             justifyContent="space-between" 
@@ -216,13 +225,15 @@ function App() {
               />
             </Button>
 
-            {/* Center: Main Navigation */}
+            {/* Center: Main Navigation - Only show on XL screens */}
             <XStack 
               space="$8" 
               alignItems="center"
               position="absolute"
               left="50%"
               style={{ transform: 'translateX(-50%)' }}
+              display="none"
+              $xl={{ display: 'flex' }}  // Only show on XL screens
             >
               <Button
                 backgroundColor="transparent"
@@ -258,8 +269,23 @@ function App() {
               </Button>
             </XStack>
 
-            {/* Right side: Auth Buttons */}
+            {/* Right side: Auth Buttons + Theme Toggle */}
             <XStack space="$2" alignItems="center">
+              {/* Theme Toggle Button */}
+              <Button
+                backgroundColor="transparent"
+                padding="$2"
+                onPress={handleThemeToggle}
+                aria-label="Toggle theme"
+                hoverStyle={{ opacity: 0.8 }}
+              >
+                {theme === 'dark' ? (
+                  <Sun size={24} color="white" />
+                ) : (
+                  <Moon size={24} color="white" />
+                )}
+              </Button>
+
               {!isSignedIn ? (
                 <XStack space="$2" alignItems="center">
                   <div id="googleSignInDiv"></div>
@@ -283,7 +309,7 @@ function App() {
                   </Button>
                 </XStack>
               ) : (
-                <Text color="white" marginRight="$2" fontSize="$3">
+                <Text color={theme === 'dark' ? 'white' : 'black'} marginRight="$2" fontSize="$3">
                   {userEmail}
                 </Text>
               )}
@@ -319,18 +345,30 @@ function App() {
               padding="$2"
               zIndex={3}
               space="$1"
+              $sm={{ width: '100%', right: 0 }}
             >
-              {isSignedIn || tempAdminMode ? (
+              {isSignedIn ? (
                 <>
-                  {/* Signed In Menu Items */}
+                  {/* Profile with Email */}
                   <MenuItem 
-                    label={`Profile: ${tempAdminMode ? "temp@admin.com" : userEmail}`} 
+                    label={`Profile: ${tempAdminMode ? 'temp@admin.com' : userEmail}`} 
                     page="profile" 
                   />
+                  
+                  {/* Mobile Navigation Items */}
+                  <YStack $xl={{ display: 'none' }}>
+                    <MenuItem label="Workouts" onClick={() => handleNavigate('schedule/workouts')} />
+                    <MenuItem label="Events" onClick={() => handleNavigate('schedule/events')} />
+                  </YStack>
+
+                  {/* Admin Panel (if admin) */}
                   {(userData?.isAdmin || tempAdminMode) && (
                     <MenuItem label="Admin Panel" page="admin" />
                   )}
+                  
                   <MenuItem label="Privacy Policy" page="privacy" />
+                  
+                  {/* Sign Out Button */}
                   <YStack 
                     borderTopWidth={1} 
                     borderTopColor="$borderColor"
@@ -347,6 +385,10 @@ function App() {
                 <>
                   {/* Signed Out Menu Items */}
                   <MenuItem label="Profile" page="profile" />
+                  <YStack $xl={{ display: 'none' }}>
+                    <MenuItem label="Workouts" onClick={() => handleNavigate('schedule/workouts')} />
+                    <MenuItem label="Events" onClick={() => handleNavigate('schedule/events')} />
+                  </YStack>
                   <MenuItem label="Privacy Policy" page="privacy" />
                 </>
               )}
@@ -390,6 +432,7 @@ function App() {
             width="100%" 
             position="relative" 
             zIndex={2}
+            backgroundColor={theme === 'light' ? 'white' : 'transparent'}
           >
             <AppRoutes />
           </YStack>

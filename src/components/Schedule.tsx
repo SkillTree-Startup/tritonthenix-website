@@ -17,6 +17,20 @@ interface Event {
   tags?: string;
 }
 
+// Helper function to generate week dates
+const generateWeekDates = (selectedDate: Date) => {
+  const dates = [];
+  const startDate = new Date(selectedDate);
+  startDate.setDate(startDate.getDate() - 3); // Start 3 days before
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+    dates.push(date);
+  }
+  return dates;
+};
+
 const Schedule = () => {
   // Initialize activeTab based on URL
   const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(() => {
@@ -24,6 +38,8 @@ const Schedule = () => {
     return path.includes('events') ? 'Events' : 'Workouts';
   });
   const [events, setEvents] = useState<Event[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [weekDates, setWeekDates] = useState(generateWeekDates(new Date()));
 
   // Add URL change listener
   useEffect(() => {
@@ -53,6 +69,11 @@ const Schedule = () => {
     window.history.pushState({}, '', newPath);
   };
 
+  // Update week dates when selected date changes
+  useEffect(() => {
+    setWeekDates(generateWeekDates(selectedDate));
+  }, [selectedDate]);
+
   useEffect(() => {
     // Query events from Firebase
     const q = query(collection(db, 'events'), orderBy('date', 'asc'));
@@ -79,122 +100,235 @@ const Schedule = () => {
     const isCorrectType = activeTab === 'Events' ? 
       event.type === 'Event' : 
       event.type === 'Workout';
-    return isCorrectType;
+    
+    if (activeTab === 'Events') {
+      return isCorrectType;
+    } else {
+      // For workouts, filter by selected date
+      const eventDate = new Date(event.date);
+      return isCorrectType && 
+        eventDate.toDateString() === selectedDate.toDateString();
+    }
   });
 
   const upcomingEvents = filteredEvents.filter(event => 
     new Date(event.date) >= now
   );
 
-  return (
-    <YStack 
-      padding="$4" 
-      space="$4" 
-      width="100%" 
-      alignItems="center"
-    >
-      {/* Main Panel */}
-      <YStack space="$4" maxWidth={500} width="100%">
-        <Text 
-          fontSize="$8" 
-          fontWeight="bold" 
-          color="$color"
-        >
-          Schedule
-        </Text>
+  const pastEvents = filteredEvents.filter(event => 
+    new Date(event.date) < now
+  );
 
-        {/* Tabs - Updated with new handler */}
-        <XStack 
-          backgroundColor="#f0f0f0" 
-          borderRadius="$4"
-          overflow="hidden"
-        >
+  const formatDate = (date: Date) => {
+    return {
+      day: date.getDate(),
+      month: date.toLocaleString('default', { month: 'short' }),
+      weekday: date.toLocaleString('default', { weekday: 'short' })
+    };
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+  };
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
+    setSelectedDate(newDate);
+  };
+
+  return (
+    <YStack padding="$4" space="$4" width="100%" alignItems="center">
+      <YStack space="$4" maxWidth={800} width="100%">
+        <Text fontSize="$8" fontWeight="bold" color="$textPrimary">Schedule</Text>
+
+        {/* Tabs */}
+        <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
           <Button
             flex={1}
-            backgroundColor={activeTab === 'Workouts' ? 'white' : 'transparent'}
-            color="black"
+            backgroundColor={activeTab === 'Workouts' ? '$background' : 'transparent'}
+            color="$textPrimary"
             onPress={() => handleTabChange('Workouts')}
           >
             Workouts
           </Button>
           <Button
             flex={1}
-            backgroundColor={activeTab === 'Events' ? 'white' : 'transparent'}
-            color="black"
+            backgroundColor={activeTab === 'Events' ? '$background' : 'transparent'}
+            color="$textPrimary"
             onPress={() => handleTabChange('Events')}
           >
             Events
           </Button>
         </XStack>
 
-        {/* Events List */}
-        <YStack 
-          backgroundColor="$background" 
-          borderRadius="$4" 
-          borderWidth={1} 
-          borderColor="$borderColor"
-          width="100%"
-        >
-          <Text 
-            fontSize="$6" 
-            fontWeight="bold" 
-            color="$color"
-            padding="$4"
-            borderBottomWidth={1}
-            borderBottomColor="$borderColor"
+        {/* Date Selector - Only show for Workouts */}
+        {activeTab === 'Workouts' && (
+          <XStack 
+            backgroundColor="$cardBackground" 
+            borderRadius="$4" 
+            padding="$2"
+            space="$2"
+            alignItems="center"
           >
-            {`Upcoming ${activeTab}`}
-          </Text>
-          <ScrollView height={400} padding="$4">
-            <YStack space="$4">
-              {upcomingEvents.map(event => (
-                <YStack 
-                  key={event.id}
-                  backgroundColor="white"
-                  padding="$3"
-                  borderRadius="$2"
-                  borderWidth={1}
-                  borderColor="$borderColor"
-                  space="$2"
+            <Button
+              size="$2"
+              onPress={() => navigateWeek('prev')}
+              backgroundColor="transparent"
+            >
+              ←
+            </Button>
+            {weekDates.map((date) => {
+              const formattedDate = formatDate(date);
+              const isSelected = date.toDateString() === selectedDate.toDateString();
+              const isToday = date.toDateString() === new Date().toDateString();
+              
+              return (
+                <Button
+                  key={date.toISOString()}
+                  onPress={() => handleDateSelect(date)}
+                  backgroundColor={isSelected ? '$color' : 'transparent'}
+                  borderRadius="$4"
+                  padding="$2"
+                  flex={1}
                 >
-                  <XStack justifyContent="space-between" alignItems="flex-start">
-                    <Text fontWeight="bold" color="$color">
-                      {event.name}
+                  <YStack alignItems="center" space="$1">
+                    <Text 
+                      color={isSelected ? 'white' : '$color'} 
+                      fontSize="$2"
+                    >
+                      {formattedDate.weekday}
                     </Text>
-                  </XStack>
-                  <Text color="$color" fontSize="$3">
-                    {new Date(event.date).toLocaleDateString()} at {event.time}
+                    <Text 
+                      color={isSelected ? 'white' : '$color'} 
+                      fontSize="$4" 
+                      fontWeight="bold"
+                    >
+                      {formattedDate.day}
+                    </Text>
+                    {isToday && (
+                      <Text 
+                        color={isSelected ? 'white' : '$color'} 
+                        fontSize="$2"
+                      >
+                        Today
+                      </Text>
+                    )}
+                  </YStack>
+                </Button>
+              );
+            })}
+            <Button
+              size="$2"
+              onPress={() => navigateWeek('next')}
+              backgroundColor="transparent"
+            >
+              →
+            </Button>
+          </XStack>
+        )}
+
+        {/* Events List */}
+        <ScrollView height={600} width="100%">
+          <YStack space="$4">
+            {activeTab === 'Events' ? (
+              // Events View
+              <>
+                {/* Upcoming Events */}
+                <YStack space="$4">
+                  <Text fontSize="$6" fontWeight="bold" color="$color">
+                    Upcoming Events
                   </Text>
-                  <Text color="$color">
-                    {event.instructor}
-                  </Text>
-                  <Text color="$color">
-                    {event.location}
-                  </Text>
-                  <Text color="$color">
-                    {event.subLocation}
-                  </Text>
-                  <Text color="$color" fontSize="$3">
-                    {event.description}
-                  </Text>
-                  {event.tags && (
-                    <Text color="$color" fontSize="$3" opacity={0.7}>
-                      Tags: {event.tags}
+                  {upcomingEvents.map(event => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                  {upcomingEvents.length === 0 && (
+                    <Text color="$color" textAlign="center">
+                      No upcoming events scheduled
                     </Text>
                   )}
                 </YStack>
-              ))}
-              {upcomingEvents.length === 0 && (
-                <Text color="$color" textAlign="center">
-                  No upcoming {activeTab.toLowerCase()} scheduled
-                </Text>
-              )}
-            </YStack>
-          </ScrollView>
-        </YStack>
+
+                {/* Past Events */}
+                <YStack space="$4" marginTop="$6">
+                  <Text fontSize="$6" fontWeight="bold" color="$color">
+                    Past Events
+                  </Text>
+                  {pastEvents.map(event => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                  {pastEvents.length === 0 && (
+                    <Text color="$color" textAlign="center">
+                      No past events
+                    </Text>
+                  )}
+                </YStack>
+              </>
+            ) : (
+              // Workouts View
+              <YStack space="$4">
+                {filteredEvents.map(event => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+                {filteredEvents.length === 0 && (
+                  <Text color="$color" textAlign="center">
+                    No workouts scheduled for this date
+                  </Text>
+                )}
+              </YStack>
+            )}
+          </YStack>
+        </ScrollView>
       </YStack>
     </YStack>
   );
 };
+
+// Event Card Component
+const EventCard = ({ event }: { event: Event }) => (
+  <YStack
+    backgroundColor="$cardBackground"
+    padding="$4"
+    borderRadius="$4"
+    borderWidth={1}
+    borderColor="$borderColor"
+    space="$2"
+  >
+    <XStack justifyContent="space-between" alignItems="flex-start">
+      <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+        {event.name}
+      </Text>
+      <Text color="$textSecondary">
+        {event.time}
+      </Text>
+    </XStack>
+    
+    <XStack space="$2" alignItems="center">
+      <Text fontWeight="500" color="$color">
+        {event.instructor}
+      </Text>
+      <Text color="$color" opacity={0.7}>•</Text>
+      <Text color="$color">
+        {event.location}
+      </Text>
+    </XStack>
+
+    {event.subLocation && (
+      <Text color="$color" opacity={0.8}>
+        {event.subLocation}
+      </Text>
+    )}
+
+    <Text color="$color" marginTop="$2">
+      {event.description}
+    </Text>
+
+    {event.tags && (
+      <Text color="$color" fontSize="$3" opacity={0.7} marginTop="$2">
+        Tags: {event.tags}
+      </Text>
+    )}
+  </YStack>
+);
 
 export default Schedule; 
