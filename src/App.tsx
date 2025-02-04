@@ -1,4 +1,4 @@
-import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack, useTheme } from 'tamagui'
+import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack } from 'tamagui'
 import config from './tamagui.config'
 import { useEffect, useState } from 'react'
 import logoSvg from './assets/logo.svg'
@@ -44,13 +44,6 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activePage, setActivePage] = useState<string>(() => {
-    // Get initial page from URL path
-    const path = window.location.pathname
-    if (path === '/privacy') return 'privacy'
-    if (path === '/admin') return 'admin'
-    return 'home'
-  })
   const [tempAdminMode, setTempAdminMode] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
@@ -106,10 +99,6 @@ function App() {
 
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen)
-  }
-
-  const handleLogoClick = () => {
-    handleNavigate('home')
   }
 
   const handleNavigate = (path: string) => {

@@ -17,6 +17,10 @@ interface Event {
   tags?: string;
 }
 
+interface ScheduleProps {
+  defaultTab?: 'Workouts' | 'Events';
+}
+
 // Helper function to generate week dates
 const generateWeekDates = (selectedDate: Date) => {
   const dates = [];
@@ -31,12 +35,9 @@ const generateWeekDates = (selectedDate: Date) => {
   return dates;
 };
 
-const Schedule = () => {
-  // Initialize activeTab based on URL
-  const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(() => {
-    const path = window.location.pathname;
-    return path.includes('events') ? 'Events' : 'Workouts';
-  });
+const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
+  // Initialize activeTab based on defaultTab prop instead of URL
+  const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(defaultTab);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState(generateWeekDates(new Date()));
