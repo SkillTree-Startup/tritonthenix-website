@@ -1,4 +1,4 @@
-import { YStack, Text, useTheme, Theme } from 'tamagui'
+import { YStack, Text, useTheme } from 'tamagui'
 
 const Home = () => {
   const theme = useTheme()
