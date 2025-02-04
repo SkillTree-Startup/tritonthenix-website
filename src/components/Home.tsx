@@ -1,7 +1,8 @@
-import { YStack, Text, useTheme } from 'tamagui'
+import { YStack, Text, useTheme, Theme } from 'tamagui'
 
 const Home = () => {
   const theme = useTheme()
+  const isDark = theme.name?.toString() === 'dark'
 
   return (
     <YStack 
@@ -30,7 +31,7 @@ const Home = () => {
         $xl={{ fontSize: 96, lineHeight: 100, letterSpacing: '3px' }}
         style={{
           fontFamily: 'Open Sans, sans-serif',
-          textShadow: theme.name === 'dark' ? `
+          textShadow: isDark ? `
             0 0 10px rgba(255,255,255,0.3),
             0 0 20px rgba(255,255,255,0.2),
             0 0 30px rgba(255,255,255,0.1)
@@ -65,7 +66,7 @@ const Home = () => {
             fontFamily: 'Open Sans, sans-serif',
             fontWeight: '300',
             letterSpacing: '0.5px',
-            textShadow: theme.name === 'dark' ? '0 2px 4px rgba(0,0,0,0.3)' : 'none',
+            textShadow: isDark ? '0 2px 4px rgba(0,0,0,0.3)' : 'none',
           }}
         >
           Welcome to the TritonThenix Family. Join our community of fitness enthusiasts and transform your journey.
