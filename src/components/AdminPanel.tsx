@@ -52,14 +52,6 @@ const generateDateOptions = () => {
 }
 
 // Add this helper function at the top of the file
-const adjustDateForTimezone = (dateStr: string) => {
-  // Create date in Pacific time
-  const date = new Date(`${dateStr}T00:00:00-08:00`);
-  // Format it back to YYYY-MM-DD
-  return date.toISOString().split('T')[0];
-};
-
-// Add this helper function at the top of the file
 const formatEventDate = (dateStr: string) => {
   // Add Pacific Time zone offset to ensure correct date
   const date = new Date(`${dateStr}T00:00:00-08:00`);
@@ -86,10 +78,10 @@ interface EventWithTimestamp extends EventData {
 }
 
 interface AdminPanelProps {
-  userEmail: string;
+  userEmail?: string;
 }
 
-export const AdminPanel = ({ userEmail }: AdminPanelProps) => {
+export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   const [eventData, setEventData] = useState<EventData>({
     name: '',
     type: 'Workout',
