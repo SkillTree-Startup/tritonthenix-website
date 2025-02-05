@@ -142,6 +142,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   // Filter events based on active tab and date
   const now = new Date();
   const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  today.setHours(0, 0, 0, 0); // Set to start of day
 
   const filteredEvents = events.filter(event => {
     const isCorrectType = activeTab === 'Events' ? 
@@ -160,13 +161,16 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   });
 
   const upcomingEvents = filteredEvents.filter(event => {
-    const eventDate = new Date(`${event.date}T00:00:00-08:00`);
-    return eventDate >= today;
+    const eventDate = new Date(`${event.date}T${event.time}-08:00`);
+    const nowPacific = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    return eventDate >= nowPacific;
   });
 
-  const pastEvents = filteredEvents.filter(event => 
-    new Date(event.date) < now
-  );
+  const pastEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(`${event.date}T${event.time}-08:00`);
+    const nowPacific = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    return eventDate < nowPacific;
+  });
 
   const formatDate = (date: Date) => {
     return {
@@ -448,7 +452,7 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
   const getSpotsText = () => {
     if (event.maxRSVPs) {
       const spots = event.maxRSVPs - attendeeCount
-      return `${spots} ${spots === 1 ? 'spot' : 'spots'} remaining`
+      return `${spots} ${spots === 1 ? 'spot' : 'spots'} left`
     }
     return null
   }
@@ -526,17 +530,9 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
             </Text>
           )}
 
-          <Text 
-            color="$textSecondary"
-          >
+          <Text color="$textSecondary">
             {event.description}
           </Text>
-
-          {event.tags && (
-            <Text color="$color" fontSize="$3" opacity={0.7}>
-              Tags: {event.tags}
-            </Text>
-          )}
         </YStack>
 
         {/* Right side content */}
@@ -546,6 +542,7 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
             backgroundColor="$gray8"
             onPress={() => onViewDetails()}
             minHeight={36}
+            width={100}
             paddingHorizontal="$3"
             alignItems="center"
             justifyContent="center"
@@ -556,7 +553,13 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
 
           {/* Only show spots text if there's a limit */}
           {event.maxRSVPs && (
-            <Text fontSize="$3" color="$textSecondary" textAlign="center" marginTop="$1">
+            <Text 
+              fontSize="$3" 
+              color="$textSecondary" 
+              textAlign="center" 
+              marginTop="$1"
+              width={100}
+            >
               {getSpotsText()}
             </Text>
           )}

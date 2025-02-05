@@ -7,7 +7,6 @@ import { db } from '../firebase'
 interface EventEditPopupProps {
   event: Event
   onClose: () => void
-  onDelete: (eventId: string) => void
 }
 
 interface UserInfo {
@@ -85,8 +84,7 @@ const formatEventDate = (dateStr: string) => {
   return date.toLocaleDateString()
 }
 
-export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps) => {
-  const [attendees, setAttendees] = useState<UserInfo[]>([])
+export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
@@ -116,34 +114,6 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
       console.error('Error updating event:', error)
     }
   }
-
-  useEffect(() => {
-    const fetchAttendees = async () => {
-      try {
-        const eventDoc = await getDoc(doc(db, 'events', event.id))
-        const eventData = eventDoc.data()
-        const attendeeEmails = eventData?.attendees || []
-
-        const attendeePromises = attendeeEmails.map(async (email: string) => {
-          const userDoc = await getDoc(doc(db, 'users', email))
-          const userData = userDoc.data()
-          return {
-            email,
-            name: userData?.name
-          }
-        })
-
-        const attendeeInfo = await Promise.all(attendeePromises)
-        setAttendees(attendeeInfo)
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Error fetching attendees:', error)
-        setIsLoading(false)
-      }
-    }
-
-    fetchAttendees()
-  }, [event.id])
 
   return (
     <YStack
@@ -426,38 +396,6 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
                 )}
               </XStack>
             </YStack>
-
-            {/* Attendees Section */}
-            <YStack space="$2" marginTop="$2">
-              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
-                RSVPs ({attendees.length})
-              </Text>
-              {isLoading ? (
-                <Text color="$textSecondary">Loading attendees...</Text>
-              ) : attendees.length > 0 ? (
-                <YStack space="$2">
-                  {attendees.map((attendee) => (
-                    <XStack 
-                      key={attendee.email}
-                      backgroundColor="$cardBackground"
-                      padding="$3"
-                      borderRadius="$2"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Text color="$textPrimary" fontSize="$4">
-                        {attendee.name || 'Anonymous'}
-                      </Text>
-                      <Text color="$textSecondary" fontSize="$3">
-                        {attendee.email}
-                      </Text>
-                    </XStack>
-                  ))}
-                </YStack>
-              ) : (
-                <Text color="$textSecondary">No RSVPs yet</Text>
-              )}
-            </YStack>
           </YStack>
         </ScrollView>
 
@@ -493,7 +431,6 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
                 backgroundColor="$red8"
                 padding="$2"
                 onPress={() => {
-                  onDelete(event.id)
                   onClose()
                 }}
                 hoverStyle={{ backgroundColor: '$red7' }}

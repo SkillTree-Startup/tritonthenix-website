@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { DialogScope } from '../tamagui.config'
+import { getFunctions, httpsCallable } from 'firebase/functions'
+import { admin } from '../firebase'
 
 interface RSVPListPopupProps {
   event: Event
@@ -75,28 +77,28 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
     
     setIsSending(true)
     try {
-      // Mock successful email send for now
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const functions = getFunctions()
+      const sendEmailToAttendees = httpsCallable(functions, 'sendEmailToAttendees')
       
-      console.log('Email would be sent to:', {
+      await sendEmailToAttendees({
         recipients: attendees.map(a => a.email),
         subject: `Message from TritonThenix: ${event.name}`,
         content: emailContent,
         eventDetails: {
           name: event.name,
           date: event.date,
-          time: event.time,
-          sentBy: adminName
-        }
+          time: event.time
+        },
+        senderName: adminName
       })
 
       // Close dialog and cleanup
       setShowEmailDialog(false)
       setEmailContent('')
-      setIsSending(false)
       
     } catch (error) {
       console.error('Error sending email:', error)
+    } finally {
       setIsSending(false)
     }
   }
@@ -256,7 +258,11 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               maxWidth={500}
               backgroundColor="$background"
             >
-              <Dialog.Title>Send Message to Attendees</Dialog.Title>
+              <Dialog.Title>
+                <Text fontSize="$5" color="$textPrimary">
+                  Send Message to RSVP List
+                </Text>
+              </Dialog.Title>
               <Dialog.Description>
                 This message will be sent to all {attendees.length} attendees of {event.name} from {adminName}.
               </Dialog.Description>
@@ -335,7 +341,11 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
             left="50%"
             transform="translate(-50%, -50%)"
           >
-            <Dialog.Title>RSVP Settings</Dialog.Title>
+            <Dialog.Title>
+              <Text fontSize="$5" color="$textPrimary">
+                RSVP Limit
+              </Text>
+            </Dialog.Title>
             <Dialog.Description>
               Set the maximum number of RSVPs allowed for this event. Set to 0 for unlimited.
             </Dialog.Description>
