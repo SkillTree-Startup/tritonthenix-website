@@ -8,9 +8,11 @@ import { Profile } from './Profile';
 interface RoutesProps {
   userEmail?: string;
   userName?: string;
+  tempAdminMode?: boolean;
+  onTempAdminToggle?: () => void;
 }
 
-const AppRoutes = ({ userEmail, userName }: RoutesProps) => {
+const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle }: RoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -18,7 +20,17 @@ const AppRoutes = ({ userEmail, userName }: RoutesProps) => {
       <Route path="/schedule/events" element={<Schedule defaultTab="Events" />} />
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/profile" element={<Profile email={userEmail} name={userName} />} />
+      <Route 
+        path="/profile" 
+        element={
+          <Profile 
+            email={userEmail} 
+            name={userName}
+            tempAdminMode={tempAdminMode}
+            onTempAdminToggle={onTempAdminToggle}
+          />
+        } 
+      />
     </Routes>
   );
 };

@@ -49,14 +49,14 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   useEffect(() => {
-    window.google?.accounts.id.initialize({
-      client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
-      callback: handleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true
-    });
-
     if (!isSignedIn) {
+      window.google?.accounts.id.initialize({
+        client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
       window.google?.accounts.id.renderButton(
         document.getElementById("googleSignInDiv"),
         {
@@ -259,7 +259,11 @@ function App() {
             </XStack>
 
             {/* Right side: Auth Buttons + Theme Toggle */}
-            <XStack space="$2" alignItems="center">
+            <XStack 
+              space="$2" 
+              alignItems="center"
+              $sm={{ space: '$0' }} // Remove space on mobile
+            >
               {/* Theme Toggle Button */}
               <Button
                 backgroundColor="transparent"
@@ -267,6 +271,7 @@ function App() {
                 onPress={handleThemeToggle}
                 aria-label="Toggle theme"
                 hoverStyle={{ opacity: 0.8 }}
+                $sm={{ padding: '$1' }} // Reduce padding on mobile
               >
                 {theme === 'dark' ? (
                   <Sun size={24} color="white" />
@@ -276,33 +281,24 @@ function App() {
               </Button>
 
               {!isSignedIn ? (
-                <XStack space="$2" alignItems="center">
-                  <div 
-                    id="googleSignInDiv" 
+                <XStack 
+                  space="$2" 
+                  alignItems="center"
+                  $sm={{ space: '$0' }} // Remove space on mobile
+                >
+                  <XStack
                     style={{
                       backgroundColor: 'transparent',
                       borderRadius: '20px',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
                     }}
-                  ></div>
-                  <Button
-                    backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
-                    borderColor="$color"
-                    borderWidth={1}
-                    padding="$2"
-                    onPress={() => {
-                      setTempAdminMode(!tempAdminMode)
-                      setUserData({
-                        email: 'temp@admin.com',
-                        isAdmin: !tempAdminMode
-                      })
-                      setIsSignedIn(!tempAdminMode)
-                    }}
+                    $gtMd={{ transform: 'scale(1)', transformOrigin: 'right center' }}
+                    $md={{ transform: 'scale(0.8)', transformOrigin: 'right center' }}
+                    $sm={{ transform: 'scale(0.7)', transformOrigin: 'right center' }}
+                    $xs={{ transform: 'scale(0.6)', transformOrigin: 'right center' }}
                   >
-                    <Text color="$color" fontSize="$2">
-                      {tempAdminMode ? 'Disable' : 'Enable'} Temp Admin
-                    </Text>
-                  </Button>
+                    <div id="googleSignInDiv"></div>
+                  </XStack>
                 </XStack>
               ) : (
                 <Text color={theme === 'dark' ? 'white' : 'black'} marginRight="$2" fontSize="$3">
@@ -316,6 +312,7 @@ function App() {
                 padding="$2"
                 onPress={handleMenuToggle}
                 aria-label="Menu"
+                $sm={{ padding: '$1' }} // Reduce padding on mobile
               >
                 <YStack space="$1.5">
                   <Stack height={2} width={24} backgroundColor="white" />
@@ -383,7 +380,24 @@ function App() {
                 </>
               ) : (
                 <>
-                  {/* Signed Out Menu Items */}
+                  {/* Show Google Sign-In in menu only on mobile */}
+                  <XStack 
+                    display="none" 
+                    $sm={{ display: 'flex' }}
+                    justifyContent="center"
+                    paddingVertical="$2"
+                  >
+                    <div 
+                      id="googleSignInDivMobile"
+                      style={{
+                        backgroundColor: 'transparent',
+                        borderRadius: '20px',
+                        overflow: 'hidden'
+                      }}
+                    ></div>
+                  </XStack>
+                  
+                  {/* Rest of the signed out menu items */}
                   <YStack $xl={{ display: 'none' }}>
                     <MenuItem 
                       label="Workouts" 
@@ -443,6 +457,16 @@ function App() {
             <AppRoutes 
               userEmail={userEmail} 
               userName={userData?.name}
+              tempAdminMode={tempAdminMode}
+              onTempAdminToggle={() => {
+                setTempAdminMode(!tempAdminMode);
+                setUserData({
+                  email: 'temp@admin.com',
+                  name: userData?.name,
+                  isAdmin: !tempAdminMode
+                });
+                setIsSignedIn(!tempAdminMode);
+              }}
             />
           </YStack>
 

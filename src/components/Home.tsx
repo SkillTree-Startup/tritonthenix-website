@@ -69,7 +69,7 @@ const Home = () => {
             textShadow: isDark ? '0 2px 4px rgba(0,0,0,0.3)' : 'none',
           }}
         >
-          Welcome to the TritonThenix Family. Join our community of fitness enthusiasts and transform your journey.
+          Welcome to the TritonThenix family. Join our community of fitness enthusiasts and transform your journey.
         </Text>
       </YStack>
     </YStack>
