@@ -23,6 +23,7 @@ interface EditableFields {
   description: string
   additionalDetails?: string
   tags?: string
+  type: 'Workout' | 'Event'
 }
 
 // Common edit button component style
@@ -96,7 +97,8 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
     time: event.time,
     description: event.description,
     additionalDetails: event.additionalDetails,
-    tags: event.tags
+    tags: event.tags,
+    type: event.type
   })
   const [editing, setEditing] = useState<EditableFields>({
     name: false,
@@ -104,7 +106,8 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
     date: false,
     time: false,
     tags: false,
-    additionalDetails: false
+    additionalDetails: false,
+    type: false
   })
   const [dateOptions] = useState(generateDateOptions())
   const [timeOptions] = useState(generateTimeOptions())
@@ -189,6 +192,53 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
                   <XStack flex={1} space="$2" alignItems="center">
                     <Text flex={1} color="$textPrimary">{editedEvent.name}</Text>
                     <EditButton onPress={() => setEditing(prev => ({ ...prev, name: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Type Field - Remove border and padding */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Event Type</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.type ? (
+                  <XStack flex={1} space="$2">
+                    <XStack flex={1} space="$2">
+                      <Button
+                        flex={1}
+                        backgroundColor={editedEvent.type === 'Workout' ? '$blue8' : '$gray4'}
+                        onPress={() => handleFieldChange('type', 'Workout')}
+                        padding="$2"
+                      >
+                        <Text color={editedEvent.type === 'Workout' ? 'white' : '$textPrimary'}>
+                          Workout
+                        </Text>
+                      </Button>
+                      <Button
+                        flex={1}
+                        backgroundColor={editedEvent.type === 'Event' ? '$blue8' : '$gray4'}
+                        onPress={() => handleFieldChange('type', 'Event')}
+                        padding="$2"
+                      >
+                        <Text color={editedEvent.type === 'Event' ? 'white' : '$textPrimary'}>
+                          Event
+                        </Text>
+                      </Button>
+                    </XStack>
+                    <Button
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('type')}
+                      padding="$2"
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">
+                      {editedEvent.type}
+                    </Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, type: true }))} />
                   </XStack>
                 )}
               </XStack>
