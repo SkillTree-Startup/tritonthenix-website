@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
+import { YStack, Text, XStack, Button, ScrollView, Stack, Image } from 'tamagui';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+// Add the default profile image constant
+const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
 
 interface Event {
   id: string;
@@ -16,6 +19,9 @@ interface Event {
   subLocation: string;
   createdAt: Date;
   tags?: string;
+  creatorEmail: string;
+  creatorName?: string;
+  creatorProfilePicture?: string;
 }
 
 interface ScheduleProps {
@@ -309,6 +315,12 @@ const EventCard = ({ event }: { event: Event }) => {
     return date.toLocaleDateString();
   };
 
+  // Add helper to get first name
+  const getFirstName = (fullName?: string) => {
+    if (!fullName) return 'Anonymous';
+    return fullName.split(' ')[0];
+  };
+
   return (
     <YStack
       backgroundColor="$cardBackground"
@@ -318,9 +330,41 @@ const EventCard = ({ event }: { event: Event }) => {
       borderColor="$borderColor"
       space="$2"
     >
-      <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-        {event.name}
-      </Text>
+      {event.type === 'Workout' ? (
+        <XStack space="$2" alignItems="center">
+          <Stack
+            width={32}
+            height={32}
+            borderRadius={16}
+            overflow="hidden"
+            backgroundColor="$background"
+            borderWidth={1}
+            borderColor="$borderColor"
+          >
+            <Image
+              source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
+              width="100%"
+              height="100%"
+              resizeMode="cover"
+              alt={`${getFirstName(event.creatorName)}'s profile picture`}
+            />
+          </Stack>
+          
+          <YStack>
+            <Text fontSize="$3" color="$textSecondary">
+              {getFirstName(event.creatorName)}
+            </Text>
+            <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+              {event.name}
+            </Text>
+          </YStack>
+        </XStack>
+      ) : (
+        // Simple title for Events
+        <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+          {event.name}
+        </Text>
+      )}
 
       <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
         {event.type === 'Event' && (

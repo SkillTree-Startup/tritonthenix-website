@@ -1,7 +1,7 @@
 import { YStack, Text, Input, Button, XStack, TextArea, Select, ScrollView } from 'tamagui'
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -21,25 +21,43 @@ const generateTimeOptions = () => {
 // Add this helper function next to generateTimeOptions
 const generateDateOptions = () => {
   const dates = []
-  const today = new Date()
+  // Start with Pacific time
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
   
-  // Generate dates for the next 365 days
   for (let i = 0; i < 365; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
     
-    const value = date.toISOString().split('T')[0]
-    const label = date.toLocaleDateString('en-US', { 
+    // Force the date to be interpreted in Pacific time
+    const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
+    
+    // Format the date components
+    const year = pacificDate.getFullYear()
+    const month = String(pacificDate.getMonth() + 1).padStart(2, '0')
+    const day = String(pacificDate.getDate()).padStart(2, '0')
+    const value = `${year}-${month}-${day}`
+    
+    // Format the label
+    const label = pacificDate.toLocaleDateString('en-US', { 
       weekday: 'short',
       month: 'short', 
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'America/Los_Angeles'
     })
     
     dates.push({ value, label })
   }
   return dates
 }
+
+// Add this helper function at the top of the file
+const adjustDateForTimezone = (dateStr: string) => {
+  // Create date in Pacific time
+  const date = new Date(`${dateStr}T00:00:00-08:00`);
+  // Format it back to YYYY-MM-DD
+  return date.toISOString().split('T')[0];
+};
 
 // Add this helper function at the top of the file
 const formatEventDate = (dateStr: string) => {
@@ -55,6 +73,9 @@ interface EventData {
   time: string
   description: string
   tags: string
+  creatorEmail: string
+  creatorName?: string
+  creatorProfilePicture?: string
 }
 
 // Add interface for event with timestamps
@@ -64,14 +85,19 @@ interface EventWithTimestamp extends EventData {
   id: string
 }
 
-export const AdminPanel = () => {
+interface AdminPanelProps {
+  userEmail: string;
+}
+
+export const AdminPanel = ({ userEmail }: AdminPanelProps) => {
   const [eventData, setEventData] = useState<EventData>({
     name: '',
     type: 'Workout',
     date: '',
     time: '',
     description: '',
-    tags: ''
+    tags: '',
+    creatorEmail: ''
   })
 
   // Add state to track if form has been submitted
@@ -117,22 +143,37 @@ export const AdminPanel = () => {
   }, [])
 
   const handleSubmit = async () => {
-    setHasAttemptedSubmit(true)  // Set to true when submit is attempted
+    setHasAttemptedSubmit(true)
 
-    // Check for required fields
     if (!eventData.name.trim() || !eventData.date || !eventData.time || !eventData.description.trim()) {
       return
     }
 
     try {
+      console.log('Original date:', eventData.date); // Debug log
+
+      // Get creator's info from Firestore
+      const userDoc = await getDoc(doc(db, 'users', userEmail));
+      const userData = userDoc.data();
+
+      // Keep the date as is since it's already in YYYY-MM-DD format
+      const formattedDate = eventData.date;
+      console.log('Formatted date:', formattedDate); // Debug log
+
       // Create a new document in the events collection
       const docRef = await addDoc(collection(db, 'events'), {
         ...eventData,
+        date: formattedDate,
+        creatorEmail: userEmail,
+        creatorName: userData?.name,
+        creatorProfilePicture: userData?.profilePicture,
         createdAt: new Date(),
         updatedAt: new Date()
       })
       
-      console.log('Event added with ID:', docRef.id)
+      // Log the stored date
+      const savedData = (await getDoc(docRef)).data();
+      console.log('Stored date:', savedData?.date); // Debug log
       
       // Clear the form and reset submit attempt
       setEventData({
@@ -141,9 +182,10 @@ export const AdminPanel = () => {
         date: '',
         time: '',
         description: '',
-        tags: ''
+        tags: '',
+        creatorEmail: ''
       })
-      setHasAttemptedSubmit(false)  // Reset after successful submit
+      setHasAttemptedSubmit(false)
       
     } catch (error) {
       console.error('Error adding event:', error)
@@ -157,7 +199,10 @@ export const AdminPanel = () => {
       date: event.date,
       time: event.time,
       description: event.description,
-      tags: event.tags
+      tags: event.tags,
+      creatorEmail: event.creatorEmail,
+      creatorName: event.creatorName,
+      creatorProfilePicture: event.creatorProfilePicture
     })
     // Scroll to top of form on mobile
     if (!isDesktop) {
