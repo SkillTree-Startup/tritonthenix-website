@@ -244,72 +244,91 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
               </XStack>
             </YStack>
 
-            {/* Date and Time Fields */}
+            {/* Date Field */}
             <YStack space="$2">
-              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Date & Time</Text>
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Date</Text>
               <XStack space="$2" alignItems="center">
-                {editing.date || editing.time ? (
-                  <YStack flex={1} space="$2">
-                    <Select
+                {editing.date ? (
+                  <XStack flex={1} space="$2">
+                    <select
                       value={editedEvent.date}
-                      onValueChange={(value: string) => handleFieldChange('date', value)}
-                    >
-                      <Select.Trigger>
-                        <Select.Value />
-                      </Select.Trigger>
-                      <Select.Content>
-                        {dateOptions.map((option, index) => (
-                          <Select.Item 
-                            key={option.value} 
-                            value={option.value}
-                            index={index}
-                          >
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select>
-
-                    <Select
-                      value={editedEvent.time}
-                      onValueChange={(value) => handleFieldChange('time', value)}
-                      items={timeOptions}
-                    >
-                      <Select.Trigger width="100%" iconAfter={Pencil}>
-                        <Select.Value placeholder="Select Time" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          <Select.Group>
-                            {timeOptions.map((option) => (
-                              <Select.Item key={option.value} value={option.value}>
-                                <Select.ItemText>{option.label}</Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.Group>
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
-                      </Select.Content>
-                    </Select>
-
-                    <Button
-                      size="$3"
-                      backgroundColor="$blue8"
-                      onPress={() => {
-                        handleSave('date')
-                        handleSave('time')
+                      onChange={(e) => handleFieldChange('date', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: 8,
+                        backgroundColor: '#1A202C',
+                        color: 'white',
+                        border: '1px solid #2d3748',
+                        borderRadius: 4,
+                        fontSize: 16
                       }}
+                    >
+                      <option value="">Select Date</option>
+                      {dateOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('date')}
+                      padding="$2"
                     >
                       <Text color="white">Save</Text>
                     </Button>
-                  </YStack>
+                  </XStack>
                 ) : (
                   <XStack flex={1} space="$2" alignItems="center">
                     <Text flex={1} color="$textPrimary">
-                      {formatEventDate(editedEvent.date)} at {editedEvent.time}
+                      {formatEventDate(editedEvent.date)}
                     </Text>
-                    <EditButton onPress={() => setEditing(prev => ({ ...prev, date: true, time: true }))} />
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, date: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Time Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Time</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.time ? (
+                  <XStack flex={1} space="$2">
+                    <select
+                      value={editedEvent.time}
+                      onChange={(e) => handleFieldChange('time', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: 8,
+                        backgroundColor: '#1A202C',
+                        color: 'white',
+                        border: '1px solid #2d3748',
+                        borderRadius: 4,
+                        fontSize: 16
+                      }}
+                    >
+                      <option value="">Select Time</option>
+                      {timeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('time')}
+                      padding="$2"
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">
+                      {editedEvent.time}
+                    </Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, time: true }))} />
                   </XStack>
                 )}
               </XStack>
