@@ -20,6 +20,7 @@ const WHITELISTED_EMAILS = [
 // Type for user data
 interface UserData {
   email: string;
+  name?: string;
   isAdmin: boolean;
 }
 
@@ -75,11 +76,13 @@ function App() {
   const handleCredentialResponse = (response: any) => {
     const decodedToken = JSON.parse(atob(response.credential.split('.')[1]));
     const email = decodedToken.email;
+    const name = decodedToken.name;
     setUserEmail(email);
     const isAdmin = WHITELISTED_EMAILS.includes(email);
     
     setUserData({
       email,
+      name,
       isAdmin
     });
     setIsSignedIn(true);
@@ -342,12 +345,6 @@ function App() {
             >
               {isSignedIn ? (
                 <>
-                  {/* Profile with Email */}
-                  <MenuItem 
-                    label={`Profile: ${tempAdminMode ? 'temp@admin.com' : userEmail}`} 
-                    page="profile" 
-                  />
-                  
                   {/* Mobile Navigation Items */}
                   <YStack $xl={{ display: 'none' }}>
                     <MenuItem 
@@ -357,6 +354,10 @@ function App() {
                     <MenuItem 
                       label="Events" 
                       onClick={() => handleNavigate('/schedule/events')} 
+                    />
+                    <MenuItem 
+                      label="Profile"
+                      page="profile" 
                     />
                   </YStack>
 
@@ -383,7 +384,6 @@ function App() {
               ) : (
                 <>
                   {/* Signed Out Menu Items */}
-                  <MenuItem label="Profile" page="profile" />
                   <YStack $xl={{ display: 'none' }}>
                     <MenuItem 
                       label="Workouts" 
@@ -393,6 +393,7 @@ function App() {
                       label="Events" 
                       onClick={() => handleNavigate('/schedule/events')} 
                     />
+                    <MenuItem label="Profile" page="profile" />
                   </YStack>
                   <MenuItem label="Privacy Policy" page="privacy" />
                 </>
@@ -439,7 +440,10 @@ function App() {
             zIndex={2}
             backgroundColor={theme === 'light' ? 'white' : 'transparent'}
           >
-            <AppRoutes />
+            <AppRoutes 
+              userEmail={userEmail} 
+              userName={userData?.name}
+            />
           </YStack>
 
           {/* EST. SINCE 2022 Text */}
@@ -469,7 +473,7 @@ function App() {
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                 }}
               >
-                Est. Since
+                Est.
               </Text>
               <Text
                 color="rgba(255,255,255,0.9)"
