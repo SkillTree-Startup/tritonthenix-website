@@ -3,6 +3,7 @@ import { YStack, Text, XStack, Button, ScrollView, Stack, Image } from 'tamagui'
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { EventDetailsPopup } from './EventDetailsPopup'
 
 // Add the default profile image constant
 const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
@@ -59,7 +60,7 @@ const formatTime = (timeStr: string) => {
   }
 }
 
-const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
+const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { userEmail?: string }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(defaultTab);
@@ -264,7 +265,11 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
                     Upcoming Events
                   </Text>
                   {upcomingEvents.map(event => (
-                    <EventCard key={event.id} event={event} />
+                    <EventCard 
+                      key={event.id} 
+                      event={event}
+                      userEmail={userEmail}
+                    />
                   ))}
                   {upcomingEvents.length === 0 && (
                     <Text color="$color" textAlign="center">
@@ -279,7 +284,11 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
                     Past Events
                   </Text>
                   {pastEvents.map(event => (
-                    <EventCard key={event.id} event={event} />
+                    <EventCard 
+                      key={event.id} 
+                      event={event}
+                      userEmail={userEmail}
+                    />
                   ))}
                   {pastEvents.length === 0 && (
                     <Text color="$color" textAlign="center">
@@ -292,7 +301,11 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
               // Workouts View
               <YStack space="$8">
                 {filteredEvents.map(event => (
-                  <EventCard key={event.id} event={event} />
+                  <EventCard 
+                    key={event.id} 
+                    event={event}
+                    userEmail={userEmail}
+                  />
                 ))}
                 {filteredEvents.length === 0 && (
                   <Text color="$color" textAlign="center">
@@ -309,7 +322,9 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
 };
 
 // Event Card Component
-const EventCard = ({ event }: { event: Event }) => {
+const EventCard = ({ event, userEmail }: { event: Event, userEmail?: string }) => {
+  const [showDetails, setShowDetails] = useState(false)
+
   const formatEventDate = (dateStr: string) => {
     const date = new Date(`${dateStr}T00:00:00-08:00`);
     return date.toLocaleDateString();
@@ -322,91 +337,118 @@ const EventCard = ({ event }: { event: Event }) => {
   };
 
   return (
-    <YStack
-      backgroundColor="$cardBackground"
-      padding="$4"
-      borderRadius="$4"
-      borderWidth={1}
-      borderColor="$borderColor"
-      space="$2"
-    >
-      {event.type === 'Workout' ? (
-        <XStack space="$2" alignItems="center">
-          <Stack
-            width={32}
-            height={32}
-            borderRadius={16}
-            overflow="hidden"
-            backgroundColor="$background"
-            borderWidth={1}
-            borderColor="$borderColor"
-          >
-            <Image
-              source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
-              width="100%"
-              height="100%"
-              resizeMode="cover"
-              alt={`${getFirstName(event.creatorName)}'s profile picture`}
-            />
-          </Stack>
-          
-          <YStack>
-            <Text fontSize="$3" color="$textSecondary">
-              {getFirstName(event.creatorName)}
+    <>
+      <YStack
+        backgroundColor="$cardBackground"
+        padding="$4"
+        borderRadius="$4"
+        borderWidth={1}
+        borderColor="$borderColor"
+        space="$2"
+      >
+        <XStack>
+          {/* Left side content */}
+          <YStack flex={1} space="$2">
+            {event.type === 'Workout' ? (
+              <XStack space="$2" alignItems="center">
+                <Stack
+                  width={32}
+                  height={32}
+                  borderRadius={16}
+                  overflow="hidden"
+                  backgroundColor="$background"
+                  borderWidth={1}
+                  borderColor="$borderColor"
+                >
+                  <Image
+                    source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
+                    width="100%"
+                    height="100%"
+                    resizeMode="cover"
+                    alt={`${getFirstName(event.creatorName)}'s profile picture`}
+                  />
+                </Stack>
+                
+                <YStack>
+                  <Text fontSize="$3" color="$textSecondary">
+                    {getFirstName(event.creatorName)}
+                  </Text>
+                  <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+                    {event.name}
+                  </Text>
+                </YStack>
+              </XStack>
+            ) : (
+              <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+                {event.name}
+              </Text>
+            )}
+
+            <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
+              {event.type === 'Event' && (
+                <Text fontWeight="500" color="$color">
+                  {formatEventDate(event.date)}
+                </Text>
+              )}
+              <Text 
+                color="$color"
+                marginLeft={event.type === 'Workout' ? '$0' : undefined}
+              >
+                {formatTime(event.time)}
+              </Text>
+              <Text 
+                color="$color"
+                marginLeft="$2"
+              >
+                {event.instructor}
+              </Text>
+            </XStack>
+
+            {event.subLocation && (
+              <Text color="$color" opacity={0.8}>
+                {event.subLocation}
+              </Text>
+            )}
+
+            <Text 
+              color="$textSecondary"
+            >
+              {event.description}
             </Text>
-            <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-              {event.name}
-            </Text>
+
+            {event.tags && (
+              <Text color="$color" fontSize="$3" opacity={0.7}>
+                Tags: {event.tags}
+              </Text>
+            )}
+          </YStack>
+
+          {/* Right side button */}
+          <YStack justifyContent="center" marginLeft="$4">
+            <Button
+              size="$3"
+              backgroundColor="$gray8"
+              onPress={() => setShowDetails(true)}
+              minHeight={36}
+              paddingHorizontal="$3"
+              alignItems="center"
+              justifyContent="center"
+              hoverStyle={{ backgroundColor: '$gray7' }}
+            >
+              <Text color="white">Details</Text>
+            </Button>
           </YStack>
         </XStack>
-      ) : (
-        // Simple title for Events
-        <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-          {event.name}
-        </Text>
+      </YStack>
+
+      {showDetails && (
+        <EventDetailsPopup
+          event={event}
+          onClose={() => setShowDetails(false)}
+          userEmail={userEmail}
+        />
       )}
-
-      <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
-        {event.type === 'Event' && (
-          <>
-            <Text fontWeight="500" color="$color">
-              {formatEventDate(event.date)}
-            </Text>
-          </>
-        )}
-        <Text 
-          color="$color"
-          marginLeft={event.type === 'Workout' ? '$0' : undefined}
-        >
-          {formatTime(event.time)}
-        </Text>
-        <Text 
-          color="$color"
-          marginLeft="$2"
-        >
-          {event.instructor}
-        </Text>
-      </XStack>
-
-      {event.subLocation && (
-        <Text color="$color" opacity={0.8}>
-          {event.subLocation}
-        </Text>
-      )}
-
-      <Text 
-        color="$textSecondary"
-        marginTop="$2"
-      >
-        {event.description}
-      </Text>
-
-      {event.tags && (
-        <Text color="$color" fontSize="$3" opacity={0.7} marginTop="$2">
-          Tags: {event.tags}
-        </Text>
-      )}
-    </YStack>
+    </>
   );
 };
 

@@ -9,8 +9,8 @@ const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiB
 interface ProfileProps {
   email?: string;
   name?: string;
-  tempAdminMode?: boolean;
-  onTempAdminToggle?: () => void;
+  tempAdminMode: boolean;
+  onTempAdminToggle: () => void;
 }
 
 export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: ProfileProps) => {
@@ -18,23 +18,29 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch user's profile picture on component mount
+  // Reset image URL when email changes or admin mode changes
   useEffect(() => {
     const fetchProfilePicture = async () => {
-      if (!email) return;
+      if (!email) {
+        setImageUrl('');
+        return;
+      }
       
       try {
         const userDoc = await getDoc(doc(db, 'users', email));
         if (userDoc.exists() && userDoc.data().profilePicture) {
           setImageUrl(userDoc.data().profilePicture);
+        } else {
+          setImageUrl(''); // Clear the image if none exists
         }
       } catch (error) {
         console.error('Error fetching profile picture:', error);
+        setImageUrl('');
       }
     };
 
     fetchProfilePicture();
-  }, [email]);
+  }, [email, tempAdminMode]); // Added tempAdminMode as dependency
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -117,147 +123,181 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
     }
   }
 
-  return (
-    <YStack 
-      padding="$6" 
-      space="$4" 
-      maxWidth={800} 
-      width="100%" 
-      margin="auto"
-    >
-      <Text 
-        fontSize="$8" 
-        fontWeight="bold" 
-        color="$textPrimary"
-      >
-        Profile
-      </Text>
+  const handleAdminLogin = async () => {
+    try {
+      // Update Firestore with admin profile, without profile picture
+      await setDoc(doc(db, 'users', 'admin@tritonthenix.com'), {
+        name: 'Test Admin',
+        email: 'admin@tritonthenix.com',
+      }, { merge: true });
 
-      <YStack 
-        backgroundColor="$cardBackground"
-        padding="$4"
-        borderRadius="$4"
-        space="$4"
-        borderWidth={1}
-        borderColor="$borderColor"
-      >
-        {/* Profile Picture Section */}
-        <YStack space="$2" alignItems="center">
-          <Stack
-            width={120}
-            height={120}
-            borderRadius={60}
-            overflow="hidden"
-            backgroundColor="$background"
-            borderWidth={1}
-            borderColor="$borderColor"
-          >
-            {imageUrl ? (
+      // Call the toggle function to update app state
+      onTempAdminToggle();
+    } catch (error) {
+      console.error('Error setting up admin account:', error);
+    }
+  };
+
+  return (
+    <YStack padding="$4" space="$4" alignItems="center">
+      <YStack space="$4" maxWidth={500} width="100%">
+        <Text fontSize="$8" fontWeight="bold" color="$textPrimary">
+          Profile
+        </Text>
+
+        {/* Profile Info Card */}
+        <YStack 
+          backgroundColor="$cardBackground"
+          padding="$4"
+          borderRadius="$4"
+          space="$4"
+          borderWidth={1}
+          borderColor="$borderColor"
+        >
+          {/* Profile Picture Section */}
+          <YStack space="$2" alignItems="center">
+            <Stack
+              width={120}
+              height={120}
+              borderRadius={60}
+              overflow="hidden"
+              backgroundColor="$background"
+              borderWidth={1}
+              borderColor="$borderColor"
+            >
               <Image
-                source={{ uri: imageUrl }}
+                source={{ uri: imageUrl || DEFAULT_PROFILE_IMAGE }}
                 width="100%"
                 height="100%"
                 resizeMode="cover"
                 alt="Profile picture"
               />
-            ) : (
-              <Image
-                source={{ uri: DEFAULT_PROFILE_IMAGE }}
-                width="100%"
-                height="100%"
-                resizeMode="cover"
-                alt="Profile picture placeholder"
-              />
-            )}
-          </Stack>
-          
-          {/* Hidden file input */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            style={{ display: 'none' }}
-          />
-          
-          {email ? (
-            // Show upload/remove buttons when signed in
-            <XStack space="$2">
-              <Button
-                backgroundColor="$cardBackground"
-                borderColor="$color"
-                borderWidth={1}
-                padding="$2"
-                onPress={handleUploadClick}
-                disabled={isUploading}
-              >
-                <Text color="$color">
-                  {isUploading ? 'Uploading...' : 'Upload Picture'}
+            </Stack>
+            
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
+            
+            {email ? (
+              <>
+                <XStack space="$2">
+                  <Button
+                    backgroundColor="$cardBackground"
+                    borderColor="$color"
+                    borderWidth={1}
+                    padding="$2"
+                    onPress={handleUploadClick}
+                    disabled={isUploading}
+                  >
+                    <Text color="$color">
+                      {isUploading ? 'Uploading...' : 'Upload Picture'}
+                    </Text>
+                  </Button>
+
+                  {imageUrl && (
+                    <Button
+                      backgroundColor="$cardBackground"
+                      borderColor="$color"
+                      borderWidth={1}
+                      padding="$2"
+                      onPress={handleRemovePicture}
+                    >
+                      <Text color="$color">
+                        Remove Picture
+                      </Text>
+                    </Button>
+                  )}
+                </XStack>
+                <Text fontSize="$5" color="$textPrimary">
+                  {name || 'Anonymous'}
                 </Text>
-              </Button>
-
-              {imageUrl && (
-                <Button
-                  backgroundColor="$cardBackground"
-                  borderColor="$color"
-                  borderWidth={1}
-                  padding="$2"
-                  onPress={handleRemovePicture}
+                <Text fontSize="$4" color="$textSecondary">
+                  {email}
+                </Text>
+              </>
+            ) : (
+              <YStack space="$4" alignItems="center">
+                <Text fontSize="$4" color="$textSecondary" textAlign="center">
+                  Sign in to access your profile
+                </Text>
+                <XStack 
+                  space="$2" 
+                  alignItems="center"
+                  justifyContent="center"
+                  width="100%"
+                  $sm={{ display: 'none' }}
                 >
-                  <Text color="$color">
-                    Remove Picture
-                  </Text>
-                </Button>
-              )}
-            </XStack>
-          ) : (
-            // Show Google Sign-In when not signed in
-            <XStack 
-              style={{
-                backgroundColor: 'transparent',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                marginTop: '12px'
-              }}
-            >
-              <div id="googleSignInDivProfile"></div>
-            </XStack>
-          )}
+                  <XStack
+                    style={{
+                      backgroundColor: 'transparent',
+                      borderRadius: '20px',
+                      overflow: 'hidden',
+                    }}
+                    $gtMd={{ transform: 'scale(1)', transformOrigin: 'center' }}
+                  >
+                    <div id="googleSignInDivProfile"></div>
+                  </XStack>
+                </XStack>
+                
+                <XStack
+                  space="$2"
+                  alignItems="center"
+                  justifyContent="center"
+                  width="100%"
+                  display="none"
+                  $sm={{ display: 'flex' }}
+                >
+                  <XStack
+                    style={{
+                      backgroundColor: 'transparent',
+                      borderRadius: '20px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div id="googleSignInDivProfileMobile"></div>
+                  </XStack>
+                </XStack>
+              </YStack>
+            )}
+          </YStack>
         </YStack>
 
-        {/* Profile Information */}
-        <YStack space="$2">
-          <Text fontSize="$3" color="$textSecondary">Name</Text>
-          <Text fontSize="$4" color="$textPrimary">{name || 'Not available'}</Text>
-        </YStack>
-
-        <YStack space="$2">
-          <Text fontSize="$3" color="$textSecondary">Email</Text>
-          <Text fontSize="$4" color="$textPrimary">{email || 'Not signed in'}</Text>
-        </YStack>
-
-        {/* Only show admin toggle when signed in */}
-        {email && (
-          <YStack 
-            marginTop="$4" 
-            borderTopWidth={1} 
-            borderTopColor="$borderColor" 
-            paddingTop="$4"
-          >
+        {/* Developer Options Card */}
+        <YStack 
+          backgroundColor="$cardBackground"
+          padding="$4"
+          borderRadius="$4"
+          space="$4"
+          borderWidth={1}
+          borderColor="$borderColor"
+        >
+          <Text fontSize="$5" color="$textPrimary" fontWeight="bold">
+            Developer Options
+          </Text>
+          <XStack space="$2" alignItems="center">
             <Button
-              backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
-              borderColor="$color"
-              borderWidth={1}
-              padding="$2"
-              onPress={onTempAdminToggle}
+              backgroundColor={tempAdminMode ? '$red8' : '$blue8'}
+              onPress={handleAdminLogin}
+              paddingHorizontal="$4"
+              paddingVertical="$2"
             >
-              <Text color="$color" fontSize="$2">
-                {tempAdminMode ? 'Disable' : 'Enable'} Temp Admin
+              <Text color="white">
+                {tempAdminMode ? 'Exit Admin Mode' : 'Log in as Admin'}
               </Text>
             </Button>
-          </YStack>
-        )}
+            {tempAdminMode && (
+              <Text fontSize="$3" color="$textSecondary">
+                Logged in as Test Admin
+              </Text>
+            )}
+          </XStack>
+        </YStack>
       </YStack>
     </YStack>
-  )
-} 
+  );
+}; 

@@ -58,6 +58,8 @@ function App() {
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState<string>("")
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+  const [previousUserEmail, setPreviousUserEmail] = useState<string>('')
+  const [previousUserName, setPreviousUserName] = useState<string>('')
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -95,10 +97,28 @@ function App() {
             {
               type: "standard",
               theme: "outline",
-              size: "large",
+              size: "medium",
               shape: "pill",
               text: "signin_with",
-              width: 250,
+              width: 200,
+              locale: "en",
+              logo_alignment: "center"
+            }
+          );
+        }
+
+        // Add initialization for the mobile profile button
+        const profileButtonMobile = document.getElementById("googleSignInDivProfileMobile");
+        if (profileButtonMobile) {
+          window.google?.accounts.id.renderButton(
+            profileButtonMobile,
+            {
+              type: "standard",
+              theme: "outline",
+              size: "medium",
+              shape: "pill",
+              text: "signin_with",
+              width: 200,
               locale: "en",
               logo_alignment: "center"
             }
@@ -203,11 +223,35 @@ function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
   }
 
+  // Update the temp admin toggle handler
+  const handleTempAdminToggle = () => {
+    if (tempAdminMode) {
+      // Reset to previous state
+      setTempAdminMode(false);
+      setUserEmail('');
+      setUserData(null);
+      setIsSignedIn(false);
+    } else {
+      // Switch to admin mode
+      setTempAdminMode(true);
+      setUserEmail('admin@tritonthenix.com');
+      setUserData({
+        email: 'admin@tritonthenix.com',
+        name: 'Test Admin',
+        isAdmin: true
+      });
+      setIsSignedIn(true);
+    }
+  };
+
+  // Update the isAdmin check in the header
+  const isAdmin = tempAdminMode || WHITELISTED_EMAILS.includes(userEmail);
+
   return (
     <TamaguiProvider config={config}>
       <Theme name={theme}>
         <YStack 
-          backgroundColor="$background" 
+          backgroundColor="$background"  // Revert to using theme token
           minHeight="100vh"
           position="relative"
           width="100vw"
@@ -252,9 +296,9 @@ function App() {
           )}
 
           {/* Navigation Bar - Always Black */}
-          <XStack 
-            padding="$4" 
-            justifyContent="space-between" 
+          <XStack
+            padding="$4"
+            justifyContent="space-between"
             alignItems="center"
             position="relative"
             zIndex={2}
@@ -516,21 +560,13 @@ function App() {
             width="100%" 
             position="relative" 
             zIndex={2}
-            backgroundColor={theme === 'light' ? 'white' : 'transparent'}
+            backgroundColor="transparent"
           >
             <AppRoutes 
               userEmail={userEmail} 
               userName={userData?.name}
               tempAdminMode={tempAdminMode}
-              onTempAdminToggle={() => {
-                setTempAdminMode(!tempAdminMode);
-                setUserData({
-                  email: 'temp@admin.com',
-                  name: userData?.name,
-                  isAdmin: !tempAdminMode
-                });
-                setIsSignedIn(!tempAdminMode);
-              }}
+              onTempAdminToggle={handleTempAdminToggle}
             />
           </YStack>
 

@@ -2,6 +2,7 @@ import { YStack, Text, Input, Button, XStack, TextArea, Select, ScrollView } fro
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
+import { RSVPListPopup } from './RSVPListPopup'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -103,6 +104,9 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
 
   // Add a function to check window width
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024)
+
+  // Add state for showing RSVPs
+  const [selectedEventId, setShowRSVPs] = useState<string | null>(null)
 
   // Add useEffect to fetch and listen to events
   useEffect(() => {
@@ -423,22 +427,31 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                 borderColor="$borderColor"
                 space="$1"
               >
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack space="$0">
+                <XStack justifyContent="space-between" alignItems="flex-start">
+                  <YStack flex={1} space="$1">
                     <Text fontWeight="bold" color="$textPrimary">
                       {event.type}: {event.name}
                     </Text>
-                    <Text color="$textPrimary" fontSize="$3" marginTop="$0">
+                    <Text color="$textPrimary" fontSize="$3">
                       {formatEventDate(event.date)} at {event.time}
                     </Text>
                   </YStack>
-                  <YStack space="$2" alignItems="flex-end">
+
+                  <XStack space="$2">
+                    <Button
+                      size="$2"
+                      backgroundColor="$gray8"
+                      padding="$2"
+                      onPress={() => setShowRSVPs(event.id)}
+                      hoverStyle={{ backgroundColor: '$gray7' }}
+                    >
+                      <Text color="white" fontSize="$3">RSVPs</Text>
+                    </Button>
                     <Button
                       size="$2"
                       padding="$2"
                       backgroundColor="transparent"
                       onPress={() => handleCopyEvent(event)}
-                      aria-label="Copy event"
                       hoverStyle={{ backgroundColor: '$gray4' }}
                     >
                       <Text color="$textPrimary" fontSize="$3">Copy</Text>
@@ -452,14 +465,9 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                         backgroundColor: '$red10'
                       }}
                     >
-                      <Text 
-                        color="$color" 
-                        fontSize="$3"
-                      >
-                        Delete
-                      </Text>
+                      <Text color="$color" fontSize="$3">Delete</Text>
                     </Button>
-                  </YStack>
+                  </XStack>
                 </XStack>
                 <Text color="$textPrimary" numberOfLines={2}>
                   {event.description}
@@ -477,6 +485,14 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
           </YStack>
         </ScrollView>
       </YStack>
+
+      {/* Add the popup */}
+      {selectedEventId && (
+        <RSVPListPopup
+          event={eventHistory.find(e => e.id === selectedEventId)!}
+          onClose={() => setShowRSVPs(null)}
+        />
+      )}
     </YStack>
   )
 } 

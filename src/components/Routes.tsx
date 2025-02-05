@@ -16,8 +16,14 @@ const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle }: Ro
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/schedule/workouts" element={<Schedule defaultTab="Workouts" />} />
-      <Route path="/schedule/events" element={<Schedule defaultTab="Events" />} />
+      <Route 
+        path="/schedule/workouts" 
+        element={<Schedule defaultTab="Workouts" userEmail={userEmail} />} 
+      />
+      <Route 
+        path="/schedule/events" 
+        element={<Schedule defaultTab="Events" userEmail={userEmail} />} 
+      />
       <Route path="/admin" element={<AdminPanel userEmail={userEmail || ''} />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route 
