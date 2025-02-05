@@ -68,6 +68,7 @@ interface EventData {
   description: string
   tags: string
   creatorEmail: string
+  additionalDetails?: string
   creatorName?: string
   creatorProfilePicture?: string
 }
@@ -91,7 +92,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
     time: '',
     description: '',
     tags: '',
-    creatorEmail: ''
+    creatorEmail: '',
+    additionalDetails: ''
   })
 
   // Add state to track if form has been submitted
@@ -140,8 +142,9 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   }, [])
 
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!eventData.name.trim() || !eventData.date || !eventData.time || !eventData.description.trim()) {
+    // Validate required fields including additionalDetails
+    if (!eventData.name.trim() || !eventData.date || !eventData.time || 
+        !eventData.description.trim() || !eventData.additionalDetails?.trim()) {
       setHasAttemptedSubmit(true)
       return
     }
@@ -164,7 +167,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
         time: eventData.time, // Ensure time is included
         type: eventData.type || 'Workout', // Ensure type has a default
         description: eventData.description.trim(),
-        tags: eventData.tags?.trim() || ''
+        tags: eventData.tags?.trim() || '',
+        additionalDetails: eventData.additionalDetails?.trim() || ''
       }
 
       // Add to Firestore
@@ -179,7 +183,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
         time: '',
         description: '',
         tags: '',
-        creatorEmail: ''
+        creatorEmail: '',
+        additionalDetails: ''
       })
 
       // Reset submit attempt flag
@@ -201,7 +206,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
       tags: event.tags,
       creatorEmail: event.creatorEmail,
       creatorName: event.creatorName,
-      creatorProfilePicture: event.creatorProfilePicture
+      creatorProfilePicture: event.creatorProfilePicture,
+      additionalDetails: event.additionalDetails || ''
     })
     // Scroll to top of form on mobile
     if (!isDesktop) {
@@ -216,6 +222,25 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
     } catch (error) {
       console.error('Error deleting event:', error)
     }
+  }
+
+  // Add a helper function to check if an event is in the past
+  const isEventPast = (eventDate: string) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)  // Reset time to start of day
+    const date = new Date(`${eventDate}T00:00:00-08:00`)
+    return date < today
+  }
+
+  // Add helper function to check if event is today
+  const isEventToday = (eventDate: string) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)  // Reset time to start of day
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    
+    const date = new Date(`${eventDate}T00:00:00-08:00`)
+    return date >= today && date < tomorrow
   }
 
   return (
@@ -343,14 +368,34 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
           <TextArea
             value={eventData.description}
             onChangeText={(text) => setEventData(prev => ({ ...prev, description: text }))}
-            placeholder={`Say a little bit about your ${eventData.type.toLowerCase()}`}
+            placeholder="Short sentence about the workout/event"
             borderWidth={1}
             borderColor={!eventData.description.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
             backgroundColor="white"
             padding="$3"
-            minHeight={100}
+            paddingVertical="$2"
             color="#4A5568"
             placeholderTextColor="#A0AEC0"
+            minHeight={40}
+            maxHeight={40}
+            textAlignVertical="center"
+          />
+        </YStack>
+
+        {/* Additional Details Field */}
+        <YStack space="$2">
+          <Text color="$color">Full Description *</Text>
+          <TextArea
+            value={eventData.additionalDetails}
+            onChangeText={(text) => setEventData(prev => ({ ...prev, additionalDetails: text }))}
+            placeholder="Provide a more detailed description of the workout/event along with any additional information"
+            borderWidth={1}
+            borderColor={!eventData.additionalDetails?.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
+            backgroundColor="white"
+            padding="$3"
+            color="#4A5568"
+            placeholderTextColor="#A0AEC0"
+            minHeight={100}
           />
         </YStack>
 
@@ -372,7 +417,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
 
         {/* Error message only shows if submit was attempted and fields are missing */}
         {hasAttemptedSubmit && 
-         (!eventData.name.trim() || !eventData.date || !eventData.time || !eventData.description.trim()) && (
+         (!eventData.name.trim() || !eventData.date || !eventData.time || 
+          !eventData.description.trim() || !eventData.additionalDetails?.trim()) && (
           <Text color="red" textAlign="center">
             Please fill out all required fields
           </Text>
@@ -413,59 +459,178 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
           borderBottomWidth={1}
           borderBottomColor="$borderColor"
         >
-          Recent Activity
+          Schedule Management
         </Text>
         <ScrollView 
           height={isDesktop ? 600 : 400} 
           padding="$4"
         >
           <YStack space="$4">
-            {eventHistory.map((event) => (
-              <YStack 
-                key={event.id}
-                backgroundColor="$cardBackground"
-                padding="$3"
-                borderRadius="$2"
-                borderWidth={1}
-                borderColor="$borderColor"
-                space="$1"
-              >
-                <XStack justifyContent="space-between" alignItems="flex-start">
-                  <YStack flex={1} space="$1">
-                    <Text fontWeight="bold" color="$textPrimary">
-                      {event.type}: {event.name}
-                    </Text>
-                    <Text color="$textPrimary" fontSize="$3">
-                      {formatEventDate(event.date)} at {event.time}
-                    </Text>
-                    <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
-                      Created: {event.createdAt.toLocaleString()}
-                    </Text>
-                  </YStack>
+            {/* Today's Events Section */}
+            <YStack space="$2">
+              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+                Today
+              </Text>
+              {eventHistory
+                .filter(event => isEventToday(event.date))
+                .map((event) => (
+                  <YStack 
+                    key={event.id}
+                    backgroundColor="$cardBackground"
+                    padding="$3"
+                    borderRadius="$2"
+                    borderWidth={1}
+                    borderColor="$borderColor"
+                    space="$1"
+                  >
+                    <XStack justifyContent="space-between" alignItems="flex-start">
+                      <YStack flex={1} space="$1">
+                        <Text fontWeight="bold" color="$textPrimary">
+                          {event.type}: {event.name}
+                        </Text>
+                        <Text color="$textPrimary" fontSize="$3">
+                          {formatEventDate(event.date)} at {event.time}
+                        </Text>
+                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                          Created: {event.createdAt.toLocaleString()}
+                        </Text>
+                      </YStack>
 
-                  <XStack space="$2">
-                    <Button
-                      size="$2"
-                      backgroundColor="$gray8"
-                      padding="$2"
-                      onPress={() => setSelectedEventId(event.id)}
-                      hoverStyle={{ backgroundColor: '$gray7' }}
-                    >
-                      <Text color="white" fontSize="$3">Edit</Text>
-                    </Button>
-                    <Button
-                      size="$2"
-                      padding="$2"
-                      backgroundColor="transparent"
-                      onPress={() => handleCopyEvent(event)}
-                      hoverStyle={{ backgroundColor: '$gray4' }}
-                    >
-                      <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                    </Button>
-                  </XStack>
-                </XStack>
-              </YStack>
-            ))}
+                      <XStack space="$2">
+                        <Button
+                          size="$2"
+                          padding="$2"
+                          backgroundColor="transparent"
+                          onPress={() => handleCopyEvent(event)}
+                          hoverStyle={{ backgroundColor: '$gray4' }}
+                        >
+                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
+                        </Button>
+                        <Button
+                          size="$2"
+                          backgroundColor="$gray8"
+                          padding="$2"
+                          onPress={() => setSelectedEventId(event.id)}
+                          hoverStyle={{ backgroundColor: '$gray7' }}
+                        >
+                          <Text color="white" fontSize="$3">Edit</Text>
+                        </Button>
+                      </XStack>
+                    </XStack>
+                  </YStack>
+                ))}
+              {!eventHistory.some(event => isEventToday(event.date)) && (
+                <Text color="$textSecondary" fontSize="$3">
+                  Nothing scheduled for today
+                </Text>
+              )}
+            </YStack>
+
+            {/* Upcoming Events Section */}
+            <YStack space="$2" marginTop="$4">
+              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+                Upcoming
+              </Text>
+              {eventHistory
+                .filter(event => !isEventPast(event.date) && !isEventToday(event.date))
+                .map((event) => (
+                  <YStack 
+                    key={event.id}
+                    backgroundColor="$cardBackground"
+                    padding="$3"
+                    borderRadius="$2"
+                    borderWidth={1}
+                    borderColor="$borderColor"
+                    space="$1"
+                  >
+                    <XStack justifyContent="space-between" alignItems="flex-start">
+                      <YStack flex={1} space="$1">
+                        <Text fontWeight="bold" color="$textPrimary">
+                          {event.type}: {event.name}
+                        </Text>
+                        <Text color="$textPrimary" fontSize="$3">
+                          {formatEventDate(event.date)} at {event.time}
+                        </Text>
+                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                          Created: {event.createdAt.toLocaleString()}
+                        </Text>
+                      </YStack>
+
+                      <XStack space="$2">
+                        <Button
+                          size="$2"
+                          padding="$2"
+                          backgroundColor="transparent"
+                          onPress={() => handleCopyEvent(event)}
+                          hoverStyle={{ backgroundColor: '$gray4' }}
+                        >
+                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
+                        </Button>
+                        <Button
+                          size="$2"
+                          backgroundColor="$gray8"
+                          padding="$2"
+                          onPress={() => setSelectedEventId(event.id)}
+                          hoverStyle={{ backgroundColor: '$gray7' }}
+                        >
+                          <Text color="white" fontSize="$3">Edit</Text>
+                        </Button>
+                      </XStack>
+                    </XStack>
+                  </YStack>
+                ))}
+              {!eventHistory.some(event => !isEventPast(event.date) && !isEventToday(event.date)) && (
+                <Text color="$textSecondary" fontSize="$3">
+                  Nothing scheduled for the future
+                </Text>
+              )}
+            </YStack>
+
+            {/* Past Events Section */}
+            <YStack space="$2" marginTop="$4">
+              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+                Past
+              </Text>
+              {eventHistory
+                .filter(event => isEventPast(event.date))
+                .map((event) => (
+                  <YStack 
+                    key={event.id}
+                    backgroundColor="$cardBackground"
+                    padding="$3"
+                    borderRadius="$2"
+                    borderWidth={1}
+                    borderColor="$borderColor"
+                    space="$1"
+                    opacity={0.7}  // Dim past events
+                  >
+                    <XStack justifyContent="space-between" alignItems="flex-start">
+                      <YStack flex={1} space="$1">
+                        <Text fontWeight="bold" color="$textPrimary">
+                          {event.type}: {event.name}
+                        </Text>
+                        <Text color="$textPrimary" fontSize="$3">
+                          {formatEventDate(event.date)} at {event.time}
+                        </Text>
+                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                          Created: {event.createdAt.toLocaleString()}
+                        </Text>
+                      </YStack>
+
+                      {/* Only show Copy button */}
+                      <Button
+                        size="$2"
+                        padding="$2"
+                        backgroundColor="transparent"
+                        onPress={() => handleCopyEvent(event)}
+                        hoverStyle={{ backgroundColor: '$gray4' }}
+                      >
+                        <Text color="$textPrimary" fontSize="$3">Copy</Text>
+                      </Button>
+                    </XStack>
+                  </YStack>
+                ))}
+            </YStack>
           </YStack>
         </ScrollView>
       </YStack>
