@@ -6,6 +6,9 @@ import backgroundImage from './assets/image.png'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AppRoutes from './components/Routes'
 import { Moon, Sun } from '@tamagui/lucide-icons'
+import { jwtDecode } from 'jwt-decode'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { db } from './firebase'
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -22,6 +25,7 @@ interface UserData {
   email: string;
   name?: string;
   isAdmin: boolean;
+  profilePicture?: string;
 }
 
 // Declare global google type
@@ -73,19 +77,42 @@ function App() {
     }
   }, [isSignedIn]);
 
-  const handleCredentialResponse = (response: any) => {
-    const decodedToken = JSON.parse(atob(response.credential.split('.')[1]));
-    const email = decodedToken.email;
-    const name = decodedToken.name;
-    setUserEmail(email);
-    const isAdmin = WHITELISTED_EMAILS.includes(email);
-    
-    setUserData({
-      email,
-      name,
-      isAdmin
-    });
-    setIsSignedIn(true);
+  const handleCredentialResponse = async (response: any) => {
+    try {
+      const decoded = jwtDecode(response.credential) as JwtPayload;
+      const userEmail = decoded.email;
+      const userName = decoded.name;
+
+      if (userEmail) {
+        // Check if user exists in Firestore
+        const userDoc = await getDoc(doc(db, 'users', userEmail));
+        
+        if (userDoc.exists()) {
+          // Use existing user data
+          const userData = userDoc.data();
+          setUserData({
+            email: userEmail,
+            name: userData.name || userName,
+            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
+            profilePicture: userData.profilePicture
+          });
+        } else {
+          // Create new user document
+          const newUserData = {
+            email: userEmail,
+            name: userName,
+            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
+          };
+          await setDoc(doc(db, 'users', userEmail), newUserData);
+          setUserData(newUserData);
+        }
+
+        setUserEmail(userEmail);
+        setIsSignedIn(true);
+      }
+    } catch (error) {
+      console.error('Error handling credential response:', error);
+    }
   };
 
   const handleSignOut = () => {
