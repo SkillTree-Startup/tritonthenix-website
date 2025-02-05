@@ -457,6 +457,14 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
     return null
   }
 
+  const formatEventDateDisplay = (dateStr: string) => {
+    const date = new Date(`${dateStr}T00:00:00-08:00`);
+    return {
+      month: date.toLocaleString('default', { month: 'short' }).toUpperCase(),
+      day: date.getDate()
+    };
+  };
+
   return (
     <YStack
       backgroundColor="$cardBackground"
@@ -467,6 +475,39 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
       space="$2"
     >
       <XStack>
+        {/* Date display for events */}
+        {event.type === 'Event' && (
+          <YStack
+            width={50}
+            alignItems="center"
+            justifyContent="center"
+            marginRight="$4"
+            padding="$2"
+          >
+            <Text 
+              color="$textSecondary"
+              fontSize="$3"
+              fontWeight="500"
+            >
+              {formatEventDateDisplay(event.date).month}
+            </Text>
+            <Text 
+              color="$textPrimary"
+              fontSize="$6"
+              fontWeight="bold"
+            >
+              {formatEventDateDisplay(event.date).day}
+            </Text>
+            <Text 
+              color="$textSecondary"
+              fontSize="$3"
+              marginTop="$1"
+            >
+              {formatTime(event.time)}
+            </Text>
+          </YStack>
+        )}
+
         {/* Left side content */}
         <YStack flex={1} space="$2">
           {event.type === 'Workout' ? (
@@ -504,18 +545,16 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
             </Text>
           )}
 
+          {/* Remove date/time from here for Events */}
           <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
-            {event.type === 'Event' && (
-              <Text fontWeight="500" color="$color">
-                {formatEventDate(event.date)}
+            {event.type === 'Workout' && (
+              <Text 
+                color="$color"
+                marginLeft={event.type === 'Workout' ? '$0' : undefined}
+              >
+                {formatTime(event.time)}
               </Text>
             )}
-            <Text 
-              color="$color"
-              marginLeft={event.type === 'Workout' ? '$0' : undefined}
-            >
-              {formatTime(event.time)}
-            </Text>
             <Text 
               color="$color"
               marginLeft="$2"
