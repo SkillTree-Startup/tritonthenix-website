@@ -236,30 +236,22 @@ export const AdminPanel = () => {
               <Select
                 value={eventData.date}
                 onValueChange={(value) => setEventData(prev => ({ ...prev, date: value }))}
-                backgroundColor="$cardBackground"
                 borderColor={!eventData.date && hasAttemptedSubmit ? 'red' : '$borderColor'}
               >
-                <Select.Trigger
-                  backgroundColor="$cardBackground"
-                  width="100%" 
-                  padding="$3"
-                >
-                  <Select.Value 
-                    placeholder="Select Date" 
-                    color="$textPrimary"
-                  />
+                <Select.Trigger>
+                  <Select.Value placeholder="Select Date" />
                 </Select.Trigger>
-                <Select.Content backgroundColor="$cardBackground">
+                <Select.Content>
                   <Select.ScrollUpButton />
                   <Select.Viewport>
                     <Select.Group>
-                      {dateOptions.map((option) => (
+                      {dateOptions.map((option, index) => (
                         <Select.Item 
                           key={option.value} 
                           value={option.value}
-                          backgroundColor="$cardBackground"
+                          index={index}
                         >
-                          <Select.ItemText color="$textPrimary">{option.label}</Select.ItemText>
+                          <Select.ItemText>{option.label}</Select.ItemText>
                         </Select.Item>
                       ))}
                     </Select.Group>

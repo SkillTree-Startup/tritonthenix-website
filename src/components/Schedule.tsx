@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { YStack, Text, XStack, Button, ScrollView, tokens } from 'tamagui';
+import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Event {

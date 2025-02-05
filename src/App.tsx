@@ -42,6 +42,13 @@ interface MenuItemProps {
   onClick?: () => void;
 }
 
+// Add this interface
+interface JwtPayload {
+  email: string;
+  name: string;
+  // Add other fields you need from the JWT
+}
+
 function App() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
