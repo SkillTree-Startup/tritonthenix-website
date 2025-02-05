@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { YStack, Text, XStack, Button, ScrollView, tokens } from 'tamagui';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Event {
@@ -321,7 +321,7 @@ const EventCard = ({ event }: { event: Event }) => {
       <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
         {event.name}
       </Text>
-      
+
       <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
         {event.type === 'Event' && (
           <>

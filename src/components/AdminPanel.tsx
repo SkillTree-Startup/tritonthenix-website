@@ -1,7 +1,7 @@
 import { YStack, Text, Input, Button, XStack, TextArea, Select, ScrollView } from 'tamagui'
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
-import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -162,6 +162,15 @@ export const AdminPanel = () => {
     // Scroll to top of form on mobile
     if (!isDesktop) {
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'events', id))
+      console.log('Event deleted successfully')
+    } catch (error) {
+      console.error('Error deleting event:', error)
     }
   }
 
@@ -391,26 +400,46 @@ export const AdminPanel = () => {
                 borderRadius="$2"
                 borderWidth={1}
                 borderColor="$borderColor"
-                space="$2"
+                space="$1"
               >
-                <XStack justifyContent="space-between" alignItems="flex-start">
-                  <Text fontWeight="bold" color="$textPrimary">
-                    {event.type}: {event.name}
-                  </Text>
-                  <Button
-                    size="$2"
-                    padding="$2"
-                    backgroundColor="transparent"
-                    onPress={() => handleCopyEvent(event)}
-                    aria-label="Copy event"
-                    hoverStyle={{ backgroundColor: '$gray4' }}
-                  >
-                    <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                  </Button>
+                <XStack justifyContent="space-between" alignItems="center">
+                  <YStack space="$0">
+                    <Text fontWeight="bold" color="$textPrimary">
+                      {event.type}: {event.name}
+                    </Text>
+                    <Text color="$textPrimary" fontSize="$3" marginTop="$0">
+                      {formatEventDate(event.date)} at {event.time}
+                    </Text>
+                  </YStack>
+                  <YStack space="$2" alignItems="flex-end">
+                    <Button
+                      size="$2"
+                      padding="$2"
+                      backgroundColor="transparent"
+                      onPress={() => handleCopyEvent(event)}
+                      aria-label="Copy event"
+                      hoverStyle={{ backgroundColor: '$gray4' }}
+                    >
+                      <Text color="$textPrimary" fontSize="$3">Copy</Text>
+                    </Button>
+                    <Button
+                      backgroundColor="transparent"
+                      padding="$2"
+                      onPress={() => handleDelete(event.id)}
+                      hoverStyle={{ 
+                        opacity: 0.7,
+                        backgroundColor: '$red10'
+                      }}
+                    >
+                      <Text 
+                        color="$color" 
+                        fontSize="$3"
+                      >
+                        Delete
+                      </Text>
+                    </Button>
+                  </YStack>
                 </XStack>
-                <Text color="$textPrimary" fontSize="$3">
-                  {formatEventDate(event.date)} at {event.time}
-                </Text>
                 <Text color="$textPrimary" numberOfLines={2}>
                   {event.description}
                 </Text>
