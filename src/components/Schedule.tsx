@@ -36,6 +36,23 @@ const generateWeekDates = (selectedDate: Date) => {
   return dates;
 };
 
+// Add this helper function at the top of the file
+const formatTime = (timeStr: string) => {
+  try {
+    // Parse the time string (assuming it's in 24hr format like "14:00")
+    const [hours, minutes] = timeStr.split(':').map(Number)
+    
+    // Convert to 12hr format
+    const period = hours >= 12 ? 'PM' : 'AM'
+    const hours12 = hours % 12 || 12 // Convert 0 to 12 for midnight
+    
+    // Return formatted time
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`
+  } catch {
+    return timeStr // Return original string if parsing fails
+  }
+}
+
 const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -231,12 +248,12 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
 
         {/* Events List */}
         <ScrollView height={600} width="100%">
-          <YStack space="$4">
+          <YStack space="$8">
             {activeTab === 'Events' ? (
               // Events View
               <>
                 {/* Upcoming Events */}
-                <YStack space="$4">
+                <YStack space="$8">
                   <Text fontSize="$6" fontWeight="bold" color="$color">
                     Upcoming Events
                   </Text>
@@ -251,7 +268,7 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
                 </YStack>
 
                 {/* Past Events */}
-                <YStack space="$4" marginTop="$6">
+                <YStack space="$8" marginTop="$8">
                   <Text fontSize="$6" fontWeight="bold" color="$color">
                     Past Events
                   </Text>
@@ -267,7 +284,7 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
               </>
             ) : (
               // Workouts View
-              <YStack space="$4">
+              <YStack space="$8">
                 {filteredEvents.map(event => (
                   <EventCard key={event.id} event={event} />
                 ))}
@@ -287,9 +304,7 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
 
 // Event Card Component
 const EventCard = ({ event }: { event: Event }) => {
-  // Convert the date string to a Date object in Pacific Time
   const formatEventDate = (dateStr: string) => {
-    // Add Pacific Time zone offset to ensure correct date
     const date = new Date(`${dateStr}T00:00:00-08:00`);
     return date.toLocaleDateString();
   };
@@ -303,21 +318,28 @@ const EventCard = ({ event }: { event: Event }) => {
       borderColor="$borderColor"
       space="$2"
     >
-      <XStack justifyContent="space-between" alignItems="flex-start">
-        <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-          {event.name}
-        </Text>
-        <Text color="$textSecondary">
-          {event.time}
-        </Text>
-      </XStack>
+      <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+        {event.name}
+      </Text>
       
-      <XStack space="$2" alignItems="center">
-        <Text fontWeight="500" color="$color">
-          {formatEventDate(event.date)}
+      <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
+        {event.type === 'Event' && (
+          <>
+            <Text fontWeight="500" color="$color">
+              {formatEventDate(event.date)}
+            </Text>
+          </>
+        )}
+        <Text 
+          color="$color"
+          marginLeft={event.type === 'Workout' ? '$0' : undefined}
+        >
+          {formatTime(event.time)}
         </Text>
-        <Text color="$color" opacity={0.7}>•</Text>
-        <Text color="$color">
+        <Text 
+          color="$color"
+          marginLeft="$2"
+        >
           {event.instructor}
         </Text>
       </XStack>
@@ -328,7 +350,10 @@ const EventCard = ({ event }: { event: Event }) => {
         </Text>
       )}
 
-      <Text color="$color" marginTop="$2">
+      <Text 
+        color="$textSecondary"
+        marginTop="$2"
+      >
         {event.description}
       </Text>
 

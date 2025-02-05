@@ -3,6 +3,9 @@ import { useState, useRef, useEffect } from 'react'
 import { storage, db } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
+import placeholderImage from '../assets/placeholder.jpg?url'
+
+const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
 
 interface ProfileProps {
   email?: string;
@@ -159,17 +162,17 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
                 alt="Profile picture"
               />
             ) : (
-              <Text
-                color="$textSecondary"
-                fontSize="$6"
-                textAlign="center"
-                marginTop="$4"
-              >
-                No Image
-              </Text>
+              <Image
+                source={{ uri: DEFAULT_PROFILE_IMAGE }}
+                width="100%"
+                height="100%"
+                resizeMode="cover"
+                alt="Profile picture placeholder"
+              />
             )}
           </Stack>
           
+          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -178,38 +181,52 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
             style={{ display: 'none' }}
           />
           
-          <XStack space="$2">
-            <Button
-              backgroundColor="$cardBackground"
-              borderColor="$color"
-              borderWidth={1}
-              padding="$2"
-              onPress={handleUploadClick}
-              disabled={isUploading || !email}
-            >
-              <Text color="$color">
-                {isUploading ? 'Uploading...' : email ? 'Upload Picture' : 'Sign in to upload'}
-              </Text>
-            </Button>
-
-            {imageUrl && (
+          {email ? (
+            // Show upload/remove buttons when signed in
+            <XStack space="$2">
               <Button
                 backgroundColor="$cardBackground"
                 borderColor="$color"
                 borderWidth={1}
                 padding="$2"
-                onPress={handleRemovePicture}
-                disabled={!email}
+                onPress={handleUploadClick}
+                disabled={isUploading}
               >
                 <Text color="$color">
-                  Remove Picture
+                  {isUploading ? 'Uploading...' : 'Upload Picture'}
                 </Text>
               </Button>
-            )}
-          </XStack>
+
+              {imageUrl && (
+                <Button
+                  backgroundColor="$cardBackground"
+                  borderColor="$color"
+                  borderWidth={1}
+                  padding="$2"
+                  onPress={handleRemovePicture}
+                >
+                  <Text color="$color">
+                    Remove Picture
+                  </Text>
+                </Button>
+              )}
+            </XStack>
+          ) : (
+            // Show Google Sign-In when not signed in
+            <XStack 
+              style={{
+                backgroundColor: 'transparent',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                marginTop: '12px'
+              }}
+            >
+              <div id="googleSignInDivProfile"></div>
+            </XStack>
+          )}
         </YStack>
 
-        {/* Profile Information Section */}
+        {/* Profile Information */}
         <YStack space="$2">
           <Text fontSize="$3" color="$textSecondary">Name</Text>
           <Text fontSize="$4" color="$textPrimary">{name || 'Not available'}</Text>
@@ -220,25 +237,27 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
           <Text fontSize="$4" color="$textPrimary">{email || 'Not signed in'}</Text>
         </YStack>
 
-        {/* Temp Admin Toggle */}
-        <YStack 
-          marginTop="$4" 
-          borderTopWidth={1} 
-          borderTopColor="$borderColor" 
-          paddingTop="$4"
-        >
-          <Button
-            backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
-            borderColor="$color"
-            borderWidth={1}
-            padding="$2"
-            onPress={onTempAdminToggle}
+        {/* Only show admin toggle when signed in */}
+        {email && (
+          <YStack 
+            marginTop="$4" 
+            borderTopWidth={1} 
+            borderTopColor="$borderColor" 
+            paddingTop="$4"
           >
-            <Text color="$color" fontSize="$2">
-              {tempAdminMode ? 'Disable' : 'Enable'} Temp Admin
-            </Text>
-          </Button>
-        </YStack>
+            <Button
+              backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
+              borderColor="$color"
+              borderWidth={1}
+              padding="$2"
+              onPress={onTempAdminToggle}
+            >
+              <Text color="$color" fontSize="$2">
+                {tempAdminMode ? 'Disable' : 'Enable'} Temp Admin
+              </Text>
+            </Button>
+          </YStack>
+        )}
       </YStack>
     </YStack>
   )

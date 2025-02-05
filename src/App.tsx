@@ -54,28 +54,60 @@ function App() {
 
   useEffect(() => {
     if (!isSignedIn) {
-      window.google?.accounts.id.initialize({
-        client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
+      const initializeGoogleSignIn = () => {
+        window.google?.accounts.id.initialize({
+          client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
 
-      window.google?.accounts.id.renderButton(
-        document.getElementById("googleSignInDiv"),
-        {
-          type: "standard",
-          theme: "outline",
-          size: "medium",
-          shape: "pill",
-          text: "signin_with",
-          width: 200,
-          locale: "en",
-          logo_alignment: "center"
+        // Try to render header button
+        const headerButton = document.getElementById("googleSignInDiv");
+        if (headerButton) {
+          window.google?.accounts.id.renderButton(
+            headerButton,
+            {
+              type: "standard",
+              theme: "outline",
+              size: "medium",
+              shape: "pill",
+              text: "signin_with",
+              width: 200,
+              locale: "en",
+              logo_alignment: "center"
+            }
+          );
         }
-      );
+
+        // Try to render profile button
+        const profileButton = document.getElementById("googleSignInDivProfile");
+        if (profileButton) {
+          window.google?.accounts.id.renderButton(
+            profileButton,
+            {
+              type: "standard",
+              theme: "outline",
+              size: "large",
+              shape: "pill",
+              text: "signin_with",
+              width: 250,
+              locale: "en",
+              logo_alignment: "center"
+            }
+          );
+        }
+      };
+
+      // Initial attempt
+      initializeGoogleSignIn();
+
+      // Retry after a short delay to ensure DOM elements are ready
+      const retryTimeout = setTimeout(initializeGoogleSignIn, 1000);
+
+      return () => clearTimeout(retryTimeout);
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, location.pathname]);
 
   const handleCredentialResponse = async (response: any) => {
     try {
@@ -311,7 +343,7 @@ function App() {
                 <XStack 
                   space="$2" 
                   alignItems="center"
-                  $sm={{ space: '$0' }} // Remove space on mobile
+                  $sm={{ display: 'none' }}  // Hide on mobile
                 >
                   <XStack
                     style={{
@@ -321,8 +353,6 @@ function App() {
                     }}
                     $gtMd={{ transform: 'scale(1)', transformOrigin: 'right center' }}
                     $md={{ transform: 'scale(0.8)', transformOrigin: 'right center' }}
-                    $sm={{ transform: 'scale(0.7)', transformOrigin: 'right center' }}
-                    $xs={{ transform: 'scale(0.6)', transformOrigin: 'right center' }}
                   >
                     <div id="googleSignInDiv"></div>
                   </XStack>
