@@ -93,35 +93,45 @@ export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPop
 
         {/* Event details */}
         <YStack space="$4">
-          <XStack space="$2" alignItems="center">
-            {event.creatorProfilePicture && (
-              <Stack
-                width={40}
-                height={40}
-                borderRadius={20}
-                overflow="hidden"
-              >
-                <Image
-                  source={{ uri: event.creatorProfilePicture }}
-                  width="100%"
-                  height="100%"
-                  resizeMode="cover"
-                  alt="Creator's profile"
-                />
-              </Stack>
-            )}
-            <YStack>
-              <Text fontSize="$3" color="$textSecondary">
-                Posted by {event.creatorName || 'Anonymous'}
-              </Text>
-              <Text fontSize="$4" color="$color">
-                {formatEventDate(event.date)} at {event.time}
-              </Text>
-            </YStack>
-          </XStack>
+          {/* Only show creator info if it's not an Event type */}
+          {event.type !== 'Event' && (
+            <XStack space="$2" alignItems="center">
+              {event.creatorProfilePicture && (
+                <Stack
+                  width={40}
+                  height={40}
+                  borderRadius={20}
+                  overflow="hidden"
+                >
+                  <Image
+                    source={{ uri: event.creatorProfilePicture }}
+                    width="100%"
+                    height="100%"
+                    resizeMode="cover"
+                    alt="Creator's profile"
+                  />
+                </Stack>
+              )}
+              <YStack>
+                <Text fontSize="$3" color="$textSecondary">
+                  Posted by {event.creatorName || 'Anonymous'}
+                </Text>
+                <Text fontSize="$4" color="$color">
+                  {formatEventDate(event.date)} at {event.time}
+                </Text>
+              </YStack>
+            </XStack>
+          )}
+
+          {/* Always show date/time for Event type */}
+          {event.type === 'Event' && (
+            <Text fontSize="$4" color="$color">
+              {formatEventDate(event.date)} at {event.time}
+            </Text>
+          )}
 
           <Text color="$textPrimary">
-            {event.description}
+            {event.additionalDetails || event.description}
           </Text>
 
           {event.tags && (

@@ -22,6 +22,7 @@ interface EditableFields {
   date: boolean
   time: boolean
   tags: boolean
+  additionalDetails: boolean
 }
 
 // Common edit button component style
@@ -97,7 +98,8 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
     type: false,
     date: false,
     time: false,
-    tags: false
+    tags: false,
+    additionalDetails: false
   })
   const [dateOptions] = useState(generateDateOptions())
   const [timeOptions] = useState(generateTimeOptions())
@@ -311,6 +313,40 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
                   <XStack flex={1} space="$2" alignItems="flex-start">
                     <Text flex={1} color="$textPrimary">{editedEvent.description}</Text>
                     <EditButton onPress={() => setEditing(prev => ({ ...prev, description: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Additional Details Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Additional Details</Text>
+              <XStack space="$2" alignItems="flex-start">
+                {editing.additionalDetails ? (
+                  <XStack flex={1} space="$2">
+                    <TextArea
+                      flex={1}
+                      value={editedEvent.additionalDetails || ''}
+                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, additionalDetails: text }))}
+                      backgroundColor="$background"
+                      borderColor="$borderColor"
+                      minHeight={100}
+                      placeholder="Add any additional information that will be shown to users"
+                    />
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('additionalDetails')}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="flex-start">
+                    <Text flex={1} color="$textPrimary">
+                      {editedEvent.additionalDetails || 'No additional details'}
+                    </Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, additionalDetails: true }))} />
                   </XStack>
                 )}
               </XStack>
