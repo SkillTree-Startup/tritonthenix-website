@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { RSVPListPopup } from './RSVPListPopup'
+import { EventEditPopup } from './EventEditPopup'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -106,7 +107,7 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024)
 
   // Add state for showing RSVPs
-  const [selectedEventId, setShowRSVPs] = useState<string | null>(null)
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
   // Add useEffect to fetch and listen to events
   useEffect(() => {
@@ -139,39 +140,26 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   }, [])
 
   const handleSubmit = async () => {
-    setHasAttemptedSubmit(true)
-
+    // Validate required fields
     if (!eventData.name.trim() || !eventData.date || !eventData.time || !eventData.description.trim()) {
+      setHasAttemptedSubmit(true)
       return
     }
 
     try {
-      console.log('Original date:', eventData.date); // Debug log
-
-      // Get creator's info from Firestore
-      const userDoc = await getDoc(doc(db, 'users', userEmail));
-      const userData = userDoc.data();
-
-      // Keep the date as is since it's already in YYYY-MM-DD format
-      const formattedDate = eventData.date;
-      console.log('Formatted date:', formattedDate); // Debug log
-
-      // Create a new document in the events collection
-      const docRef = await addDoc(collection(db, 'events'), {
+      // Add timestamps and creator info
+      const newEvent = {
         ...eventData,
-        date: formattedDate,
         creatorEmail: userEmail,
-        creatorName: userData?.name,
-        creatorProfilePicture: userData?.profilePicture,
         createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      
-      // Log the stored date
-      const savedData = (await getDoc(docRef)).data();
-      console.log('Stored date:', savedData?.date); // Debug log
-      
-      // Clear the form and reset submit attempt
+        updatedAt: new Date(),
+        attendees: []  // Initialize empty attendees array
+      }
+
+      // Add to Firestore
+      await addDoc(collection(db, 'events'), newEvent)
+
+      // Reset form
       setEventData({
         name: '',
         type: 'Workout',
@@ -181,10 +169,13 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
         tags: '',
         creatorEmail: ''
       })
+
+      // Reset submit attempt flag
       setHasAttemptedSubmit(false)
-      
+
     } catch (error) {
       console.error('Error adding event:', error)
+      // Optionally add error handling UI here
     }
   }
 
@@ -435,6 +426,9 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                     <Text color="$textPrimary" fontSize="$3">
                       {formatEventDate(event.date)} at {event.time}
                     </Text>
+                    <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                      Created: {event.createdAt.toLocaleString()}
+                    </Text>
                   </YStack>
 
                   <XStack space="$2">
@@ -442,10 +436,10 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                       size="$2"
                       backgroundColor="$gray8"
                       padding="$2"
-                      onPress={() => setShowRSVPs(event.id)}
+                      onPress={() => setSelectedEventId(event.id)}
                       hoverStyle={{ backgroundColor: '$gray7' }}
                     >
-                      <Text color="white" fontSize="$3">RSVPs</Text>
+                      <Text color="white" fontSize="$3">Edit</Text>
                     </Button>
                     <Button
                       size="$2"
@@ -456,41 +450,20 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                     >
                       <Text color="$textPrimary" fontSize="$3">Copy</Text>
                     </Button>
-                    <Button
-                      backgroundColor="transparent"
-                      padding="$2"
-                      onPress={() => handleDelete(event.id)}
-                      hoverStyle={{ 
-                        opacity: 0.7,
-                        backgroundColor: '$red10'
-                      }}
-                    >
-                      <Text color="$color" fontSize="$3">Delete</Text>
-                    </Button>
                   </XStack>
                 </XStack>
-                <Text color="$textPrimary" numberOfLines={2}>
-                  {event.description}
-                </Text>
-                {event.tags && (
-                  <Text color="$textPrimary" fontSize="$3" opacity={0.7}>
-                    Tags: {event.tags}
-                  </Text>
-                )}
-                <Text fontSize="$2" color="$textPrimary" opacity={0.5}>
-                  Created: {event.createdAt.toLocaleString()}
-                </Text>
               </YStack>
             ))}
           </YStack>
         </ScrollView>
       </YStack>
 
-      {/* Add the popup */}
+      {/* Update the popup */}
       {selectedEventId && (
-        <RSVPListPopup
+        <EventEditPopup
           event={eventHistory.find(e => e.id === selectedEventId)!}
-          onClose={() => setShowRSVPs(null)}
+          onClose={() => setSelectedEventId(null)}
+          onDelete={handleDelete}
         />
       )}
     </YStack>

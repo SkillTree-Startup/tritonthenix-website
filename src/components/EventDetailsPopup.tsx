@@ -73,7 +73,7 @@ export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPop
         {/* Header with close button */}
         <XStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$6" fontWeight="bold" color="$textPrimary">
-            {event.type}: {event.name}
+            {event.name}
           </Text>
           <Button
             size="$3"
