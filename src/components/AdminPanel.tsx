@@ -147,17 +147,29 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
     }
 
     try {
-      // Add timestamps and creator info
+      // Get creator's info from Firestore
+      const userDoc = await getDoc(doc(db, 'users', userEmail))
+      const userData = userDoc.data()
+
+      // Create the event document
       const newEvent = {
         ...eventData,
         creatorEmail: userEmail,
+        creatorName: userData?.name || 'Anonymous',
+        creatorProfilePicture: userData?.profilePicture || null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        attendees: []  // Initialize empty attendees array
+        attendees: [],
+        date: eventData.date, // Ensure date is included
+        time: eventData.time, // Ensure time is included
+        type: eventData.type || 'Workout', // Ensure type has a default
+        description: eventData.description.trim(),
+        tags: eventData.tags?.trim() || ''
       }
 
       // Add to Firestore
-      await addDoc(collection(db, 'events'), newEvent)
+      const docRef = await addDoc(collection(db, 'events'), newEvent)
+      console.log('Event added with ID:', docRef.id)
 
       // Reset form
       setEventData({
