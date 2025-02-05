@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
+import { YStack, Text, XStack, Button, ScrollView, tokens } from 'tamagui';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Event {
   id: string;
@@ -36,38 +37,27 @@ const generateWeekDates = (selectedDate: Date) => {
 };
 
 const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
-  // Initialize activeTab based on defaultTab prop instead of URL
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(defaultTab);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState(generateWeekDates(new Date()));
 
-  // Add URL change listener
+  // Update activeTab when URL changes
   useEffect(() => {
-    const handleUrlChange = () => {
-      const path = window.location.pathname;
-      setActiveTab(path.includes('events') ? 'Events' : 'Workouts');
-    };
+    const path = location.pathname;
+    if (path.includes('events')) {
+      setActiveTab('Events');
+    } else if (path.includes('workouts')) {
+      setActiveTab('Workouts');
+    }
+  }, [location.pathname]);
 
-    // Listen for both popstate and our custom urlchange event
-    window.addEventListener('popstate', handleUrlChange);
-    window.addEventListener('urlchange', handleUrlChange);
-    
-    // Initial check
-    handleUrlChange();
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('popstate', handleUrlChange);
-      window.removeEventListener('urlchange', handleUrlChange);
-    };
-  }, []);
-
-  // Add URL handling when tab changes
+  // Update the handleTabChange function
   const handleTabChange = (tab: 'Workouts' | 'Events') => {
     setActiveTab(tab);
-    const newPath = tab === 'Events' ? '/schedule/events' : '/schedule/workouts';
-    window.history.pushState({}, '', newPath);
+    navigate(tab === 'Events' ? '/schedule/events' : '/schedule/workouts');
   };
 
   // Update week dates when selected date changes
@@ -175,6 +165,7 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
             padding="$2"
             space="$2"
             alignItems="center"
+            pressStyle={{ backgroundColor: 'transparent' }}
           >
             <Button
               size="$2"
@@ -196,6 +187,11 @@ const Schedule = ({ defaultTab = 'Workouts' }: ScheduleProps) => {
                   borderRadius="$4"
                   padding="$2"
                   flex={1}
+                  hoverStyle={isToday ? {
+                    borderColor: '$color',
+                    borderWidth: 1
+                  } : undefined}
+                  borderWidth={0}
                 >
                   <YStack alignItems="center" space="$1">
                     <Text 

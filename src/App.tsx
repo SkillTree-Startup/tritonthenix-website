@@ -99,8 +99,8 @@ function App() {
   }
 
   const handleNavigate = (path: string) => {
-    navigate(`/${path}`);
-    setIsMenuOpen(false)
+    navigate(path.startsWith('/') ? path : `/${path}`);
+    setIsMenuOpen(false);
   }
 
   // Helper function to check if link is active
@@ -350,8 +350,14 @@ function App() {
                   
                   {/* Mobile Navigation Items */}
                   <YStack $xl={{ display: 'none' }}>
-                    <MenuItem label="Workouts" onClick={() => handleNavigate('schedule/workouts')} />
-                    <MenuItem label="Events" onClick={() => handleNavigate('schedule/events')} />
+                    <MenuItem 
+                      label="Workouts" 
+                      onClick={() => handleNavigate('/schedule/workouts')} 
+                    />
+                    <MenuItem 
+                      label="Events" 
+                      onClick={() => handleNavigate('/schedule/events')} 
+                    />
                   </YStack>
 
                   {/* Admin Panel (if admin) */}
@@ -379,8 +385,14 @@ function App() {
                   {/* Signed Out Menu Items */}
                   <MenuItem label="Profile" page="profile" />
                   <YStack $xl={{ display: 'none' }}>
-                    <MenuItem label="Workouts" onClick={() => handleNavigate('schedule/workouts')} />
-                    <MenuItem label="Events" onClick={() => handleNavigate('schedule/events')} />
+                    <MenuItem 
+                      label="Workouts" 
+                      onClick={() => handleNavigate('/schedule/workouts')} 
+                    />
+                    <MenuItem 
+                      label="Events" 
+                      onClick={() => handleNavigate('/schedule/events')} 
+                    />
                   </YStack>
                   <MenuItem label="Privacy Policy" page="privacy" />
                 </>
