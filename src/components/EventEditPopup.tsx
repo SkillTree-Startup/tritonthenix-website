@@ -1,7 +1,7 @@
-import { YStack, Text, Button, XStack, Stack, Image, ScrollView } from 'tamagui'
-import { X } from '@tamagui/lucide-icons'
+import { YStack, Text, Button, XStack, Stack, Image, ScrollView, Input, TextArea, Select } from 'tamagui'
+import { X, Edit2, Pencil } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 
 interface EventEditPopupProps {
@@ -15,10 +15,105 @@ interface UserInfo {
   name?: string
 }
 
+interface EditableFields {
+  name: boolean
+  description: boolean
+  type: boolean
+  date: boolean
+  time: boolean
+  tags: boolean
+}
+
+// Common edit button component style
+const EditButton = ({ onPress }: { onPress: () => void }) => (
+  <Button
+    size="$3"
+    backgroundColor="$blue2"
+    padding="$2"
+    onPress={onPress}
+    hoverStyle={{ backgroundColor: '$blue3' }}
+    borderRadius="$4"
+  >
+    <Pencil size={18} color="$blue8" />
+  </Button>
+)
+
+// Import the helper functions from AdminPanel
+const generateTimeOptions = () => {
+  const times = []
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute of [0, 30]) {
+      const hourStr = hour.toString().padStart(2, '0')
+      const minStr = minute.toString().padStart(2, '0')
+      const timeStr = `${hourStr}:${minStr}`
+      const label = `${hour % 12 || 12}:${minStr} ${hour < 12 ? 'AM' : 'PM'}`
+      times.push({ value: timeStr, label })
+    }
+  }
+  return times
+}
+
+const generateDateOptions = () => {
+  const dates = []
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
+  
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() + i)
+    const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
+    const year = pacificDate.getFullYear()
+    const month = String(pacificDate.getMonth() + 1).padStart(2, '0')
+    const day = String(pacificDate.getDate()).padStart(2, '0')
+    const value = `${year}-${month}-${day}`
+    const label = pacificDate.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'America/Los_Angeles'
+    })
+    dates.push({ value, label })
+  }
+  return dates
+}
+
+// Add this helper function at the top of the file (same as AdminPanel)
+const formatEventDate = (dateStr: string) => {
+  // Add Pacific Time zone offset to ensure correct date
+  const date = new Date(`${dateStr}T00:00:00-08:00`)
+  return date.toLocaleDateString()
+}
+
 export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps) => {
   const [attendees, setAttendees] = useState<UserInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  
+  // Add state for edited values
+  const [editedEvent, setEditedEvent] = useState({ ...event })
+  const [editing, setEditing] = useState<EditableFields>({
+    name: false,
+    description: false,
+    type: false,
+    date: false,
+    time: false,
+    tags: false
+  })
+  const [dateOptions] = useState(generateDateOptions())
+  const [timeOptions] = useState(generateTimeOptions())
+
+  // Add save function
+  const handleSave = async (field: keyof EditableFields) => {
+    try {
+      await updateDoc(doc(db, 'events', event.id), {
+        [field]: editedEvent[field],
+        updatedAt: new Date()
+      })
+      setEditing(prev => ({ ...prev, [field]: false }))
+    } catch (error) {
+      console.error('Error updating event:', error)
+    }
+  }
 
   useEffect(() => {
     const fetchAttendees = async () => {
@@ -69,10 +164,10 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
         maxWidth={500}
         space="$4"
       >
-        {/* Header with close button */}
+        {/* Header */}
         <XStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$6" fontWeight="bold" color="$textPrimary">
-            {event.name}
+            Event Details
           </Text>
           <Button
             size="$3"
@@ -85,47 +180,216 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
         </XStack>
 
         <ScrollView>
-          <YStack space="$4">
-            <XStack space="$2" alignItems="center">
-              {event.creatorProfilePicture && (
-                <Stack
-                  width={40}
-                  height={40}
-                  borderRadius={20}
-                  overflow="hidden"
-                >
-                  <Image
-                    source={{ uri: event.creatorProfilePicture }}
-                    width="100%"
-                    height="100%"
-                    resizeMode="cover"
-                    alt="Creator's profile"
-                  />
-                </Stack>
-              )}
-              <YStack>
-                <Text fontSize="$3" color="$textSecondary">
-                  Posted by {event.creatorName || 'Anonymous'}
-                </Text>
-                <Text fontSize="$4" color="$color">
-                  {new Date(event.date).toLocaleDateString()} at {event.time}
-                </Text>
-              </YStack>
-            </XStack>
+          <YStack space="$4" padding="$2">
+            {/* Name Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Name</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.name ? (
+                  <XStack flex={1} space="$2">
+                    <Input
+                      flex={1}
+                      value={editedEvent.name}
+                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, name: text }))}
+                      backgroundColor="$background"
+                      borderColor="$borderColor"
+                    />
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('name')}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">{editedEvent.name}</Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, name: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
 
-            <Text color="$textPrimary">
-              {event.description}
-            </Text>
+            {/* Date and Time Fields */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Date & Time</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.date || editing.time ? (
+                  <YStack flex={1} space="$2">
+                    <Select
+                      value={editedEvent.date}
+                      onValueChange={(value) => setEditedEvent(prev => ({ ...prev, date: value }))}
+                      items={dateOptions}
+                    >
+                      <Select.Trigger width="100%" iconAfter={Pencil}>
+                        <Select.Value placeholder="Select Date" />
+                      </Select.Trigger>
+                      <Select.Content>
+                        <Select.ScrollUpButton />
+                        <Select.Viewport>
+                          <Select.Group>
+                            {dateOptions.map((option) => (
+                              <Select.Item key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.Group>
+                        </Select.Viewport>
+                        <Select.ScrollDownButton />
+                      </Select.Content>
+                    </Select>
 
-            {event.tags && (
-              <Text color="$color" fontSize="$3" opacity={0.7}>
-                Tags: {event.tags}
-              </Text>
-            )}
+                    <Select
+                      value={editedEvent.time}
+                      onValueChange={(value) => setEditedEvent(prev => ({ ...prev, time: value }))}
+                      items={timeOptions}
+                    >
+                      <Select.Trigger width="100%" iconAfter={Pencil}>
+                        <Select.Value placeholder="Select Time" />
+                      </Select.Trigger>
+                      <Select.Content>
+                        <Select.ScrollUpButton />
+                        <Select.Viewport>
+                          <Select.Group>
+                            {timeOptions.map((option) => (
+                              <Select.Item key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.Group>
+                        </Select.Viewport>
+                        <Select.ScrollDownButton />
+                      </Select.Content>
+                    </Select>
 
-            <Text color="$textSecondary" fontSize="$3">
-              Type: {event.type}
-            </Text>
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => {
+                        handleSave('date')
+                        handleSave('time')
+                      }}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </YStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">
+                      {formatEventDate(editedEvent.date)} at {editedEvent.time}
+                    </Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, date: true, time: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Description Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Description</Text>
+              <XStack space="$2" alignItems="flex-start">
+                {editing.description ? (
+                  <XStack flex={1} space="$2">
+                    <TextArea
+                      flex={1}
+                      value={editedEvent.description}
+                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, description: text }))}
+                      backgroundColor="$background"
+                      borderColor="$borderColor"
+                      minHeight={100}
+                    />
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('description')}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="flex-start">
+                    <Text flex={1} color="$textPrimary">{editedEvent.description}</Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, description: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Tags Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Tags</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.tags ? (
+                  <XStack flex={1} space="$2">
+                    <Input
+                      flex={1}
+                      value={editedEvent.tags}
+                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, tags: text }))}
+                      backgroundColor="$background"
+                      borderColor="$borderColor"
+                    />
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('tags')}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </XStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">{editedEvent.tags || 'No tags'}</Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, tags: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
+
+            {/* Type Field */}
+            <YStack space="$2">
+              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Type</Text>
+              <XStack space="$2" alignItems="center">
+                {editing.type ? (
+                  <YStack flex={1} space="$2">
+                    <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
+                      <Button
+                        flex={1}
+                        backgroundColor={editedEvent.type === 'Workout' ? '$blue8' : 'transparent'}
+                        onPress={() => setEditedEvent(prev => ({ ...prev, type: 'Workout' }))}
+                        hoverStyle={{ opacity: 0.8 }}
+                      >
+                        <Text color={editedEvent.type === 'Workout' ? 'white' : '$color'}>
+                          Workout
+                        </Text>
+                      </Button>
+                      <Button
+                        flex={1}
+                        backgroundColor={editedEvent.type === 'Event' ? '$blue8' : 'transparent'}
+                        onPress={() => setEditedEvent(prev => ({ ...prev, type: 'Event' }))}
+                        hoverStyle={{ opacity: 0.8 }}
+                      >
+                        <Text color={editedEvent.type === 'Event' ? 'white' : '$color'}>
+                          Event
+                        </Text>
+                      </Button>
+                    </XStack>
+                    <Button
+                      size="$3"
+                      backgroundColor="$blue8"
+                      onPress={() => handleSave('type')}
+                    >
+                      <Text color="white">Save</Text>
+                    </Button>
+                  </YStack>
+                ) : (
+                  <XStack flex={1} space="$2" alignItems="center">
+                    <Text flex={1} color="$textPrimary">{editedEvent.type}</Text>
+                    <EditButton onPress={() => setEditing(prev => ({ ...prev, type: true }))} />
+                  </XStack>
+                )}
+              </XStack>
+            </YStack>
 
             {/* Attendees Section */}
             <YStack space="$2" marginTop="$2">

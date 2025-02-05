@@ -10,6 +10,12 @@ interface EventDetailsPopupProps {
   userEmail?: string
 }
 
+const formatEventDate = (dateStr: string) => {
+  // Add Pacific Time zone offset to ensure correct date
+  const date = new Date(`${dateStr}T00:00:00-08:00`)
+  return date.toLocaleDateString()
+}
+
 export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPopupProps) => {
   const [isRsvped, setIsRsvped] = useState(false)
   const [attendees, setAttendees] = useState<string[]>([])
@@ -109,7 +115,7 @@ export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPop
                 Posted by {event.creatorName || 'Anonymous'}
               </Text>
               <Text fontSize="$4" color="$color">
-                {new Date(event.date).toLocaleDateString()} at {event.time}
+                {formatEventDate(event.date)} at {event.time}
               </Text>
             </YStack>
           </XStack>
