@@ -9,7 +9,7 @@ interface EventDetailsPopupProps {
   onClose: () => void
   userEmail?: string
   onRSVP: () => void
-  isRSVPd: boolean | undefined
+  isRSVPd?: boolean
 }
 
 const formatEventDate = (dateStr: string) => {
@@ -18,7 +18,7 @@ const formatEventDate = (dateStr: string) => {
   return date.toLocaleDateString()
 }
 
-export const EventDetailsPopup = ({ event, onClose, userEmail, onRSVP, isRSVPd }: EventDetailsPopupProps) => {
+export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDetailsPopupProps) => {
   const [attendeeCount, setAttendeeCount] = useState(0)
   
   // Fetch current attendee count

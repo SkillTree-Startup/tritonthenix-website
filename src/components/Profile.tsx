@@ -123,18 +123,9 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
     }
   }
 
-  const handleAdminLogin = async () => {
-    try {
-      // Update Firestore with admin profile, without profile picture
-      await setDoc(doc(db, 'users', 'admin@tritonthenix.com'), {
-        name: 'Test Admin',
-        email: 'admin@tritonthenix.com',
-      }, { merge: true });
-
-      // Call the toggle function to update app state
+  const handleAdminLogin = () => {
+    if (onTempAdminToggle) {
       onTempAdminToggle();
-    } catch (error) {
-      console.error('Error setting up admin account:', error);
     }
   };
 

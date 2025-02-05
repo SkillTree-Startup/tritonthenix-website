@@ -5,7 +5,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { DialogScope } from '../tamagui.config'
 import { getFunctions, httpsCallable } from 'firebase/functions'
-import { admin } from '../firebase'
+import { Event } from '../types/Event'
 
 interface RSVPListPopupProps {
   event: Event
@@ -32,30 +32,30 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
   useEffect(() => {
     const fetchAttendees = async () => {
       try {
-        const eventDoc = await getDoc(doc(db, 'events', event.id))
-        const eventData = eventDoc.data()
-        const attendeeEmails = eventData?.attendees || []
-
-        const attendeePromises = attendeeEmails.map(async (email: string) => {
+        setIsLoading(true)
+        const attendeePromises = (event.attendees || []).map(async (email: string) => {
           const userDoc = await getDoc(doc(db, 'users', email))
           const userData = userDoc.data()
           return {
             email,
-            name: userData?.name
+            name: userData?.name || email
           }
         })
 
         const attendeeInfo = await Promise.all(attendeePromises)
+        console.log('Fetched attendees:', attendeeInfo)
         setAttendees(attendeeInfo)
-        setIsLoading(false)
       } catch (error) {
         console.error('Error fetching attendees:', error)
+      } finally {
         setIsLoading(false)
       }
     }
 
-    fetchAttendees()
-  }, [event.id])
+    if (event.attendees?.length) {
+      fetchAttendees()
+    }
+  }, [event.attendees])
 
   useEffect(() => {
     const fetchAdminName = async () => {
@@ -126,7 +126,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
   return (
     <>
       <YStack
-        position="fixed"
+        position="absolute"
         top={0}
         left={0}
         right={0}
@@ -179,33 +179,32 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
             </XStack>
           </XStack>
 
-          <ScrollView>
-            <YStack space="$2">
-              {isLoading ? (
-                <Text color="$textSecondary">Loading attendees...</Text>
-              ) : attendees.length > 0 ? (
-                attendees.map((attendee) => (
+          {isLoading ? (
+            <Text color="$textSecondary">Loading attendees...</Text>
+          ) : attendees.length === 0 ? (
+            <Text color="$textSecondary">No RSVPs yet</Text>
+          ) : (
+            <ScrollView maxHeight={400}>
+              <YStack space="$2">
+                {attendees.map((attendee, index) => (
                   <XStack 
                     key={attendee.email}
-                    backgroundColor="$cardBackground"
+                    backgroundColor="$backgroundHover"
                     padding="$3"
                     borderRadius="$2"
-                    justifyContent="space-between"
-                    alignItems="center"
+                    space="$2"
                   >
-                    <Text color="$textPrimary" fontSize="$4">
-                      {attendee.name || 'Anonymous'}
+                    <Text flex={1} color="$textPrimary">
+                      {attendee.name || attendee.email}
                     </Text>
-                    <Text color="$textSecondary" fontSize="$3">
+                    <Text color="$textSecondary" fontSize="$2">
                       {attendee.email}
                     </Text>
                   </XStack>
-                ))
-              ) : (
-                <Text color="$textSecondary">No RSVPs yet</Text>
-              )}
-            </YStack>
-          </ScrollView>
+                ))}
+              </YStack>
+            </ScrollView>
+          )}
         </YStack>
       </YStack>
 
@@ -237,13 +236,12 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={[
-                {
-                  opacity: {
-                    overshootClamping: true,
-                  },
-                },
-              ]}
+              animation={{
+                type: 'fade',
+                opacity: {
+                  overshootClamping: true
+                }
+              }}
               position="absolute"
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
@@ -326,13 +324,12 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
             bordered
             elevate
             key="content"
-            animation={[
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
+            animation={{
+              type: 'fade',
+              opacity: {
+                overshootClamping: true
+              }
+            }}
             position="absolute"
             enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
             exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}

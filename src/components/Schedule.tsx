@@ -195,12 +195,16 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   };
 
   const handleRSVP = async (event: Event) => {
-    if (!userEmail) return;
+    // Check if user is logged in
+    if (!userEmail) {
+      // Redirect to profile page
+      navigate('/profile');
+      return;
+    }
 
     try {
       const eventRef = doc(db, 'events', event.id);
-      const eventDoc = await getDoc(eventRef);
-      const currentAttendees = eventDoc.data()?.attendees || [];
+      const currentAttendees = event.attendees || [];
       const isCurrentlyRSVPd = currentAttendees.includes(userEmail);
 
       // Check if event is full when trying to RSVP
@@ -209,28 +213,21 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
         return;
       }
 
-      if (isCurrentlyRSVPd) {
-        // Cancel RSVP
-        await updateDoc(eventRef, {
-          attendees: arrayRemove(userEmail)
-        });
-      } else {
-        // Add RSVP
-        await updateDoc(eventRef, {
-          attendees: arrayUnion(userEmail)
-        });
-      }
+      const updatedAttendees = isCurrentlyRSVPd
+        ? currentAttendees.filter((email: string) => email !== userEmail)
+        : [...currentAttendees, userEmail];
 
-      // Update selected event to reflect changes
+      await updateDoc(eventRef, {
+        attendees: updatedAttendees
+      });
+
+      // Update selected event
       if (selectedEvent?.id === event.id) {
         setSelectedEvent({
           ...selectedEvent,
-          attendees: isCurrentlyRSVPd 
-            ? currentAttendees.filter(email => email !== userEmail)
-            : [...currentAttendees, userEmail]
+          attendees: updatedAttendees
         });
       }
-
     } catch (error) {
       console.error('Error updating RSVP:', error);
     }
@@ -415,9 +412,8 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
         <EventDetailsPopup
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
-          userEmail={userEmail}
           onRSVP={() => handleRSVP(selectedEvent)}
-          isRSVPd={selectedEvent.attendees?.includes(userEmail || '')}
+          isRSVPd={selectedEvent.attendees?.includes(userEmail)}
         />
       )}
     </YStack>

@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Event {
   id: string;
   name: string;
@@ -16,4 +18,9 @@ export interface Event {
   maxRSVPs?: number;
   attendees?: string[];
   additionalDetails?: string;
+}
+
+export interface EventWithTimestamp extends Omit<Event, 'createdAt'> {
+  createdAt: Timestamp;
+  id: string;
 } 

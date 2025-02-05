@@ -3,10 +3,12 @@ import { X, Edit2, Pencil } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { Event } from '../types/Event'
 
 interface EventEditPopupProps {
   event: Event
   onClose: () => void
+  onDelete: (eventId: string) => void
 }
 
 interface UserInfo {
@@ -15,13 +17,12 @@ interface UserInfo {
 }
 
 interface EditableFields {
-  name: boolean
-  description: boolean
-  type: boolean
-  date: boolean
-  time: boolean
-  tags: boolean
-  additionalDetails: boolean
+  name: string
+  date: string
+  time: string
+  description: string
+  additionalDetails?: string
+  tags?: string
 }
 
 // Common edit button component style
@@ -84,16 +85,22 @@ const formatEventDate = (dateStr: string) => {
   return date.toLocaleDateString()
 }
 
-export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
+export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
   // Add state for edited values
-  const [editedEvent, setEditedEvent] = useState({ ...event })
+  const [editedEvent, setEditedEvent] = useState<EditableFields>({
+    name: event.name,
+    date: event.date,
+    time: event.time,
+    description: event.description,
+    additionalDetails: event.additionalDetails,
+    tags: event.tags
+  })
   const [editing, setEditing] = useState<EditableFields>({
     name: false,
     description: false,
-    type: false,
     date: false,
     time: false,
     tags: false,
@@ -115,9 +122,13 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
     }
   }
 
+  const handleFieldChange = (field: keyof EditableFields, value: string) => {
+    setEditedEvent(prev => ({ ...prev, [field]: value }))
+  }
+
   return (
     <YStack
-      position="fixed"
+      position="absolute"
       top={0}
       left={0}
       right={0}
@@ -162,7 +173,7 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                     <Input
                       flex={1}
                       value={editedEvent.name}
-                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, name: text }))}
+                      onChangeText={(text) => handleFieldChange('name', text)}
                       backgroundColor="$background"
                       borderColor="$borderColor"
                     />
@@ -191,30 +202,27 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                   <YStack flex={1} space="$2">
                     <Select
                       value={editedEvent.date}
-                      onValueChange={(value) => setEditedEvent(prev => ({ ...prev, date: value }))}
-                      items={dateOptions}
+                      onValueChange={(value: string) => handleFieldChange('date', value)}
                     >
-                      <Select.Trigger width="100%" iconAfter={Pencil}>
-                        <Select.Value placeholder="Select Date" />
+                      <Select.Trigger>
+                        <Select.Value />
                       </Select.Trigger>
                       <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          <Select.Group>
-                            {dateOptions.map((option) => (
-                              <Select.Item key={option.value} value={option.value}>
-                                <Select.ItemText>{option.label}</Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.Group>
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
+                        {dateOptions.map((option, index) => (
+                          <Select.Item 
+                            key={option.value} 
+                            value={option.value}
+                            index={index}
+                          >
+                            <Select.ItemText>{option.label}</Select.ItemText>
+                          </Select.Item>
+                        ))}
                       </Select.Content>
                     </Select>
 
                     <Select
                       value={editedEvent.time}
-                      onValueChange={(value) => setEditedEvent(prev => ({ ...prev, time: value }))}
+                      onValueChange={(value) => handleFieldChange('time', value)}
                       items={timeOptions}
                     >
                       <Select.Trigger width="100%" iconAfter={Pencil}>
@@ -266,7 +274,7 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                     <TextArea
                       flex={1}
                       value={editedEvent.description}
-                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, description: text }))}
+                      onChangeText={(text) => handleFieldChange('description', text)}
                       backgroundColor="$background"
                       borderColor="$borderColor"
                       minHeight={100}
@@ -297,7 +305,7 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                     <TextArea
                       flex={1}
                       value={editedEvent.additionalDetails || ''}
-                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, additionalDetails: text }))}
+                      onChangeText={(text) => handleFieldChange('additionalDetails', text)}
                       backgroundColor="$background"
                       borderColor="$borderColor"
                       minHeight={100}
@@ -331,7 +339,7 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                     <Input
                       flex={1}
                       value={editedEvent.tags}
-                      onChangeText={(text) => setEditedEvent(prev => ({ ...prev, tags: text }))}
+                      onChangeText={(text) => handleFieldChange('tags', text)}
                       backgroundColor="$background"
                       borderColor="$borderColor"
                     />
@@ -347,51 +355,6 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                   <XStack flex={1} space="$2" alignItems="center">
                     <Text flex={1} color="$textPrimary">{editedEvent.tags || 'No tags'}</Text>
                     <EditButton onPress={() => setEditing(prev => ({ ...prev, tags: true }))} />
-                  </XStack>
-                )}
-              </XStack>
-            </YStack>
-
-            {/* Type Field */}
-            <YStack space="$2">
-              <Text color="$textSecondary" fontSize="$3" fontWeight="bold">Type</Text>
-              <XStack space="$2" alignItems="center">
-                {editing.type ? (
-                  <YStack flex={1} space="$2">
-                    <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
-                      <Button
-                        flex={1}
-                        backgroundColor={editedEvent.type === 'Workout' ? '$blue8' : 'transparent'}
-                        onPress={() => setEditedEvent(prev => ({ ...prev, type: 'Workout' }))}
-                        hoverStyle={{ opacity: 0.8 }}
-                      >
-                        <Text color={editedEvent.type === 'Workout' ? 'white' : '$color'}>
-                          Workout
-                        </Text>
-                      </Button>
-                      <Button
-                        flex={1}
-                        backgroundColor={editedEvent.type === 'Event' ? '$blue8' : 'transparent'}
-                        onPress={() => setEditedEvent(prev => ({ ...prev, type: 'Event' }))}
-                        hoverStyle={{ opacity: 0.8 }}
-                      >
-                        <Text color={editedEvent.type === 'Event' ? 'white' : '$color'}>
-                          Event
-                        </Text>
-                      </Button>
-                    </XStack>
-                    <Button
-                      size="$3"
-                      backgroundColor="$blue8"
-                      onPress={() => handleSave('type')}
-                    >
-                      <Text color="white">Save</Text>
-                    </Button>
-                  </YStack>
-                ) : (
-                  <XStack flex={1} space="$2" alignItems="center">
-                    <Text flex={1} color="$textPrimary">{editedEvent.type}</Text>
-                    <EditButton onPress={() => setEditing(prev => ({ ...prev, type: true }))} />
                   </XStack>
                 )}
               </XStack>
@@ -431,7 +394,7 @@ export const EventEditPopup = ({ event, onClose }: EventEditPopupProps) => {
                 backgroundColor="$red8"
                 padding="$2"
                 onPress={() => {
-                  onClose()
+                  onDelete(event.id)
                 }}
                 hoverStyle={{ backgroundColor: '$red7' }}
                 flex={1}

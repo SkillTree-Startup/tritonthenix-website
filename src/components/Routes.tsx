@@ -6,7 +6,7 @@ import Home from './Home';
 import { Profile } from './Profile';
 
 interface RoutesProps {
-  userEmail?: string;
+  userEmail: string;
   userName?: string;
   tempAdminMode?: boolean;
   onTempAdminToggle?: () => void;

@@ -46,8 +46,17 @@ interface MenuItemProps {
 interface JwtPayload {
   email: string;
   name: string;
+  picture?: string;
   // Add other fields you need from the JWT
 }
+
+// Add this constant for the test admin data
+const TEST_ADMIN_DATA: UserData = {
+  email: 'admin@tritonthenix.com',
+  name: 'Test Admin',
+  isAdmin: true,
+  profilePicture: 'https://ui-avatars.com/api/?name=Test+Admin&background=0D8ABC&color=fff'
+};
 
 function App() {
   const [isSignedIn, setIsSignedIn] = useState(false)
@@ -138,31 +147,41 @@ function App() {
       const decoded = jwtDecode(response.credential) as JwtPayload;
       const userEmail = decoded.email;
       const userName = decoded.name;
+      const picture = decoded.picture;
 
       if (userEmail) {
         // Check if user exists in Firestore
         const userDoc = await getDoc(doc(db, 'users', userEmail));
         
+        let userData;
+        
         if (userDoc.exists()) {
-          // Use existing user data
-          const userData = userDoc.data();
-          setUserData({
-            email: userEmail,
-            name: userData.name || userName,
-            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
-            profilePicture: userData.profilePicture
-          });
-        } else {
-          // Create new user document
-          const newUserData = {
+          // Use existing user data but update with latest info
+          userData = {
+            ...userDoc.data(),
             email: userEmail,
             name: userName,
             isAdmin: WHITELISTED_EMAILS.includes(userEmail),
+            profilePicture: picture || userDoc.data().profilePicture,
+            lastLogin: new Date()
           };
-          await setDoc(doc(db, 'users', userEmail), newUserData);
-          setUserData(newUserData);
+        } else {
+          // Create new user document
+          userData = {
+            email: userEmail,
+            name: userName,
+            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
+            profilePicture: picture,
+            createdAt: new Date(),
+            lastLogin: new Date()
+          };
         }
 
+        // Update or create user document
+        await setDoc(doc(db, 'users', userEmail), userData);
+        
+        // Update local state
+        setUserData(userData);
         setIsSignedIn(true);
       }
     } catch (error) {
@@ -224,10 +243,12 @@ function App() {
       // Reset to previous state
       setTempAdminMode(false);
       setIsSignedIn(false);
+      setUserData(null);
     } else {
       // Switch to admin mode
       setTempAdminMode(true);
       setIsSignedIn(true);
+      setUserData(TEST_ADMIN_DATA);
     }
   };
 
