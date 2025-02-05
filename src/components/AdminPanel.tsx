@@ -236,7 +236,6 @@ export const AdminPanel = () => {
               <Select
                 value={eventData.date}
                 onValueChange={(value) => setEventData(prev => ({ ...prev, date: value }))}
-                borderColor={!eventData.date && hasAttemptedSubmit ? 'red' : '$borderColor'}
               >
                 <Select.Trigger>
                   <Select.Value placeholder="Select Date" />
@@ -266,30 +265,23 @@ export const AdminPanel = () => {
               <Select
                 value={eventData.time}
                 onValueChange={(value) => setEventData(prev => ({ ...prev, time: value }))}
-                backgroundColor="$cardBackground"
-                borderColor={!eventData.time && hasAttemptedSubmit ? 'red' : '$borderColor'}
               >
-                <Select.Trigger
-                  backgroundColor="$cardBackground"
-                  width="100%" 
-                  padding="$3"
-                >
+                <Select.Trigger>
                   <Select.Value 
-                    placeholder="Select Time" 
-                    color="$textPrimary"
+                    placeholder="Select Time"
                   />
                 </Select.Trigger>
-                <Select.Content backgroundColor="$cardBackground">
+                <Select.Content>
                   <Select.ScrollUpButton />
                   <Select.Viewport>
                     <Select.Group>
-                      {timeOptions.map((option) => (
+                      {timeOptions.map((option, index) => (
                         <Select.Item 
                           key={option.value} 
                           value={option.value}
-                          backgroundColor="$cardBackground"
+                          index={index}
                         >
-                          <Select.ItemText color="$textPrimary">{option.label}</Select.ItemText>
+                          <Select.ItemText>{option.label}</Select.ItemText>
                         </Select.Item>
                       ))}
                     </Select.Group>
