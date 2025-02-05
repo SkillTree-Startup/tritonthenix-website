@@ -77,8 +77,9 @@ export const AdminPanel = () => {
   // Add state to track if form has been submitted
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
-  const timeOptions = generateTimeOptions()
-  const dateOptions = generateDateOptions()
+  // Initialize date and time options
+  const [dateOptions] = useState(generateDateOptions())
+  const [timeOptions] = useState(generateTimeOptions())
 
   const [eventHistory, setEventHistory] = useState<EventWithTimestamp[]>([])
 
@@ -183,36 +184,34 @@ export const AdminPanel = () => {
 
         {/* Name Input */}
         <YStack space="$2">
-          <Text color="$color">{eventData.type} Name *</Text>
+          <Text color="$color">Name *</Text>
           <Input
             value={eventData.name}
             onChangeText={(text) => setEventData(prev => ({ ...prev, name: text }))}
-            placeholder="Value"
+            placeholder={`Enter ${eventData.type.toLowerCase()} name`}
             borderWidth={1}
             borderColor={!eventData.name.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
             backgroundColor="white"
             padding="$3"
+            color="#4A5568"
+            placeholderTextColor="#A0AEC0"
           />
         </YStack>
 
         {/* Type Toggle */}
-        <XStack 
-          backgroundColor="#f0f0f0" 
-          borderRadius="$4"
-          overflow="hidden"
-        >
+        <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
           <Button
             flex={1}
-            backgroundColor={eventData.type === 'Workout' ? 'white' : 'transparent'}
-            color="black"
+            backgroundColor={eventData.type === 'Workout' ? '$background' : 'transparent'}
+            color="$textPrimary"
             onPress={() => setEventData(prev => ({ ...prev, type: 'Workout' }))}
           >
             Workout
           </Button>
           <Button
             flex={1}
-            backgroundColor={eventData.type === 'Event' ? 'white' : 'transparent'}
-            color="black"
+            backgroundColor={eventData.type === 'Event' ? '$background' : 'transparent'}
+            color="$textPrimary"
             onPress={() => setEventData(prev => ({ ...prev, type: 'Event' }))}
           >
             Event
@@ -222,29 +221,36 @@ export const AdminPanel = () => {
         {/* Date/Time Selection */}
         <YStack space="$2">
           <Text color="$color">Date/Time *</Text>
-          <XStack space="$2">
+          <XStack space="$4" width="100%">
+            {/* Date Input */}
             <YStack flex={1}>
               <Select
                 value={eventData.date}
                 onValueChange={(value) => setEventData(prev => ({ ...prev, date: value }))}
+                backgroundColor="$cardBackground"
+                borderColor={!eventData.date && hasAttemptedSubmit ? 'red' : '$borderColor'}
               >
-                <Select.Trigger 
+                <Select.Trigger
+                  backgroundColor="$cardBackground"
                   width="100%" 
-                  padding="$3" 
-                  borderWidth={1} 
-                  borderColor={!eventData.date && hasAttemptedSubmit ? 'red' : '$borderColor'} 
-                  backgroundColor="white"
+                  padding="$3"
                 >
-                  <Select.Value placeholder="Select date" />
+                  <Select.Value 
+                    placeholder="Select Date" 
+                    color="$textPrimary"
+                  />
                 </Select.Trigger>
-
-                <Select.Content>
+                <Select.Content backgroundColor="$cardBackground">
                   <Select.ScrollUpButton />
                   <Select.Viewport>
                     <Select.Group>
-                      {dateOptions.map((date, index) => (
-                        <Select.Item key={date.value} value={date.value} index={index}>
-                          <Select.ItemText>{date.label}</Select.ItemText>
+                      {dateOptions.map((option) => (
+                        <Select.Item 
+                          key={option.value} 
+                          value={option.value}
+                          backgroundColor="$cardBackground"
+                        >
+                          <Select.ItemText color="$textPrimary">{option.label}</Select.ItemText>
                         </Select.Item>
                       ))}
                     </Select.Group>
@@ -253,28 +259,36 @@ export const AdminPanel = () => {
                 </Select.Content>
               </Select>
             </YStack>
+
+            {/* Time Input */}
             <YStack flex={1}>
               <Select
                 value={eventData.time}
                 onValueChange={(value) => setEventData(prev => ({ ...prev, time: value }))}
+                backgroundColor="$cardBackground"
+                borderColor={!eventData.time && hasAttemptedSubmit ? 'red' : '$borderColor'}
               >
-                <Select.Trigger 
+                <Select.Trigger
+                  backgroundColor="$cardBackground"
                   width="100%" 
-                  padding="$3" 
-                  borderWidth={1} 
-                  borderColor={!eventData.time && hasAttemptedSubmit ? 'red' : '$borderColor'} 
-                  backgroundColor="white"
+                  padding="$3"
                 >
-                  <Select.Value placeholder="Select time" />
+                  <Select.Value 
+                    placeholder="Select Time" 
+                    color="$textPrimary"
+                  />
                 </Select.Trigger>
-
-                <Select.Content>
+                <Select.Content backgroundColor="$cardBackground">
                   <Select.ScrollUpButton />
                   <Select.Viewport>
                     <Select.Group>
-                      {timeOptions.map((time, index) => (
-                        <Select.Item key={time.value} value={time.value} index={index}>
-                          <Select.ItemText>{time.label}</Select.ItemText>
+                      {timeOptions.map((option) => (
+                        <Select.Item 
+                          key={option.value} 
+                          value={option.value}
+                          backgroundColor="$cardBackground"
+                        >
+                          <Select.ItemText color="$textPrimary">{option.label}</Select.ItemText>
                         </Select.Item>
                       ))}
                     </Select.Group>
@@ -298,6 +312,8 @@ export const AdminPanel = () => {
             backgroundColor="white"
             padding="$3"
             minHeight={100}
+            color="#4A5568"
+            placeholderTextColor="#A0AEC0"
           />
         </YStack>
 
@@ -312,6 +328,8 @@ export const AdminPanel = () => {
             borderColor="$borderColor"
             backgroundColor="white"
             padding="$3"
+            color="#4A5568"
+            placeholderTextColor="#A0AEC0"
           />
         </YStack>
 
@@ -325,8 +343,8 @@ export const AdminPanel = () => {
 
         {/* Submit Button */}
         <Button
-          backgroundColor="#d4d4d4"
-          color="black"
+          backgroundColor="$cardBackground"
+          color="$textPrimary"
           onPress={handleSubmit}
           marginTop="$4"
         >
@@ -353,7 +371,7 @@ export const AdminPanel = () => {
         <Text 
           fontSize="$6" 
           fontWeight="bold" 
-          color="$color"
+          color="$textPrimary"
           padding="$4"
           borderBottomWidth={1}
           borderBottomColor="$borderColor"
@@ -368,7 +386,7 @@ export const AdminPanel = () => {
             {eventHistory.map((event) => (
               <YStack 
                 key={event.id}
-                backgroundColor="white"
+                backgroundColor="$cardBackground"
                 padding="$3"
                 borderRadius="$2"
                 borderWidth={1}
@@ -376,7 +394,7 @@ export const AdminPanel = () => {
                 space="$2"
               >
                 <XStack justifyContent="space-between" alignItems="flex-start">
-                  <Text fontWeight="bold" color="$color">
+                  <Text fontWeight="bold" color="$textPrimary">
                     {event.type}: {event.name}
                   </Text>
                   <Button
@@ -387,21 +405,21 @@ export const AdminPanel = () => {
                     aria-label="Copy event"
                     hoverStyle={{ backgroundColor: '$gray4' }}
                   >
-                    <Text color="$color" fontSize="$3">Copy</Text>
+                    <Text color="$textPrimary" fontSize="$3">Copy</Text>
                   </Button>
                 </XStack>
-                <Text color="$color" fontSize="$3">
+                <Text color="$textPrimary" fontSize="$3">
                   {formatEventDate(event.date)} at {event.time}
                 </Text>
-                <Text color="$color" numberOfLines={2}>
+                <Text color="$textPrimary" numberOfLines={2}>
                   {event.description}
                 </Text>
                 {event.tags && (
-                  <Text color="$color" fontSize="$3" opacity={0.7}>
+                  <Text color="$textPrimary" fontSize="$3" opacity={0.7}>
                     Tags: {event.tags}
                   </Text>
                 )}
-                <Text fontSize="$2" color="$color" opacity={0.5}>
+                <Text fontSize="$2" color="$textPrimary" opacity={0.5}>
                   Created: {event.createdAt.toLocaleString()}
                 </Text>
               </YStack>
