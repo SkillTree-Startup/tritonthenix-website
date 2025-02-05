@@ -425,12 +425,12 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
 };
 
 interface EventCardProps {
-  event: Event
-  userEmail?: string
-  isRSVPd: boolean
-  attendeeCount: number
-  onRSVP: () => void
-  onViewDetails: () => void
+  event: Event;
+  userEmail?: string;
+  isRSVPd: boolean | undefined;
+  attendeeCount: number;
+  onRSVP: () => void;
+  onViewDetails: () => void;
 }
 
 const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDetails }: EventCardProps) => {

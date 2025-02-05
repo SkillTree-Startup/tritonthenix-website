@@ -1,10 +1,19 @@
 export interface Event {
   id: string;
-  type: string;
-  instructor: string;
-  date: Date;
+  name: string;
+  type: 'Workout' | 'Event';
+  date: string;
   time: string;
+  description: string;
+  instructor: string;
   location: string;
   subLocation: string;
+  createdAt: Date;
+  tags?: string;
+  creatorEmail: string;
+  creatorName?: string;
+  creatorProfilePicture?: string;
   maxRSVPs?: number;
+  attendees?: string[];
+  additionalDetails?: string;
 } 

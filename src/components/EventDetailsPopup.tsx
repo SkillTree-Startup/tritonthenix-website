@@ -42,7 +42,7 @@ export const EventDetailsPopup = ({ event, onClose, userEmail, onRSVP, isRSVPd }
 
   return (
     <YStack
-      position="fixed"
+      position="absolute"
       top={0}
       left={0}
       right={0}
