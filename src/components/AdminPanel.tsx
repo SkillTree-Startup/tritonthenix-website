@@ -111,6 +111,9 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   // Add state for showing RSVPs
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
+  // Add state for RSVP list popup
+  const [rsvpEventId, setRsvpEventId] = useState<string | null>(null)
+
   // Add useEffect to fetch and listen to events
   useEffect(() => {
     const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'))
@@ -508,6 +511,15 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                         </Button>
                         <Button
                           size="$2"
+                          backgroundColor="$blue8"
+                          padding="$2"
+                          onPress={() => setRsvpEventId(event.id)}
+                          hoverStyle={{ backgroundColor: '$blue7' }}
+                        >
+                          <Text color="white" fontSize="$3">RSVPs</Text>
+                        </Button>
+                        <Button
+                          size="$2"
                           backgroundColor="$gray8"
                           padding="$2"
                           onPress={() => setSelectedEventId(event.id)}
@@ -568,6 +580,15 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                         </Button>
                         <Button
                           size="$2"
+                          backgroundColor="$blue8"
+                          padding="$2"
+                          onPress={() => setRsvpEventId(event.id)}
+                          hoverStyle={{ backgroundColor: '$blue7' }}
+                        >
+                          <Text color="white" fontSize="$3">RSVPs</Text>
+                        </Button>
+                        <Button
+                          size="$2"
                           backgroundColor="$gray8"
                           padding="$2"
                           onPress={() => setSelectedEventId(event.id)}
@@ -617,16 +638,26 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                         </Text>
                       </YStack>
 
-                      {/* Only show Copy button */}
-                      <Button
-                        size="$2"
-                        padding="$2"
-                        backgroundColor="transparent"
-                        onPress={() => handleCopyEvent(event)}
-                        hoverStyle={{ backgroundColor: '$gray4' }}
-                      >
-                        <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                      </Button>
+                      <XStack space="$2">
+                        <Button
+                          size="$2"
+                          padding="$2"
+                          backgroundColor="transparent"
+                          onPress={() => handleCopyEvent(event)}
+                          hoverStyle={{ backgroundColor: '$gray4' }}
+                        >
+                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
+                        </Button>
+                        <Button
+                          size="$2"
+                          backgroundColor="$blue8"
+                          padding="$2"
+                          onPress={() => setRsvpEventId(event.id)}
+                          hoverStyle={{ backgroundColor: '$blue7' }}
+                        >
+                          <Text color="white" fontSize="$3">RSVPs</Text>
+                        </Button>
+                      </XStack>
                     </XStack>
                   </YStack>
                 ))}
@@ -641,6 +672,14 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
           event={eventHistory.find(e => e.id === selectedEventId)!}
           onClose={() => setSelectedEventId(null)}
           onDelete={handleDelete}
+        />
+      )}
+
+      {rsvpEventId && (
+        <RSVPListPopup
+          event={eventHistory.find(e => e.id === rsvpEventId)!}
+          onClose={() => setRsvpEventId(null)}
+          userEmail={userEmail}
         />
       )}
     </YStack>
