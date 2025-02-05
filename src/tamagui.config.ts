@@ -1,6 +1,10 @@
 import { createTamagui } from 'tamagui'
 import { shorthands } from '@tamagui/shorthands'
 import { tokens, themes } from '@tamagui/themes'
+import { createDialogScope } from '@tamagui/dialog'
+
+// Create dialog scope
+export const DialogScope = createDialogScope()
 
 const config = createTamagui({
   defaultTheme: 'dark',
@@ -42,6 +46,15 @@ const config = createTamagui({
     gtLg: { minWidth: 1280 },
     portrait: { orientation: 'portrait' },
     landscape: { orientation: 'landscape' }
+  },
+  // Add dialog configuration
+  dialogScope: DialogScope,
+  // Add default props for Dialog
+  defaultProps: {
+    Dialog: {
+      modal: true,
+      allowPinchZoom: true,
+    }
   }
 })
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { YStack, Text, XStack, Button, ScrollView, Stack, Image } from 'tamagui';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { EventDetailsPopup } from './EventDetailsPopup'
 
@@ -23,6 +23,8 @@ interface Event {
   creatorEmail: string;
   creatorName?: string;
   creatorProfilePicture?: string;
+  maxRSVPs?: number;
+  attendees?: string[];
 }
 
 interface ScheduleProps {
@@ -67,6 +69,8 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState(generateWeekDates(new Date()));
+  const [attendeeCounts, setAttendeeCounts] = useState<{ [key: string]: number }>({});
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -108,6 +112,32 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
 
     return () => unsubscribe();
   }, []);
+
+  // Fetch attendee counts when events change
+  useEffect(() => {
+    const fetchAttendeeCounts = async () => {
+      const counts: { [key: string]: number } = {}
+      
+      // Combine all events
+      const allEvents = [...events]
+      
+      // Fetch counts for each event
+      for (const event of allEvents) {
+        try {
+          const eventDoc = await getDoc(doc(db, 'events', event.id))
+          const eventData = eventDoc.data()
+          counts[event.id] = eventData?.attendees?.length || 0
+        } catch (error) {
+          console.error('Error fetching attendees for event:', event.id, error)
+          counts[event.id] = 0
+        }
+      }
+      
+      setAttendeeCounts(counts)
+    }
+
+    fetchAttendeeCounts()
+  }, [events])
 
   // Filter events based on active tab and date
   const now = new Date();
@@ -154,6 +184,52 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
     setSelectedDate(newDate);
+  };
+
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event);
+  };
+
+  const handleRSVP = async (event: Event) => {
+    if (!userEmail) return;
+
+    try {
+      const eventRef = doc(db, 'events', event.id);
+      const eventDoc = await getDoc(eventRef);
+      const currentAttendees = eventDoc.data()?.attendees || [];
+      const isCurrentlyRSVPd = currentAttendees.includes(userEmail);
+
+      // Check if event is full when trying to RSVP
+      if (!isCurrentlyRSVPd && event.maxRSVPs && currentAttendees.length >= event.maxRSVPs) {
+        console.error('Event is full');
+        return;
+      }
+
+      if (isCurrentlyRSVPd) {
+        // Cancel RSVP
+        await updateDoc(eventRef, {
+          attendees: arrayRemove(userEmail)
+        });
+      } else {
+        // Add RSVP
+        await updateDoc(eventRef, {
+          attendees: arrayUnion(userEmail)
+        });
+      }
+
+      // Update selected event to reflect changes
+      if (selectedEvent?.id === event.id) {
+        setSelectedEvent({
+          ...selectedEvent,
+          attendees: isCurrentlyRSVPd 
+            ? currentAttendees.filter(email => email !== userEmail)
+            : [...currentAttendees, userEmail]
+        });
+      }
+
+    } catch (error) {
+      console.error('Error updating RSVP:', error);
+    }
   };
 
   return (
@@ -269,6 +345,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       key={event.id} 
                       event={event}
                       userEmail={userEmail}
+                      isRSVPd={event.attendees?.includes(userEmail || '')}
+                      attendeeCount={attendeeCounts[event.id] || 0}
+                      onRSVP={() => handleRSVP(event)}
+                      onViewDetails={() => handleViewDetails(event)}
                     />
                   ))}
                   {upcomingEvents.length === 0 && (
@@ -288,6 +368,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       key={event.id} 
                       event={event}
                       userEmail={userEmail}
+                      isRSVPd={event.attendees?.includes(userEmail || '')}
+                      attendeeCount={attendeeCounts[event.id] || 0}
+                      onRSVP={() => handleRSVP(event)}
+                      onViewDetails={() => handleViewDetails(event)}
                     />
                   ))}
                   {pastEvents.length === 0 && (
@@ -305,6 +389,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     key={event.id} 
                     event={event}
                     userEmail={userEmail}
+                    isRSVPd={event.attendees?.includes(userEmail || '')}
+                    attendeeCount={attendeeCounts[event.id] || 0}
+                    onRSVP={() => handleRSVP(event)}
+                    onViewDetails={() => handleViewDetails(event)}
                   />
                 ))}
                 {filteredEvents.length === 0 && (
@@ -317,14 +405,31 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
           </YStack>
         </ScrollView>
       </YStack>
+
+      {/* Add the EventDetailsPopup at the root level */}
+      {selectedEvent && (
+        <EventDetailsPopup
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          userEmail={userEmail}
+          onRSVP={() => handleRSVP(selectedEvent)}
+          isRSVPd={selectedEvent.attendees?.includes(userEmail || '')}
+        />
+      )}
     </YStack>
   );
 };
 
-// Event Card Component
-const EventCard = ({ event, userEmail }: { event: Event, userEmail?: string }) => {
-  const [showDetails, setShowDetails] = useState(false)
+interface EventCardProps {
+  event: Event
+  userEmail?: string
+  isRSVPd: boolean
+  attendeeCount: number
+  onRSVP: () => void
+  onViewDetails: () => void
+}
 
+const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDetails }: EventCardProps) => {
   const formatEventDate = (dateStr: string) => {
     const date = new Date(`${dateStr}T00:00:00-08:00`);
     return date.toLocaleDateString();
@@ -336,119 +441,128 @@ const EventCard = ({ event, userEmail }: { event: Event, userEmail?: string }) =
     return fullName.split(' ')[0];
   };
 
+  // Calculate spots remaining if there's a limit
+  const spotsRemaining = event.maxRSVPs ? event.maxRSVPs - attendeeCount : null
+
+  // Format spots text - only for limited spots
+  const getSpotsText = () => {
+    if (event.maxRSVPs) {
+      const spots = event.maxRSVPs - attendeeCount
+      return `${spots} ${spots === 1 ? 'spot' : 'spots'} remaining`
+    }
+    return null
+  }
+
   return (
-    <>
-      <YStack
-        backgroundColor="$cardBackground"
-        padding="$4"
-        borderRadius="$4"
-        borderWidth={1}
-        borderColor="$borderColor"
-        space="$2"
-      >
-        <XStack>
-          {/* Left side content */}
-          <YStack flex={1} space="$2">
-            {event.type === 'Workout' ? (
-              <XStack space="$2" alignItems="center">
-                <Stack
-                  width={32}
-                  height={32}
-                  borderRadius={16}
-                  overflow="hidden"
-                  backgroundColor="$background"
-                  borderWidth={1}
-                  borderColor="$borderColor"
-                >
-                  <Image
-                    source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
-                    width="100%"
-                    height="100%"
-                    resizeMode="cover"
-                    alt={`${getFirstName(event.creatorName)}'s profile picture`}
-                  />
-                </Stack>
-                
-                <YStack>
-                  <Text fontSize="$3" color="$textSecondary">
-                    {getFirstName(event.creatorName)}
-                  </Text>
-                  <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-                    {event.name}
-                  </Text>
-                </YStack>
-              </XStack>
-            ) : (
-              <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
-                {event.name}
-              </Text>
-            )}
-
-            <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
-              {event.type === 'Event' && (
-                <Text fontWeight="500" color="$color">
-                  {formatEventDate(event.date)}
+    <YStack
+      backgroundColor="$cardBackground"
+      padding="$4"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="$borderColor"
+      space="$2"
+    >
+      <XStack>
+        {/* Left side content */}
+        <YStack flex={1} space="$2">
+          {event.type === 'Workout' ? (
+            <XStack space="$2" alignItems="center">
+              <Stack
+                width={32}
+                height={32}
+                borderRadius={16}
+                overflow="hidden"
+                backgroundColor="$background"
+                borderWidth={1}
+                borderColor="$borderColor"
+              >
+                <Image
+                  source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
+                  width="100%"
+                  height="100%"
+                  resizeMode="cover"
+                  alt={`${getFirstName(event.creatorName)}'s profile picture`}
+                />
+              </Stack>
+              
+              <YStack>
+                <Text fontSize="$3" color="$textSecondary">
+                  {getFirstName(event.creatorName)}
                 </Text>
-              )}
-              <Text 
-                color="$color"
-                marginLeft={event.type === 'Workout' ? '$0' : undefined}
-              >
-                {formatTime(event.time)}
-              </Text>
-              <Text 
-                color="$color"
-                marginLeft="$2"
-              >
-                {event.instructor}
-              </Text>
+                <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+                  {event.name}
+                </Text>
+              </YStack>
             </XStack>
-
-            {event.subLocation && (
-              <Text color="$color" opacity={0.8}>
-                {event.subLocation}
-              </Text>
-            )}
-
-            <Text 
-              color="$textSecondary"
-            >
-              {event.description}
+          ) : (
+            <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+              {event.name}
             </Text>
+          )}
 
-            {event.tags && (
-              <Text color="$color" fontSize="$3" opacity={0.7}>
-                Tags: {event.tags}
+          <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
+            {event.type === 'Event' && (
+              <Text fontWeight="500" color="$color">
+                {formatEventDate(event.date)}
               </Text>
             )}
-          </YStack>
-
-          {/* Right side button */}
-          <YStack justifyContent="center" marginLeft="$4">
-            <Button
-              size="$3"
-              backgroundColor="$gray8"
-              onPress={() => setShowDetails(true)}
-              minHeight={36}
-              paddingHorizontal="$3"
-              alignItems="center"
-              justifyContent="center"
-              hoverStyle={{ backgroundColor: '$gray7' }}
+            <Text 
+              color="$color"
+              marginLeft={event.type === 'Workout' ? '$0' : undefined}
             >
-              <Text color="white">Details</Text>
-            </Button>
-          </YStack>
-        </XStack>
-      </YStack>
+              {formatTime(event.time)}
+            </Text>
+            <Text 
+              color="$color"
+              marginLeft="$2"
+            >
+              {event.instructor}
+            </Text>
+          </XStack>
 
-      {showDetails && (
-        <EventDetailsPopup
-          event={event}
-          onClose={() => setShowDetails(false)}
-          userEmail={userEmail}
-        />
-      )}
-    </>
+          {event.subLocation && (
+            <Text color="$color" opacity={0.8}>
+              {event.subLocation}
+            </Text>
+          )}
+
+          <Text 
+            color="$textSecondary"
+          >
+            {event.description}
+          </Text>
+
+          {event.tags && (
+            <Text color="$color" fontSize="$3" opacity={0.7}>
+              Tags: {event.tags}
+            </Text>
+          )}
+        </YStack>
+
+        {/* Right side content */}
+        <YStack justifyContent="center" marginLeft="$4">
+          <Button
+            size="$3"
+            backgroundColor="$gray8"
+            onPress={() => onViewDetails()}
+            minHeight={36}
+            paddingHorizontal="$3"
+            alignItems="center"
+            justifyContent="center"
+            hoverStyle={{ backgroundColor: '$gray7' }}
+          >
+            <Text color="white">Details</Text>
+          </Button>
+
+          {/* Only show spots text if there's a limit */}
+          {event.maxRSVPs && (
+            <Text fontSize="$3" color="$textSecondary" textAlign="center" marginTop="$1">
+              {getSpotsText()}
+            </Text>
+          )}
+        </YStack>
+      </XStack>
+    </YStack>
   );
 };
 

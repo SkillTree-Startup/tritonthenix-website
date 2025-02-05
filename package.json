@@ -15,6 +15,7 @@
   "dependencies": {
     "@tamagui/config": "^1.123.5",
     "@tamagui/core": "^1.123.5",
+    "@tamagui/dialog": "^1.123.17",
     "@tamagui/lucide-icons": "^1.123.5",
     "@tamagui/shorthands": "^1.123.5",
     "@tamagui/themes": "^1.123.5",

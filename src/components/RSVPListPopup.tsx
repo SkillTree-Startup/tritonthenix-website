@@ -1,8 +1,9 @@
-import { YStack, Text, Button, XStack, Stack, ScrollView, Dialog, TextArea } from 'tamagui'
-import { X, Mail } from '@tamagui/lucide-icons'
+import { YStack, Text, Button, XStack, Stack, ScrollView, Dialog, TextArea, Input } from 'tamagui'
+import { X, Mail, Settings } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { DialogScope } from '../tamagui.config'
 
 interface RSVPListPopupProps {
   event: Event
@@ -22,6 +23,9 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
   const [emailContent, setEmailContent] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [adminName, setAdminName] = useState<string>('')
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
     const fetchAttendees = async () => {
@@ -97,6 +101,26 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
     }
   }
 
+  const handleUpdateMaxRSVPs = async () => {
+    if (isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      await updateDoc(doc(db, 'events', event.id), {
+        maxRSVPs: parseInt(maxRSVPs.toString()) || 0
+      })
+      
+      // Update the event object locally to reflect changes immediately
+      event.maxRSVPs = parseInt(maxRSVPs.toString()) || 0
+      
+      setShowSettingsDialog(false)
+    } catch (error) {
+      console.error('Error updating max RSVPs:', error)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   return (
     <>
       <YStack
@@ -121,7 +145,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
         >
           <XStack justifyContent="space-between" alignItems="center">
             <Text fontSize="$6" fontWeight="bold" color="$textPrimary">
-              RSVPs ({attendees.length})
+              RSVPs ({attendees.length}{maxRSVPs ? `/${maxRSVPs}` : ''})
             </Text>
             <XStack space="$2">
               {attendees.length > 0 && (
@@ -134,6 +158,14 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
                   <Mail size={20} color="white" />
                 </Button>
               )}
+              <Button
+                size="$3"
+                backgroundColor="$blue8"
+                onPress={() => setShowSettingsDialog(true)}
+                hoverStyle={{ backgroundColor: '$blue7' }}
+              >
+                <Settings size={20} color="white" />
+              </Button>
               <Button
                 size="$3"
                 circular
@@ -264,6 +296,86 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           </Dialog.Portal>
         </Dialog>
       )}
+
+      <Dialog
+        modal
+        open={showSettingsDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowSettingsDialog(false)
+            setMaxRSVPs(event.maxRSVPs || 0)
+          }
+        }}
+        {...DialogScope.props}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay
+            key="overlay"
+            animation="quick"
+            opacity={0.5}
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+            backgroundColor="rgba(0,0,0,0.5)"
+            zIndex={1000}
+          />
+          <Dialog.Content
+            bordered
+            elevate
+            key="content"
+            animation="quick"
+            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+            space
+            width="90%"
+            maxWidth={500}
+            backgroundColor="$background"
+            zIndex={1001}
+            position="fixed"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+          >
+            <Dialog.Title>RSVP Settings</Dialog.Title>
+            <Dialog.Description>
+              Set the maximum number of RSVPs allowed for this event. Set to 0 for unlimited.
+            </Dialog.Description>
+
+            <YStack space="$4" paddingVertical="$4">
+              <Input
+                value={maxRSVPs.toString()}
+                onChangeText={(text) => setMaxRSVPs(parseInt(text) || 0)}
+                placeholder="Enter max RSVPs"
+                keyboardType="numeric"
+                backgroundColor="$background"
+              />
+
+              <XStack space="$3" justifyContent="flex-end">
+                <Button
+                  backgroundColor="transparent"
+                  onPress={() => {
+                    if (!isUpdating) {
+                      setShowSettingsDialog(false)
+                      setMaxRSVPs(event.maxRSVPs || 0)
+                    }
+                  }}
+                  disabled={isUpdating}
+                >
+                  <Text color="$color">Cancel</Text>
+                </Button>
+                <Button
+                  backgroundColor="$blue8"
+                  onPress={handleUpdateMaxRSVPs}
+                  disabled={isUpdating}
+                >
+                  <Text color="white">
+                    {isUpdating ? 'Updating...' : 'Update'}
+                  </Text>
+                </Button>
+              </XStack>
+            </YStack>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
     </>
   )
 } 

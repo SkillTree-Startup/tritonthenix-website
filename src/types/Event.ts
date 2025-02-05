@@ -6,4 +6,5 @@ export interface Event {
   time: string;
   location: string;
   subLocation: string;
+  maxRSVPs?: number;
 } 

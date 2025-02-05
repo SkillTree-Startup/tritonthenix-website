@@ -1,6 +1,6 @@
 import { YStack, Text, Button, XStack, Stack, Image } from 'tamagui'
 import { X } from '@tamagui/lucide-icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -8,6 +8,8 @@ interface EventDetailsPopupProps {
   event: Event
   onClose: () => void
   userEmail?: string
+  onRSVP: () => void
+  isRSVPd: boolean
 }
 
 const formatEventDate = (dateStr: string) => {
@@ -16,44 +18,27 @@ const formatEventDate = (dateStr: string) => {
   return date.toLocaleDateString()
 }
 
-export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPopupProps) => {
-  const [isRsvped, setIsRsvped] = useState(false)
-  const [attendees, setAttendees] = useState<string[]>([])
-
-  // Fetch current RSVPs when popup opens
-  useState(() => {
-    const fetchRsvps = async () => {
-      const eventDoc = await getDoc(doc(db, 'events', event.id))
-      const data = eventDoc.data()
-      if (data?.attendees) {
-        setAttendees(data.attendees)
-        setIsRsvped(data.attendees.includes(userEmail))
+export const EventDetailsPopup = ({ event, onClose, userEmail, onRSVP, isRSVPd }: EventDetailsPopupProps) => {
+  const [attendeeCount, setAttendeeCount] = useState(0)
+  
+  // Fetch current attendee count
+  useEffect(() => {
+    const fetchAttendeeCount = async () => {
+      try {
+        const eventDoc = await getDoc(doc(db, 'events', event.id))
+        const eventData = eventDoc.data()
+        const attendees = eventData?.attendees || []
+        setAttendeeCount(attendees.length)
+      } catch (error) {
+        console.error('Error fetching attendees:', error)
       }
     }
-    fetchRsvps()
-  })
 
-  const handleRsvp = async () => {
-    if (!userEmail) return
+    fetchAttendeeCount()
+  }, [event.id])
 
-    try {
-      const eventRef = doc(db, 'events', event.id)
-      if (isRsvped) {
-        await updateDoc(eventRef, {
-          attendees: arrayRemove(userEmail)
-        })
-        setAttendees(prev => prev.filter(email => email !== userEmail))
-      } else {
-        await updateDoc(eventRef, {
-          attendees: arrayUnion(userEmail)
-        })
-        setAttendees(prev => [...prev, userEmail])
-      }
-      setIsRsvped(!isRsvped)
-    } catch (error) {
-      console.error('Error updating RSVP:', error)
-    }
-  }
+  // Calculate spots remaining if there's a limit
+  const spotsRemaining = event.maxRSVPs ? event.maxRSVPs - attendeeCount : null
 
   return (
     <YStack
@@ -143,18 +128,21 @@ export const EventDetailsPopup = ({ event, onClose, userEmail }: EventDetailsPop
           {/* RSVP section */}
           <YStack space="$2" marginTop="$2">
             <Button
-              backgroundColor={isRsvped ? '$green8' : '$blue8'}
-              onPress={handleRsvp}
-              disabled={!userEmail}
+              backgroundColor={isRSVPd ? '$red8' : '$blue8'}
+              onPress={onRSVP}
+              disabled={isRSVPd ? false : (event.maxRSVPs ? attendeeCount >= event.maxRSVPs : false)}
             >
               <Text color="white">
-                {isRsvped ? 'Cancel RSVP' : 'RSVP'}
+                {isRSVPd ? 'Cancel RSVP' : 'RSVP'}
               </Text>
             </Button>
             
-            <Text fontSize="$3" color="$textSecondary" textAlign="center">
-              {attendees.length} {attendees.length === 1 ? 'person' : 'people'} attending
-            </Text>
+            {/* Only show spots remaining if there's a limit */}
+            {event.maxRSVPs && (
+              <Text fontSize="$3" color="$textSecondary" textAlign="center">
+                {event.maxRSVPs - attendeeCount} spots remaining
+              </Text>
+            )}
           </YStack>
         </YStack>
       </YStack>
