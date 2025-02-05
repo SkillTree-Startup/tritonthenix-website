@@ -49,3 +49,38 @@ button {
     background-color: #f9f9f9;
   }
 }
+
+/* Enhanced Google Sign-In button styles */
+#googleSignInDiv,
+#googleSignInDiv *,
+#googleSignInDiv > *,
+#googleSignInDiv > * > *,
+#googleSignInDiv iframe,
+#googleSignInDiv div,
+.nsm7Bb-HzV7m-LgbsSe,
+.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe,
+.g_id_signin > * {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-radius: 20px !important;
+}
+
+/* Target the specific button container */
+.S9gUrf-YoZ4jf,
+.nsm7Bb-HzV7m-LgbsSe {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Force transparency on all nested elements */
+#googleSignInDiv iframe[src*="accounts.google.com"] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Additional specific selectors */
+.g_id_signin frame,
+.g_id_signin iframe {
+  background: transparent !important;
+}

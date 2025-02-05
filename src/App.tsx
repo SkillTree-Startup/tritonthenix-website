@@ -49,7 +49,6 @@ function App() {
 
   useEffect(() => {
     window.google?.accounts.id.initialize({
-      // Use the client ID from your Firebase project
       client_id: "427440820094-2g565030h0k2t080koick8ntbm54m10n.apps.googleusercontent.com",
       callback: handleCredentialResponse,
       auto_select: false,
@@ -61,12 +60,13 @@ function App() {
         document.getElementById("googleSignInDiv"),
         {
           type: "standard",
-          theme: "filled_blue",
+          theme: "outline",
           size: "medium",
           shape: "pill",
           text: "signin_with",
           width: 200,
-          locale: "en"
+          locale: "en",
+          logo_alignment: "center"
         }
       );
     }
@@ -274,7 +274,14 @@ function App() {
 
               {!isSignedIn ? (
                 <XStack space="$2" alignItems="center">
-                  <div id="googleSignInDiv"></div>
+                  <div 
+                    id="googleSignInDiv" 
+                    style={{
+                      backgroundColor: 'transparent',
+                      borderRadius: '20px',
+                      overflow: 'hidden'
+                    }}
+                  ></div>
                   <Button
                     backgroundColor={tempAdminMode ? '#22c55e' : '$background'}
                     borderColor="$color"
