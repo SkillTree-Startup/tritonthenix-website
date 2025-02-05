@@ -56,10 +56,7 @@ function App() {
   const [tempAdminMode, setTempAdminMode] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const [userEmail, setUserEmail] = useState<string>("")
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
-  const [previousUserEmail, setPreviousUserEmail] = useState<string>('')
-  const [previousUserName, setPreviousUserName] = useState<string>('')
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -166,7 +163,6 @@ function App() {
           setUserData(newUserData);
         }
 
-        setUserEmail(userEmail);
         setIsSignedIn(true);
       }
     } catch (error) {
@@ -178,7 +174,6 @@ function App() {
     window.google?.accounts.id.disableAutoSelect();
     setIsSignedIn(false);
     setUserData(null);
-    setUserEmail("");
     setIsMenuOpen(false);
     navigate('/');
   };
@@ -228,24 +223,16 @@ function App() {
     if (tempAdminMode) {
       // Reset to previous state
       setTempAdminMode(false);
-      setUserEmail('');
-      setUserData(null);
       setIsSignedIn(false);
     } else {
       // Switch to admin mode
       setTempAdminMode(true);
-      setUserEmail('admin@tritonthenix.com');
-      setUserData({
-        email: 'admin@tritonthenix.com',
-        name: 'Test Admin',
-        isAdmin: true
-      });
       setIsSignedIn(true);
     }
   };
 
   // Update the isAdmin check in the header
-  const isAdmin = tempAdminMode || WHITELISTED_EMAILS.includes(userEmail);
+  const isAdmin = tempAdminMode || WHITELISTED_EMAILS.includes(userData?.email || '');
 
   return (
     <TamaguiProvider config={config}>
@@ -410,7 +397,7 @@ function App() {
                 </XStack>
               ) : (
                 <Text color={theme === 'dark' ? 'white' : 'black'} marginRight="$2" fontSize="$3">
-                  {userEmail}
+                  {userData?.email}
                 </Text>
               )}
 
@@ -563,7 +550,7 @@ function App() {
             backgroundColor="transparent"
           >
             <AppRoutes 
-              userEmail={userEmail} 
+              userEmail={userData?.email || ''} 
               userName={userData?.name}
               tempAdminMode={tempAdminMode}
               onTempAdminToggle={handleTempAdminToggle}

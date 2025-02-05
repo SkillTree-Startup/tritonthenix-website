@@ -238,13 +238,13 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               elevate
               key="content"
               animation={[
-                'quick',
                 {
                   opacity: {
                     overshootClamping: true,
                   },
                 },
               ]}
+              position="absolute"
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
@@ -326,7 +326,14 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
             bordered
             elevate
             key="content"
-            animation="quick"
+            animation={[
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            position="absolute"
             enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
             exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
             space

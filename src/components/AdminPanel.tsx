@@ -4,6 +4,7 @@ import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { RSVPListPopup } from './RSVPListPopup'
 import { EventEditPopup } from './EventEditPopup'
+import { Timestamp } from 'firebase/firestore'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -74,10 +75,8 @@ interface EventData {
 }
 
 // Add interface for event with timestamps
-interface EventWithTimestamp extends EventData {
-  createdAt: Date
-  updatedAt: Date
-  id: string
+interface EventWithTimestamp extends Omit<EventData, 'createdAt'> {
+  createdAt: Timestamp;
 }
 
 interface AdminPanelProps {

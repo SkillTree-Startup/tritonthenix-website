@@ -433,7 +433,20 @@ interface EventCardProps {
   onViewDetails: () => void;
 }
 
-const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDetails }: EventCardProps) => {
+const EventCard = ({ 
+  event, 
+  attendeeCount, 
+  onViewDetails 
+}: EventCardProps) => {
+  // Remove unused functions and variables
+  const getSpotsText = () => {
+    if (event.maxRSVPs) {
+      const spots = event.maxRSVPs - attendeeCount
+      return `${spots} ${spots === 1 ? 'spot' : 'spots'} left`
+    }
+    return null
+  }
+
   const formatEventDate = (dateStr: string) => {
     const date = new Date(`${dateStr}T00:00:00-08:00`);
     return date.toLocaleDateString();
@@ -444,18 +457,6 @@ const EventCard = ({ event, userEmail, isRSVPd, attendeeCount, onRSVP, onViewDet
     if (!fullName) return 'Anonymous';
     return fullName.split(' ')[0];
   };
-
-  // Calculate spots remaining if there's a limit
-  const spotsRemaining = event.maxRSVPs ? event.maxRSVPs - attendeeCount : null
-
-  // Format spots text - only for limited spots
-  const getSpotsText = () => {
-    if (event.maxRSVPs) {
-      const spots = event.maxRSVPs - attendeeCount
-      return `${spots} ${spots === 1 ? 'spot' : 'spots'} left`
-    }
-    return null
-  }
 
   const formatEventDateDisplay = (dateStr: string) => {
     const date = new Date(`${dateStr}T00:00:00-08:00`);

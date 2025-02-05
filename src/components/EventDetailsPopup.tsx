@@ -1,7 +1,7 @@
 import { YStack, Text, Button, XStack, Stack, Image } from 'tamagui'
 import { X } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
-import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 
 interface EventDetailsPopupProps {
@@ -9,7 +9,7 @@ interface EventDetailsPopupProps {
   onClose: () => void
   userEmail?: string
   onRSVP: () => void
-  isRSVPd: boolean
+  isRSVPd: boolean | undefined
 }
 
 const formatEventDate = (dateStr: string) => {
