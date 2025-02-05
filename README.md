@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-To deploy:
+To deploy:  
 First push all changes, then
 ```
 npm run deploy
