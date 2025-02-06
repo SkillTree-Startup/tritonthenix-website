@@ -7,7 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import AppRoutes from './components/Routes'
 import { Moon, Sun } from '@tamagui/lucide-icons'
 import { jwtDecode } from 'jwt-decode'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 
 // Whitelist of emails with special privileges
@@ -40,14 +40,6 @@ interface MenuItemProps {
   label: string;
   page?: string;
   onClick?: () => void;
-}
-
-// Add this interface
-interface JwtPayload {
-  email: string;
-  name: string;
-  picture?: string;
-  // Add other fields you need from the JWT
 }
 
 // Add this constant for the test admin data
@@ -150,21 +142,23 @@ function App() {
       const picture = decoded.picture
 
       // Create userData object with all required fields
-      const newUserData: UserData = {
+      const newUserData = {
         email: userEmail,
         name: userName,
         isAdmin: WHITELISTED_EMAILS.includes(userEmail),
         profilePicture: picture,
-        createdAt: new Date(),
         lastLogin: new Date()
-      }
+      } as UserData  // Use type assertion instead of including createdAt
 
       setUserData(newUserData)
       setIsSignedIn(true)
 
       // Update user document in Firestore
       const userRef = doc(db, 'users', userEmail)
-      await setDoc(userRef, newUserData, { merge: true })
+      await setDoc(userRef, {
+        ...newUserData,
+        createdAt: new Date()  // Add createdAt only in Firestore
+      }, { merge: true })
     } catch (error) {
       console.error('Error processing login:', error)
     }
