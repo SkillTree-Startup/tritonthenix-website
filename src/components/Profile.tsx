@@ -11,9 +11,10 @@ interface ProfileProps {
   tempAdminMode: boolean;
   onTempAdminToggle: () => void;
   userData: UserData | null;
+  email?: string;
 }
 
-export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, userData }: ProfileProps) => {
+export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, userData, email }: ProfileProps) => {
   const [imageUrl, setImageUrl] = useState<string>('')
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)

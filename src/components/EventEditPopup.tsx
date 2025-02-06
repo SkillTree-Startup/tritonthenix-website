@@ -97,10 +97,9 @@ const formatEventDate = (dateStr: string) => {
 }
 
 export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps) => {
-  const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
-  // Add state for edited values
+  // Remove isLoading and isUpdating states since they're not used
   const [editedEvent, setEditedEvent] = useState<EditableFields>({
     name: event.name,
     date: event.date,
@@ -121,7 +120,6 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
   })
   const [dateOptions] = useState(generateDateOptions())
   const [timeOptions] = useState(generateTimeOptions())
-  const [isUpdating, setIsUpdating] = useState(false)
 
   // Add save function
   const handleSave = async (field: keyof EditableFields) => {

@@ -3,8 +3,6 @@ import { X, Mail, Pencil } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { DialogScope } from '../tamagui.config'
-import { getFunctions, httpsCallable } from 'firebase/functions'
 import { Event } from '../types/Event'
 
 interface RSVPListPopupProps {
@@ -215,7 +213,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation={{ type: 'fade' }}
+              animation={false}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -224,7 +222,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={{ type: 'fade' }}
+              animation={false}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space

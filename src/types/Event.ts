@@ -26,5 +26,5 @@ export interface UserData {
   isAdmin: boolean;
   profilePicture?: string;
   createdAt: Date;
-  lastLogin?: Date;
+  lastLogin: Date;
 } 
