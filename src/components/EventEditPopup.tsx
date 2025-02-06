@@ -1,7 +1,7 @@
-import { YStack, Text, Button, XStack, Stack, Image, ScrollView, Input, TextArea, Select } from 'tamagui'
-import { X, Edit2, Pencil } from '@tamagui/lucide-icons'
-import { useState, useEffect } from 'react'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { YStack, Text, Button, XStack, ScrollView, Input, TextArea } from 'tamagui'
+import { X, Pencil } from '@tamagui/lucide-icons'
+import { useState } from 'react'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Event } from '../types/Event'
 
