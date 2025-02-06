@@ -21,8 +21,6 @@ interface UserInfo {
 export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps) => {
   const [attendees, setAttendees] = useState<UserInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showEmailDialog, setShowEmailDialog] = useState(false)
-  const [emailContent, setEmailContent] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [adminName, setAdminName] = useState<string>('')
   const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0)
@@ -71,19 +69,6 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
 
     fetchAdminName()
   }, [userEmail])
-
-  const handleSendEmail = () => {
-    // Log the email details to console
-    console.log('Email would be sent with the following details:');
-    console.log('To:', attendees.map(a => a.email).join(', '));
-    console.log('Event:', event.name);
-    console.log('Message:', emailContent);
-    
-    // Close the email dialog
-    setShowEmailDialog(false);
-    // Reset the email content
-    setEmailContent('');
-  };
 
   const handleUpdateMaxRSVPs = async () => {
     if (isUpdating) return;
@@ -232,10 +217,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation={{
-                type: 'timing',
-                duration: 150
-              }}
+              animation={false}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -244,10 +226,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={{
-                type: 'timing',
-                duration: 150
-              }}
+              animation={false}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
