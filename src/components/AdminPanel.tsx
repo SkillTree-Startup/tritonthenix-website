@@ -4,7 +4,6 @@ import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { RSVPListPopup } from './RSVPListPopup'
 import { EventEditPopup } from './EventEditPopup'
-import { Timestamp } from 'firebase/firestore'
 import { Event, EventWithTimestamp } from '../types/Event'
 
 // Add helper function to generate time options
@@ -68,13 +67,13 @@ interface AdminPanelProps {
 
 export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   const [eventData, setEventData] = useState<Event>({
+    id: '',
     name: '',
     type: 'Workout',
     date: '',
     time: '',
     description: '',
     tags: '',
-    creatorEmail: '',
     additionalDetails: ''
   })
 
@@ -172,13 +171,13 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
 
       // Reset form
       setEventData({
+        id: '',
         name: '',
         type: 'Workout',
         date: '',
         time: '',
         description: '',
         tags: '',
-        creatorEmail: '',
         additionalDetails: ''
       })
 
@@ -193,15 +192,13 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
 
   const handleCopyEvent = (event: EventWithTimestamp) => {
     setEventData({
+      id: '',
       name: event.name,
       type: event.type,
       date: event.date,
       time: event.time,
       description: event.description,
       tags: event.tags,
-      creatorEmail: event.creatorEmail,
-      creatorName: event.creatorName,
-      creatorProfilePicture: event.creatorProfilePicture,
       additionalDetails: event.additionalDetails || ''
     })
     // Scroll to top of form on mobile

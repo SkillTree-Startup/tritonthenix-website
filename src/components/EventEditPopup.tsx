@@ -121,6 +121,7 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
   })
   const [dateOptions] = useState(generateDateOptions())
   const [timeOptions] = useState(generateTimeOptions())
+  const [isUpdating, setIsUpdating] = useState(false)
 
   // Add save function
   const handleSave = async (field: keyof EditableFields) => {
