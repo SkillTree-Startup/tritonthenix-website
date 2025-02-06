@@ -10,9 +10,10 @@ interface RoutesProps {
   userName?: string;
   tempAdminMode: boolean;
   onTempAdminToggle: () => void;
+  userData: any;
 }
 
-const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle }: RoutesProps) => {
+const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle, userData }: RoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -30,10 +31,9 @@ const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle }: Ro
         path="/profile" 
         element={
           <Profile 
-            email={userEmail} 
-            name={userName}
-            tempAdminMode={tempAdminMode || false}
-            onTempAdminToggle={onTempAdminToggle || (() => {})}
+            tempAdminMode={tempAdminMode}
+            onTempAdminToggle={onTempAdminToggle}
+            userData={userData}
           />
         } 
       />

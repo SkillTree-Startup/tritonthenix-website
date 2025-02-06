@@ -8,15 +8,9 @@ import { Event } from '../types/Event'
 interface RSVPListPopupProps {
   event: Event
   onClose: () => void
-  userEmail: string
 }
 
-interface UserInfo {
-  email: string
-  name?: string
-}
-
-export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps) => {
+export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
   const [attendees, setAttendees] = useState<UserInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0)
@@ -213,7 +207,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation={false}
+              animation="none"
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -222,7 +216,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={false}
+              animation="none"
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space

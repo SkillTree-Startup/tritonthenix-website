@@ -11,11 +11,6 @@ interface EventEditPopupProps {
   onDelete: (eventId: string) => void
 }
 
-interface UserInfo {
-  email: string
-  name?: string
-}
-
 interface EditableFields {
   name: string;
   date: string;

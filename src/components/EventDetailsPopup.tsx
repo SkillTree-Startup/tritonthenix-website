@@ -38,8 +38,7 @@ export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDeta
     fetchAttendeeCount()
   }, [event.id])
 
-  // Calculate spots remaining if there's a limit
-  const spotsRemaining = event.maxRSVPs ? event.maxRSVPs - attendeeCount : null
+  const attendeeCount = event.attendees?.length || 0
 
   return (
     <YStack
@@ -141,7 +140,7 @@ export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDeta
             {/* Only show spots remaining if there's a limit */}
             {event.maxRSVPs && (
               <Text fontSize="$3" color="$textSecondary" textAlign="center">
-                {event.maxRSVPs - attendeeCount} spots remaining
+                {event.maxRSVPs ? `${event.maxRSVPs - attendeeCount} spots remaining` : null}
               </Text>
             )}
           </YStack>
