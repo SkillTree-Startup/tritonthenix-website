@@ -1,5 +1,5 @@
-import { YStack, Text, Button, XStack, Stack, ScrollView, Dialog, TextArea, Input } from 'tamagui'
-import { X, Mail, Settings, Pencil } from '@tamagui/lucide-icons'
+import { YStack, Text, Button, XStack, ScrollView, Dialog, TextArea, Input } from 'tamagui'
+import { X, Mail, Pencil } from '@tamagui/lucide-icons'
 import { useState, useEffect } from 'react'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -232,7 +232,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation={{ type: 'fade' }}
+              animation="quick"
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -241,7 +241,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={{ type: 'fade' }}
+              animation="quick"
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space

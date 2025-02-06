@@ -15,7 +15,7 @@ export interface Event {
   creatorProfilePicture?: string;
 }
 
-export interface EventWithTimestamp extends Omit<Event, 'createdAt'> {
+export interface EventWithTimestamp extends Event {
   createdAt: Timestamp;
-  id: string;
+  updatedAt: Timestamp;
 } 
