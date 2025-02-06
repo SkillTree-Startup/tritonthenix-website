@@ -3,17 +3,17 @@ import { useState, useRef, useEffect } from 'react'
 import { storage, db } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { UserData } from '../types/Event'
 
 const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
 
 interface ProfileProps {
-  email?: string;
-  name?: string;
   tempAdminMode: boolean;
   onTempAdminToggle: () => void;
+  userData: UserData | null;
 }
 
-export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: ProfileProps) => {
+export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, userData }: ProfileProps) => {
   const [imageUrl, setImageUrl] = useState<string>('')
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -21,13 +21,13 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
   // Reset image URL when email changes or admin mode changes
   useEffect(() => {
     const fetchProfilePicture = async () => {
-      if (!email) {
+      if (!userData || !userData.email) {
         setImageUrl('');
         return;
       }
       
       try {
-        const userDoc = await getDoc(doc(db, 'users', email));
+        const userDoc = await getDoc(doc(db, 'users', userData.email));
         if (userDoc.exists() && userDoc.data().profilePicture) {
           setImageUrl(userDoc.data().profilePicture);
         } else {
@@ -40,21 +40,21 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
     };
 
     fetchProfilePicture();
-  }, [email, tempAdminMode]); // Added tempAdminMode as dependency
+  }, [userData, tempAdminMode]); // Added tempAdminMode as dependency
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || !email) {
+    if (!file || !userData || !userData.email) {
       console.log('No file selected or no email available')
       return
     }
 
     try {
       setIsUploading(true)
-      console.log('Starting upload for:', email)
+      console.log('Starting upload for:', userData.email)
       
       const timestamp = new Date().getTime()
-      const storageRef = ref(storage, `profile-pictures/${email}_${timestamp}`)
+      const storageRef = ref(storage, `profile-pictures/${userData.email}_${timestamp}`)
       
       console.log('Uploading file...')
       const snapshot = await uploadBytes(storageRef, file)
@@ -65,10 +65,10 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
       console.log('Download URL:', url)
       
       // Save the image URL to Firestore
-      await setDoc(doc(db, 'users', email), {
+      await setDoc(doc(db, 'users', userData.email), {
         profilePicture: url,
-        name: name,
-        email: email,
+        name: userData.name,
+        email: userData.email,
       }, { merge: true });
 
       setImageUrl(url)
@@ -83,7 +83,7 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
   }
 
   const handleUploadClick = () => {
-    if (!email) {
+    if (!userData || !userData.email) {
       console.log('User must be signed in to upload a profile picture')
       return
     }
@@ -91,14 +91,14 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
   }
 
   const handleRemovePicture = async () => {
-    if (!email || !imageUrl) return
+    if (!userData || !userData.email || !imageUrl) return
 
     try {
       // First, update Firestore to remove the profile picture URL
-      await setDoc(doc(db, 'users', email), {
+      await setDoc(doc(db, 'users', userData.email), {
         profilePicture: null,
-        name: name,
-        email: email,
+        name: userData.name,
+        email: userData.email,
       }, { merge: true })
 
       // Try to delete from Storage if possible
@@ -174,7 +174,7 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
               style={{ display: 'none' }}
             />
             
-            {email ? (
+            {userData && userData.email ? (
               <>
                 <XStack space="$2">
                   <Button
@@ -205,10 +205,10 @@ export const Profile = ({ email, name, tempAdminMode, onTempAdminToggle }: Profi
                   )}
                 </XStack>
                 <Text fontSize="$5" color="$textPrimary">
-                  {name || 'Anonymous'}
+                  {userData.name || 'Anonymous'}
                 </Text>
                 <Text fontSize="$4" color="$textSecondary">
-                  {email}
+                  {userData.email}
                 </Text>
               </>
             ) : (

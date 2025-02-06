@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { YStack, Text, XStack, Button, ScrollView, Stack, Image } from 'tamagui';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { EventDetailsPopup } from './EventDetailsPopup'
 

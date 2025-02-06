@@ -18,4 +18,13 @@ export interface Event {
 export interface EventWithTimestamp extends Event {
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+export interface UserData {
+  email: string;
+  name: string;
+  isAdmin: boolean;
+  profilePicture?: string;
+  createdAt: Date;
+  lastLogin?: Date;
 } 

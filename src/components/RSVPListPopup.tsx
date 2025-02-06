@@ -21,11 +21,11 @@ interface UserInfo {
 export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps) => {
   const [attendees, setAttendees] = useState<UserInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isSending, setIsSending] = useState(false)
-  const [adminName, setAdminName] = useState<string>('')
   const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0)
   const [isUpdating, setIsUpdating] = useState(false)
   const [editingLimit, setEditingLimit] = useState(false)
+  const [showEmailDialog, setShowEmailDialog] = useState(false)
+  const [emailContent, setEmailContent] = useState('')
 
   useEffect(() => {
     const fetchAttendees = async () => {
@@ -55,21 +55,6 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
     }
   }, [event.attendees])
 
-  useEffect(() => {
-    const fetchAdminName = async () => {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', userEmail))
-        const userData = userDoc.data()
-        setAdminName(userData?.name || 'Admin')
-      } catch (error) {
-        console.error('Error fetching admin name:', error)
-        setAdminName('Admin')
-      }
-    }
-
-    fetchAdminName()
-  }, [userEmail])
-
   const handleUpdateMaxRSVPs = async () => {
     if (isUpdating) return;
     
@@ -89,6 +74,19 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleSendEmail = () => {
+    // Log the email details to console
+    console.log('Email would be sent with the following details:');
+    console.log('To:', attendees.map(a => a.email).join(', '));
+    console.log('Event:', event.name);
+    console.log('Message:', emailContent);
+    
+    // Close the email dialog
+    setShowEmailDialog(false);
+    // Reset the email content
+    setEmailContent('');
   };
 
   return (
@@ -217,7 +215,10 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation={false}
+              animation={{
+                type: 'timing',
+                duration: 200,
+              } as const}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -226,7 +227,10 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={false}
+              animation={{
+                type: 'timing',
+                duration: 200,
+              } as const}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space

@@ -5,6 +5,7 @@ import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc 
 import { RSVPListPopup } from './RSVPListPopup'
 import { EventEditPopup } from './EventEditPopup'
 import { Timestamp } from 'firebase/firestore'
+import { Event, EventWithTimestamp } from '../types/Event'
 
 // Add helper function to generate time options
 const generateTimeOptions = () => {
@@ -61,30 +62,12 @@ const formatEventDate = (dateStr: string) => {
   return date.toLocaleDateString();
 };
 
-interface EventData {
-  name: string
-  type: 'Workout' | 'Event'
-  date: string
-  time: string
-  description: string
-  tags: string
-  creatorEmail: string
-  additionalDetails?: string
-  creatorName?: string
-  creatorProfilePicture?: string
-}
-
-// Add interface for event with timestamps
-interface EventWithTimestamp extends Omit<EventData, 'createdAt'> {
-  createdAt: Timestamp;
-}
-
 interface AdminPanelProps {
   userEmail?: string;
 }
 
 export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
-  const [eventData, setEventData] = useState<EventData>({
+  const [eventData, setEventData] = useState<Event>({
     name: '',
     type: 'Workout',
     date: '',
@@ -124,8 +107,18 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
         events.push({
           ...data,
           id: doc.id,
-          createdAt: data.createdAt.toDate(),
-          updatedAt: data.updatedAt.toDate()
+          name: data.name,
+          date: data.date,
+          time: data.time,
+          description: data.description,
+          type: data.type,
+          tags: data.tags || '',
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt.toDate(),
+          maxRSVPs: data.maxRSVPs,
+          attendees: data.attendees || [],
+          creatorName: data.creatorName,
+          creatorProfilePicture: data.creatorProfilePicture
         } as EventWithTimestamp)
       })
       setEventHistory(events)
