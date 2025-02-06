@@ -17,13 +17,13 @@ interface UserInfo {
 }
 
 interface EditableFields {
-  name: string
-  date: string
-  time: string
-  description: string
-  additionalDetails?: string
-  tags?: string
-  type: 'Workout' | 'Event'
+  name: boolean
+  date: boolean
+  time: boolean
+  description: boolean
+  additionalDetails: boolean
+  tags: boolean
+  type: boolean
 }
 
 // Common edit button component style

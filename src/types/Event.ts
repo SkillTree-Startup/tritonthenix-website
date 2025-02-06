@@ -3,21 +3,16 @@ import { Timestamp } from 'firebase/firestore';
 export interface Event {
   id: string;
   name: string;
-  type: 'Workout' | 'Event';
   date: string;
   time: string;
   description: string;
-  instructor: string;
-  location: string;
-  subLocation: string;
-  createdAt: Date;
+  additionalDetails?: string;
   tags?: string;
-  creatorEmail: string;
-  creatorName?: string;
-  creatorProfilePicture?: string;
+  type: 'Event' | 'Workout';
   maxRSVPs?: number;
   attendees?: string[];
-  additionalDetails?: string;
+  creatorName?: string;
+  creatorProfilePicture?: string;
 }
 
 export interface EventWithTimestamp extends Omit<Event, 'createdAt'> {
