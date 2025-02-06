@@ -206,7 +206,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
         ) : (
           <ScrollView maxHeight={400}>
             <YStack space="$2">
-              {attendees.map((attendee, index) => (
+              {attendees.map((attendee) => (
                 <XStack 
                   key={attendee.email}
                   backgroundColor="$backgroundHover"
@@ -232,7 +232,10 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation="quick"
+              animation={{
+                type: 'timing',
+                duration: 150
+              }}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -241,7 +244,10 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation="quick"
+              animation={{
+                type: 'timing',
+                duration: 150
+              }}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
