@@ -17,13 +17,23 @@ interface UserInfo {
 }
 
 interface EditableFields {
-  name: boolean
-  date: boolean
-  time: boolean
-  description: boolean
-  additionalDetails: boolean
-  tags: boolean
-  type: boolean
+  name: string;
+  date: string;
+  time: string;
+  description: string;
+  additionalDetails?: string;
+  tags?: string;
+  type: 'Event' | 'Workout';
+}
+
+interface EditingFields {
+  name: boolean;
+  date: boolean;
+  time: boolean;
+  description: boolean;
+  additionalDetails: boolean;
+  tags: boolean;
+  type: boolean;
 }
 
 // Common edit button component style
@@ -100,7 +110,7 @@ export const EventEditPopup = ({ event, onClose, onDelete }: EventEditPopupProps
     tags: event.tags,
     type: event.type
   })
-  const [editing, setEditing] = useState<EditableFields>({
+  const [editing, setEditing] = useState<EditingFields>({
     name: false,
     description: false,
     date: false,

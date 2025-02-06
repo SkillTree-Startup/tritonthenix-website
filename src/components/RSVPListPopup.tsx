@@ -232,7 +232,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation="quick"
+              animation={{ type: 'fade' }}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -241,12 +241,7 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
               bordered
               elevate
               key="content"
-              animation={{
-                type: 'fade',
-                opacity: {
-                  overshootClamping: true
-                }
-              }}
+              animation={{ type: 'fade' }}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
