@@ -23,9 +23,11 @@ const WHITELISTED_EMAILS = [
 // Type for user data
 interface UserData {
   email: string;
-  name?: string;
+  name: string;
   isAdmin: boolean;
   profilePicture?: string;
+  createdAt?: Date;
+  lastLogin: Date;
 }
 
 // Declare global google type
@@ -47,7 +49,8 @@ const TEST_ADMIN_DATA: UserData = {
   email: 'admin@tritonthenix.com',
   name: 'Test Admin',
   isAdmin: true,
-  profilePicture: 'https://ui-avatars.com/api/?name=Test+Admin&background=0D8ABC&color=fff'
+  profilePicture: 'https://ui-avatars.com/api/?name=Test+Admin&background=0D8ABC&color=fff',
+  lastLogin: new Date()
 };
 
 function App() {
