@@ -413,7 +413,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           onRSVP={() => handleRSVP(selectedEvent)}
-          isRSVPd={selectedEvent.attendees?.includes(userEmail)}
+          isRSVPd={selectedEvent.attendees?.includes(userEmail || '') || false}
         />
       )}
     </YStack>
@@ -442,11 +442,6 @@ const EventCard = ({
     }
     return null
   }
-
-  const formatEventDate = (dateStr: string) => {
-    const date = new Date(`${dateStr}T00:00:00-08:00`);
-    return date.toLocaleDateString();
-  };
 
   // Add helper to get first name
   const getFirstName = (fullName?: string) => {
