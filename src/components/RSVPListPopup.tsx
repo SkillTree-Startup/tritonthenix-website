@@ -72,36 +72,18 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
     fetchAdminName()
   }, [userEmail])
 
-  const handleSendEmail = async () => {
-    if (!emailContent.trim()) return
+  const handleSendEmail = () => {
+    // Log the email details to console
+    console.log('Email would be sent with the following details:');
+    console.log('To:', attendees.map(a => a.email).join(', '));
+    console.log('Event:', event.name);
+    console.log('Message:', emailContent);
     
-    setIsSending(true)
-    try {
-      const functions = getFunctions()
-      const sendEmailToAttendees = httpsCallable(functions, 'sendEmailToAttendees')
-      
-      await sendEmailToAttendees({
-        recipients: attendees.map(a => a.email),
-        subject: `Message from TritonThenix: ${event.name}`,
-        content: emailContent,
-        eventDetails: {
-          name: event.name,
-          date: event.date,
-          time: event.time
-        },
-        senderName: adminName
-      })
-
-      // Close dialog and cleanup
-      setShowEmailDialog(false)
-      setEmailContent('')
-      
-    } catch (error) {
-      console.error('Error sending email:', error)
-    } finally {
-      setIsSending(false)
-    }
-  }
+    // Close the email dialog
+    setShowEmailDialog(false);
+    // Reset the email content
+    setEmailContent('');
+  };
 
   const handleUpdateMaxRSVPs = async () => {
     if (isUpdating) return
@@ -209,62 +191,38 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
       </YStack>
 
       {showEmailDialog && (
-        <Dialog 
-          modal={false}
-          defaultOpen={true}
-          onOpenChange={(open) => {
-            if (!open && !isSending) {
-              setShowEmailDialog(false)
-              setEmailContent('')
-            }
-          }}
-        >
+        <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
+              animation="quick"
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
-              zIndex={2000}
-              position="fixed"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
             />
             <Dialog.Content
               bordered
               elevate
               key="content"
-              animation={{
-                type: 'fade',
-                opacity: {
-                  overshootClamping: true
+              animation={[
+                'quick',
+                {
+                  opacity: {
+                    overshootClamping: true
+                  }
                 }
-              }}
-              position="absolute"
+              ]}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
-              zIndex={2001}
-              position="fixed"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              width="90%"
-              maxWidth={500}
-              backgroundColor="$background"
             >
-              <Dialog.Title>
-                <Text fontSize="$5" color="$textPrimary">
-                  Send Message to RSVP List
-                </Text>
-              </Dialog.Title>
-              <Dialog.Description>
-                This message will be sent to all {attendees.length} attendees of {event.name} from {adminName}.
-              </Dialog.Description>
-
               <YStack space="$4">
+                <Dialog.Title>
+                  <Text fontSize="$5" color="$textPrimary">
+                    Message Attendees
+                  </Text>
+                </Dialog.Title>
+
                 <TextArea
                   value={emailContent}
                   onChangeText={setEmailContent}
@@ -278,8 +236,8 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
                   <Button
                     backgroundColor="transparent"
                     onPress={() => {
-                      setShowEmailDialog(false)
-                      setEmailContent('')
+                      setShowEmailDialog(false);
+                      setEmailContent('');
                     }}
                   >
                     <Text color="$color">Cancel</Text>
@@ -287,11 +245,9 @@ export const RSVPListPopup = ({ event, onClose, userEmail }: RSVPListPopupProps)
                   <Button
                     backgroundColor="$blue8"
                     onPress={handleSendEmail}
-                    disabled={isSending || !emailContent.trim()}
+                    disabled={!emailContent.trim()}
                   >
-                    <Text color="white">
-                      {isSending ? 'Sending...' : 'Send'}
-                    </Text>
+                    <Text color="white">Send</Text>
                   </Button>
                 </XStack>
               </YStack>
