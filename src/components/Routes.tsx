@@ -10,10 +10,10 @@ interface RoutesProps {
   userName?: string;
   tempAdminMode: boolean;
   onTempAdminToggle: () => void;
-  userData: any;
+  userData: UserData | null;
 }
 
-const AppRoutes = ({ userEmail, userName, tempAdminMode, onTempAdminToggle, userData }: RoutesProps) => {
+const AppRoutes = ({ userEmail, tempAdminMode, onTempAdminToggle, userData }: RoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />

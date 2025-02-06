@@ -575,6 +575,7 @@ function App() {
               userName={userData?.name}
               tempAdminMode={tempAdminMode}
               onTempAdminToggle={handleTempAdminToggle}
+              userData={userData}
             />
           </YStack>
 

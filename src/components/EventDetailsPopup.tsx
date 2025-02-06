@@ -20,7 +20,7 @@ const formatEventDate = (dateStr: string) => {
 }
 
 export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDetailsPopupProps) => {
-  const [attendeeCount, setAttendeeCount] = useState(0)
+  const [attendeeCount, setAttendeeCount] = useState(event.attendees?.length || 0)
   
   // Fetch current attendee count
   useEffect(() => {
@@ -37,8 +37,6 @@ export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDeta
 
     fetchAttendeeCount()
   }, [event.id])
-
-  const attendeeCount = event.attendees?.length || 0
 
   return (
     <YStack

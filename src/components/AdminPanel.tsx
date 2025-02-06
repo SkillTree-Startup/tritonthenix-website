@@ -668,7 +668,6 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
         <RSVPListPopup
           event={eventHistory.find(e => e.id === rsvpEventId)!}
           onClose={() => setRsvpEventId(null)}
-          userEmail={userEmail}
         />
       )}
     </YStack>

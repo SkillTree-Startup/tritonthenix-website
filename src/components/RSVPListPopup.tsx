@@ -10,6 +10,11 @@ interface RSVPListPopupProps {
   onClose: () => void
 }
 
+interface UserInfo {
+  email: string;
+  name?: string;
+}
+
 export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
   const [attendees, setAttendees] = useState<UserInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -207,7 +212,7 @@ export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
           <Dialog.Portal>
             <Dialog.Overlay
               key="overlay"
-              animation="none"
+              animation={null}
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
@@ -216,7 +221,7 @@ export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
               bordered
               elevate
               key="content"
-              animation="none"
+              animation={null}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               space
