@@ -475,8 +475,8 @@ function App() {
                   </YStack>
 
                   {/* Admin Panel (if admin) */}
-                  {(userData?.isAdmin || tempAdminMode) && (
-                    <MenuItem label="Admin Panel" page="admin" />
+                  {isAdmin && (
+                    <MenuItem label="Admin Panel" page="/admin" />
                   )}
                   
                   <MenuItem label="Privacy Policy" page="privacy" />
