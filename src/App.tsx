@@ -144,50 +144,31 @@ function App() {
 
   const handleCredentialResponse = async (response: any) => {
     try {
-      const decoded = jwtDecode(response.credential) as JwtPayload;
-      const userEmail = decoded.email;
-      const userName = decoded.name;
-      const picture = decoded.picture;
+      const decoded: any = jwtDecode(response.credential)
+      const userEmail = decoded.email
+      const userName = decoded.name
+      const picture = decoded.picture
 
-      if (userEmail) {
-        // Check if user exists in Firestore
-        const userDoc = await getDoc(doc(db, 'users', userEmail));
-        
-        let userData;
-        
-        if (userDoc.exists()) {
-          // Use existing user data but update with latest info
-          userData = {
-            ...userDoc.data(),
-            email: userEmail,
-            name: userName,
-            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
-            profilePicture: picture || userDoc.data().profilePicture,
-            lastLogin: new Date()
-          };
-        } else {
-          // Create new user document
-          userData = {
-            email: userEmail,
-            name: userName,
-            isAdmin: WHITELISTED_EMAILS.includes(userEmail),
-            profilePicture: picture,
-            createdAt: new Date(),
-            lastLogin: new Date()
-          };
-        }
-
-        // Update or create user document
-        await setDoc(doc(db, 'users', userEmail), userData);
-        
-        // Update local state
-        setUserData(userData);
-        setIsSignedIn(true);
+      // Create userData object with all required fields
+      const newUserData: UserData = {
+        email: userEmail,
+        name: userName,
+        isAdmin: WHITELISTED_EMAILS.includes(userEmail),
+        profilePicture: picture,
+        createdAt: new Date(),
+        lastLogin: new Date()
       }
+
+      setUserData(newUserData)
+      setIsSignedIn(true)
+
+      // Update user document in Firestore
+      const userRef = doc(db, 'users', userEmail)
+      await setDoc(userRef, newUserData, { merge: true })
     } catch (error) {
-      console.error('Error handling credential response:', error);
+      console.error('Error processing login:', error)
     }
-  };
+  }
 
   const handleSignOut = () => {
     window.google?.accounts.id.disableAutoSelect();
