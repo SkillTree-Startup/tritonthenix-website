@@ -4,6 +4,7 @@ import { AdminPanel } from './AdminPanel';
 import { PrivacyPolicy } from './PrivacyPolicy';
 import Home from './Home';
 import { Profile } from './Profile';
+import { UserData } from '../types/Event';
 
 interface RoutesProps {
   userEmail: string;
