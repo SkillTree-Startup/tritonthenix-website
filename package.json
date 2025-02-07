@@ -16,7 +16,7 @@
     "@tamagui/config": "^1.123.5",
     "@tamagui/core": "^1.123.5",
     "@tamagui/dialog": "^1.123.17",
-    "@tamagui/lucide-icons": "^1.123.5",
+    "@tamagui/lucide-icons": "^1.123.17",
     "@tamagui/shorthands": "^1.123.5",
     "@tamagui/themes": "^1.123.5",
     "@tamagui/vite-plugin": "^1.123.5",
@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/lodash": "^4.17.15",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",

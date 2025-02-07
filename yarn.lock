@@ -2662,12 +2662,12 @@
     "@tamagui/stacks" "1.123.5"
     "@tamagui/use-controllable-state" "1.123.5"
 
-"@tamagui/helpers-icon@1.123.5":
-  version "1.123.5"
-  resolved "https://registry.npmjs.org/@tamagui/helpers-icon/-/helpers-icon-1.123.5.tgz"
-  integrity sha512-RkQZvp+d7nvAleBZdHRPhRpfCdxwAijLWgx21BgG3I6mV0JEWBKczWrb3mBZij5BHm3oW2KnVw8vyZPyFGm1Wg==
+"@tamagui/helpers-icon@1.123.17":
+  version "1.123.17"
+  resolved "https://registry.npmjs.org/@tamagui/helpers-icon/-/helpers-icon-1.123.17.tgz"
+  integrity sha512-7TY4rjMvEbyP0lymHZR2xc55qgLUmr0I+a7HmRDjvH7B3VrQl5Zp/8vqyhonRzKk+FeRnBlMb5e3Kze2qZekCA==
   dependencies:
-    "@tamagui/core" "1.123.5"
+    "@tamagui/core" "1.123.17"
 
 "@tamagui/helpers-node@1.123.5":
   version "1.123.5"
@@ -2752,13 +2752,13 @@
     "@tamagui/text" "1.123.5"
     "@tamagui/web" "1.123.5"
 
-"@tamagui/lucide-icons@^1.123.5":
-  version "1.123.5"
-  resolved "https://registry.npmjs.org/@tamagui/lucide-icons/-/lucide-icons-1.123.5.tgz"
-  integrity sha512-g81jKl5hA1r9e3x/z3nYxDDipFD31QJN07OERwmIRthiG7/56iXghhfoY7h4q7psPAhGcBDaW8ccVn4HfZ3mWw==
+"@tamagui/lucide-icons@^1.123.17":
+  version "1.123.17"
+  resolved "https://registry.npmjs.org/@tamagui/lucide-icons/-/lucide-icons-1.123.17.tgz"
+  integrity sha512-A34OcCV9ORFKIGycsbztN9CJ3I/+qz7pryGOqFmP3GLWim0khI034sBI41JqibJkKQUVO7FX5pngAn1cNtI8pg==
   dependencies:
-    "@tamagui/core" "1.123.5"
-    "@tamagui/helpers-icon" "1.123.5"
+    "@tamagui/core" "1.123.17"
+    "@tamagui/helpers-icon" "1.123.17"
 
 "@tamagui/normalize-css-color@1.123.17":
   version "1.123.17"
@@ -3620,6 +3620,11 @@
   version "7.0.15"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
+
+"@types/lodash@^4.17.15":
+  version "4.17.15"
+  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.15.tgz"
+  integrity sha512-w/P33JFeySuhN6JLkysYUK2gEmy9kHHFN7E8ro0tkfmlDOgxBDzWEZ/J8cWA+fHqFevpswDTFZnDx+R9lbL6xw==
 
 "@types/node-forge@^1.3.0":
   version "1.3.11"

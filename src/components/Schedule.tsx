@@ -31,13 +31,14 @@ interface ScheduleProps {
   defaultTab?: 'Workouts' | 'Events';
 }
 
-// Helper function to generate week dates
-const generateWeekDates = (selectedDate: Date) => {
+// Update the helper function to generate dates based on screen size
+const generateWeekDates = (selectedDate: Date, isSmallScreen: boolean) => {
   const dates = [];
   const startDate = new Date(selectedDate);
-  startDate.setDate(startDate.getDate() - 3); // Start 3 days before
+  startDate.setDate(startDate.getDate() - (isSmallScreen ? 1 : 3)); // Start 1 or 3 days before
 
-  for (let i = 0; i < 7; i++) {
+  const daysToShow = isSmallScreen ? 3 : 7;
+  for (let i = 0; i < daysToShow; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
     dates.push(date);
@@ -68,9 +69,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   const [activeTab, setActiveTab] = useState<'Workouts' | 'Events'>(defaultTab);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [weekDates, setWeekDates] = useState(generateWeekDates(new Date()));
+  const [weekDates, setWeekDates] = useState(generateWeekDates(new Date(), false));
   const [attendeeCounts, setAttendeeCounts] = useState<{ [key: string]: number }>({});
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -88,10 +90,21 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
     navigate(tab === 'Events' ? '/schedule/events' : '/schedule/workouts');
   };
 
-  // Update week dates when selected date changes
+  // Add useEffect to handle screen size
   useEffect(() => {
-    setWeekDates(generateWeekDates(selectedDate));
-  }, [selectedDate]);
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 640); // Adjust breakpoint as needed
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Update weekDates useEffect to use screen size
+  useEffect(() => {
+    setWeekDates(generateWeekDates(selectedDate, isSmallScreen));
+  }, [selectedDate, isSmallScreen]);
 
   useEffect(() => {
     // Query events from Firebase
@@ -186,7 +199,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
+    newDate.setDate(selectedDate.getDate() + (direction === 'next' ? (isSmallScreen ? 1 : 7) : (isSmallScreen ? -1 : -7)));
     setSelectedDate(newDate);
   };
 
@@ -284,37 +297,63 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                 <Button
                   key={date.toISOString()}
                   onPress={() => handleDateSelect(date)}
-                  backgroundColor={isSelected ? '$color' : 'transparent'}
+                  backgroundColor="transparent"
                   borderRadius="$4"
-                  padding="$2"
+                  padding="$3"
+                  paddingVertical="$4"
                   flex={1}
-                  hoverStyle={isToday ? {
-                    borderColor: '$color',
-                    borderWidth: 1
-                  } : undefined}
+                  pressStyle={{
+                    scale: 0.98,
+                  }}
+                  hoverStyle={{
+                    ...(isToday && {
+                      borderColor: '$gray8',
+                      borderWidth: 1,
+                    })
+                  }}
                   borderWidth={0}
                 >
-                  <YStack alignItems="center" space="$1">
-                    <Text 
-                      color={isSelected ? 'white' : '$color'} 
-                      fontSize="$2"
-                    >
-                      {formattedDate.weekday}
-                    </Text>
-                    <Text 
-                      color={isSelected ? 'white' : '$color'} 
-                      fontSize="$4" 
-                      fontWeight="bold"
-                    >
-                      {formattedDate.day}
-                    </Text>
-                    {isToday && (
-                      <Text 
-                        color={isSelected ? 'white' : '$color'} 
-                        fontSize="$2"
-                      >
-                        Today
-                      </Text>
+                  <YStack 
+                    alignItems="center" 
+                    space="$2"
+                    backgroundColor="transparent"
+                    padding="$2"
+                    borderRadius="$2"
+                    borderBottomWidth={isSelected ? 2 : 0}
+                    borderBottomColor="$color"
+                  >
+                    {isSmallScreen ? (
+                      <>
+                        <Text 
+                          color={isSelected ? '$color' : '$gray10'} 
+                          fontSize="$4"
+                        >
+                          {isToday ? 'Today' : formattedDate.weekday}
+                        </Text>
+                        <Text 
+                          color={isSelected ? '$color' : '$gray10'} 
+                          fontSize="$6" 
+                          fontWeight="bold"
+                        >
+                          {formattedDate.day}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text 
+                          color={isSelected ? '$color' : '$gray10'} 
+                          fontSize="$4"
+                        >
+                          {`${formattedDate.month} ${formattedDate.day}`}
+                        </Text>
+                        <Text 
+                          color={isSelected ? '$color' : '$gray10'}
+                          fontSize="$6"
+                          fontWeight="bold"
+                        >
+                          {isToday ? 'Today' : formattedDate.weekday}
+                        </Text>
+                      </>
                     )}
                   </YStack>
                 </Button>
@@ -570,7 +609,7 @@ const EventCard = ({
         <YStack justifyContent="center" marginLeft="$4">
           <Button
             size="$3"
-            backgroundColor="$gray8"
+            backgroundColor="black"
             onPress={() => onViewDetails()}
             minHeight={36}
             width={100}

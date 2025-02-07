@@ -4,6 +4,7 @@ import { storage, db } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { UserData } from '../types/Event'
+import { AdminAccess } from './Auth/AdminAccess'
 
 const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
 
@@ -122,12 +123,6 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
       console.error('Error removing profile picture:', error)
     }
   }
-
-  const handleAdminLogin = () => {
-    if (onTempAdminToggle) {
-      onTempAdminToggle();
-    }
-  };
 
   return (
     <YStack padding="$4" space="$4" alignItems="center">
@@ -259,35 +254,37 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
         </YStack>
 
         {/* Developer Options Card */}
-        <YStack 
-          backgroundColor="$cardBackground"
-          padding="$4"
-          borderRadius="$4"
-          space="$4"
-          borderWidth={1}
-          borderColor="$borderColor"
-        >
-          <Text fontSize="$5" color="$textPrimary" fontWeight="bold">
-            Developer Options
-          </Text>
-          <XStack space="$2" alignItems="center">
-            <Button
-              backgroundColor={tempAdminMode ? '$red8' : '$blue8'}
-              onPress={handleAdminLogin}
-              paddingHorizontal="$4"
-              paddingVertical="$2"
-            >
-              <Text color="white">
-                {tempAdminMode ? 'Exit Admin Mode' : 'Log in as Admin'}
-              </Text>
-            </Button>
-            {tempAdminMode && (
-              <Text fontSize="$3" color="$textSecondary">
-                Logged in as Test Admin
-              </Text>
-            )}
-          </XStack>
-        </YStack>
+        <AdminAccess isAdmin={true}>
+          <YStack 
+            backgroundColor="$cardBackground"
+            padding="$4"
+            borderRadius="$4"
+            space="$4"
+            borderWidth={1}
+            borderColor="$borderColor"
+          >
+            <Text fontSize="$5" color="$textPrimary" fontWeight="bold">
+              Developer Options
+            </Text>
+            <XStack space="$2" alignItems="center">
+              <Button
+                backgroundColor={tempAdminMode ? '$red8' : '$blue8'}
+                onPress={onTempAdminToggle}
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+              >
+                <Text color="white">
+                  {tempAdminMode ? 'Exit Admin Mode' : 'Log in as Admin'}
+                </Text>
+              </Button>
+              {tempAdminMode && (
+                <Text fontSize="$3" color="$textSecondary">
+                  Logged in as Test Admin
+                </Text>
+              )}
+            </XStack>
+          </YStack>
+        </AdminAccess>
       </YStack>
     </YStack>
   );
