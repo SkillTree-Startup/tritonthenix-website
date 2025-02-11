@@ -1,4 +1,4 @@
-import { TamaguiProvider, Theme, YStack } from 'tamagui'
+import { TamaguiProvider, YStack } from 'tamagui'
 import config from './tamagui.config'
 import { useState } from 'react'
 import { useNavigate, Routes, Route } from 'react-router-dom'
@@ -49,6 +49,7 @@ function App() {
             isAdmin={isAdmin}
             handleSignOut={handleSignOut}
             handleNavigate={handleNavigate}
+            handleMenuToggle={handleMenuToggle}
           />
 
           <YStack 

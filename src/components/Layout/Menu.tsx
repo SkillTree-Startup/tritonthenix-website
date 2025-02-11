@@ -1,5 +1,4 @@
 import { YStack, Button, Text, XStack } from 'tamagui'
-import { useNavigate } from 'react-router-dom'
 
 interface MenuProps {
   isMenuOpen: boolean
