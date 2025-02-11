@@ -2,10 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/Pull-up bar.svg" id="favicon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TritonThenix</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+      #favicon {
+        color: black;
+      }
+      @media (prefers-color-scheme: dark) {
+        #favicon {
+          color: white;
+        }
+      }
+    </style>
+    <script>
+      // Handle dynamic favicon color change
+      const updateFaviconColor = () => {
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const svgContent = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 188.27 101.88">
+            <path fill="${isDarkMode ? 'white' : 'black'}" d="M188.2,11.56c-.08-.19-.25-.43-.38-.54-.99-.85-3.37-.72-3.56-.71h-35.13c-.72-.73-1.66-1.24-2.71-1.41v-4.27c0-.9-.14-3.48-1.72-4.34-.4-.22-.81-.27-1.1-.29l-8.62.1c-.4.09-.87.28-1.09.43-1.74,1.13-1.47,3.87-1.44,4.09v4.21c-1.23.05-2.32.61-3.08,1.48h-29.71c-14.26-.01-28.51-.01-42.77-.01-.81-.88-1.92-1.44-3.18-1.56v-3.37c0-.89-.14-3.42-1.72-4.27-.4-.22-.81-.27-1.1-.28l-8.62.1c-.4.09-.87.28-1.09.43-1.74,1.11-1.47,3.81-1.44,4.03v3.38c-1.13.14-2.11.71-2.8,1.55H4.52c-.88,0-3.4.07-4.24.84-.21.2-.27.4-.28.54l.1,4.24c.09.19.28.43.42.54,1.11.85,3.79.72,4,.71h31.7c.53,1.52,1.88,2.64,3.52,2.85v81.05h13.97V20.07h.18c1.89,0,3.48-1.22,4.06-2.91h41.68c9.63.01,19.25.01,28.88.01.54,1.69,2.08,2.93,3.93,3v81.71h13.97V20.17c1.84-.08,3.37-1.31,3.9-2.99h33.94c.78,0,3.03-.07,3.77-.84.19-.2.24-.4.25-.54l-.08-4.24h0Z"/>
+          </svg>
+        `;
+        const favicon = document.getElementById('favicon');
+        favicon.href = 'data:image/svg+xml;base64,' + btoa(svgContent);
+      };
+
+      // Initial update
+      updateFaviconColor();
+
+      // Listen for theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFaviconColor);
+    </script>
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
       // https://github.com/rafgraph/spa-github-pages
