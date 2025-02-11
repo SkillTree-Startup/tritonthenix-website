@@ -34,7 +34,7 @@ export const PrivacyPolicy = () => {
               width="100%"
             >
               <Text 
-                color="white" 
+                color="black" 
                 fontSize="$3"
                 textAlign="center"
                 opacity={0.9}
@@ -44,7 +44,7 @@ export const PrivacyPolicy = () => {
 
               <YStack space="$4" alignItems="center">
                 <Text 
-                  color="white" 
+                  color="black" 
                   fontSize="$4" 
                   textAlign="center"
                   opacity={0.9}
@@ -57,14 +57,14 @@ export const PrivacyPolicy = () => {
                 <YStack space="$4" alignItems="center" width="100%">
                   <Text 
                     fontWeight="bold" 
-                    color="white" 
+                    color="black" 
                     fontSize="$5"
                     textAlign="center"
                   >
                     Information We Collect
                   </Text>
                   <Text 
-                    color="white" 
+                    color="black" 
                     fontSize="$4" 
                     textAlign="center"
                     opacity={0.9}
@@ -78,7 +78,7 @@ export const PrivacyPolicy = () => {
 
                   <Text 
                     fontWeight="bold" 
-                    color="white" 
+                    color="black" 
                     fontSize="$5"
                     textAlign="center"
                     marginTop="$2"
@@ -86,7 +86,7 @@ export const PrivacyPolicy = () => {
                     How We Use Your Information
                   </Text>
                   <Text 
-                    color="white" 
+                    color="black" 
                     fontSize="$4" 
                     textAlign="center"
                     opacity={0.9}
@@ -101,7 +101,7 @@ export const PrivacyPolicy = () => {
 
                   <Text 
                     fontWeight="bold" 
-                    color="white" 
+                    color="black" 
                     fontSize="$5"
                     textAlign="center"
                     marginTop="$2"
@@ -109,7 +109,7 @@ export const PrivacyPolicy = () => {
                     Data Protection
                   </Text>
                   <Text 
-                    color="white" 
+                    color="black" 
                     fontSize="$4" 
                     textAlign="center"
                     opacity={0.9}
@@ -121,7 +121,7 @@ export const PrivacyPolicy = () => {
 
                   <Text 
                     fontWeight="bold" 
-                    color="white" 
+                    color="black" 
                     fontSize="$5"
                     textAlign="center"
                     marginTop="$2"
@@ -129,7 +129,7 @@ export const PrivacyPolicy = () => {
                     Contact
                   </Text>
                   <Text 
-                    color="white" 
+                    color="black" 
                     fontSize="$4" 
                     textAlign="center"
                     opacity={0.9}

@@ -11,21 +11,21 @@ interface MenuProps {
 }
 
 interface MenuItemProps {
-  label: string;
-  page?: string;
-  onClick?: () => void;
+  label: string
+  page?: string
+  onClick?: () => void
 }
 
 const MenuItem = ({ 
   label, 
   page, 
-  onClick, 
-  handleMenuToggle
+  onClick,
+  handleNavigate,
+  handleMenuToggle 
 }: MenuItemProps & { 
-  handleNavigate: (path: string) => void;
-  handleMenuToggle: () => void;
+  handleNavigate: (path: string) => void
+  handleMenuToggle: () => void
 }) => {
-  const navigate = useNavigate()
   return (
     <Button
       backgroundColor="transparent"
@@ -34,7 +34,7 @@ const MenuItem = ({
         if (onClick) {
           onClick()
         } else if (page) {
-          navigate(page)
+          handleNavigate(page)
         }
         handleMenuToggle()
       }}
@@ -57,14 +57,6 @@ export const Menu = ({
 }: MenuProps) => {
   if (!isMenuOpen) return null
 
-  const renderMenuItem = (props: MenuItemProps) => (
-    <MenuItem 
-      {...props} 
-      handleNavigate={handleNavigate} 
-      handleMenuToggle={handleMenuToggle}
-    />
-  )
-
   return (
     <YStack
       position="absolute"
@@ -84,40 +76,54 @@ export const Menu = ({
       {isSignedIn ? (
         <>
           <YStack $xl={{ display: 'none' }}>
-            {renderMenuItem({ 
-              label: "Workouts", 
-              onClick: () => handleNavigate('/schedule/workouts')
-            })}
-            {renderMenuItem({ 
-              label: "Events", 
-              onClick: () => handleNavigate('/schedule/events')
-            })}
-            {renderMenuItem({ 
-              label: "Events", 
-              onClick: () => handleNavigate('/schedule/events')
-            })}
-            {renderMenuItem({ 
-              label: "Profile",
-              onClick: () => handleNavigate('/Profile')
-            })}
-            {renderMenuItem({ 
-              label: "privacy",
-              onClick: () => handleNavigate('/privacy')
-            })}
+            <MenuItem 
+              label="Workouts" 
+              onClick={() => handleNavigate('/schedule/workouts')}
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
+            <MenuItem 
+              label="Events" 
+              onClick={() => handleNavigate('/schedule/events')}
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
+            <MenuItem 
+              label="Profile"
+              page="profile"
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
           </YStack>
 
-          {isAdmin && renderMenuItem({ label: "Admin Panel", page: "/admin" })}
-                    
+          {isAdmin && (
+            <MenuItem 
+              label="Admin Panel" 
+              page="/admin"
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
+          )}
+
+          <MenuItem 
+            label="Privacy Policy" 
+            page="privacy"
+            handleNavigate={handleNavigate}
+            handleMenuToggle={handleMenuToggle}
+          />
+
           <YStack 
             borderTopWidth={1} 
             borderTopColor="$borderColor"
             marginTop="$2"
             paddingTop="$2"
           >
-            {renderMenuItem({ 
-              label: "Sign Out", 
-              onClick: handleSignOut
-            })}
+            <MenuItem 
+              label="Sign Out" 
+              onClick={handleSignOut}
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
           </YStack>
         </>
       ) : (
@@ -139,23 +145,31 @@ export const Menu = ({
           </XStack>
           
           <YStack $xl={{ display: 'none' }}>
-            {renderMenuItem({ 
-              label: "Workouts", 
-              onClick: () => handleNavigate('/schedule/workouts')
-            })}
-            {renderMenuItem({ 
-              label: "Events", 
-              onClick: () => handleNavigate('/schedule/events')
-            })}
-            {renderMenuItem({ 
-              label: "Profile",
-              onClick: () => handleNavigate('/Profile')
-            })}
-            {renderMenuItem({ 
-              label: "privacy",
-              onClick: () => handleNavigate('/privacy')
-            })}
+            <MenuItem 
+              label="Workouts" 
+              onClick={() => handleNavigate('/schedule/workouts')}
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
+            <MenuItem 
+              label="Events" 
+              onClick={() => handleNavigate('/schedule/events')}
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
+            <MenuItem 
+              label="Profile" 
+              page="profile"
+              handleNavigate={handleNavigate}
+              handleMenuToggle={handleMenuToggle}
+            />
           </YStack>
+          <MenuItem 
+            label="Privacy Policy" 
+            page="privacy"
+            handleNavigate={handleNavigate}
+            handleMenuToggle={handleMenuToggle}
+          />
         </>
       )}
     </YStack>
