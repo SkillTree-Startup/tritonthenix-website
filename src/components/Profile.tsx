@@ -16,6 +16,7 @@ export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
   const [displayName, setDisplayName] = useState(userData?.name || '')
   const [isEditing, setIsEditing] = useState(false)
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PROFILE_IMAGE)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Update effect to use DEFAULT_PROFILE_IMAGE as fallback
@@ -89,42 +90,6 @@ export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
       setImageUrl(DEFAULT_PROFILE_IMAGE)
     } finally {
       setIsUploading(false)
-    }
-  }
-
-  const handleUploadClick = () => {
-    if (!userData || !userData.email) {
-      console.log('User must be signed in to upload a profile picture')
-      return
-    }
-    fileInputRef.current?.click()
-  }
-
-  const handleRemovePicture = async () => {
-    if (!userData?.email) return
-
-    try {
-      // Use the same consistent storage path
-      const storageRef = ref(storage, `profile-pictures/${userData.email}/profile`)
-      
-      try {
-        await deleteObject(storageRef)
-      } catch (error) {
-        console.error('Error deleting from storage:', error)
-      }
-
-      // Update Firestore
-      const userDocRef = doc(db, 'users', userData.email)
-      await setDoc(userDocRef, {
-        profilePicture: null,
-        name: userData.name || 'Anonymous',
-        email: userData.email,
-        updatedAt: new Date(),
-      }, { merge: true })
-
-      setImageUrl(DEFAULT_PROFILE_IMAGE)
-    } catch (error) {
-      console.error('Error removing profile picture:', error)
     }
   }
 

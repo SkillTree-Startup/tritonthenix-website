@@ -1,5 +1,5 @@
 import { YStack, Text, Input, Button, XStack, TextArea, Select } from 'tamagui'
-import { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo, memo, useEffect } from 'react'
 import { Event } from '../types/Event'
 import { generateTimeOptions, generateDateOptions } from '../utils/dateUtils'
 
@@ -167,8 +167,12 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
                 <Select.Content>
                   <Select.ScrollUpButton />
                   <Select.Viewport>
-                    {timeOptions.map((option) => (
-                      <Select.Item key={option.value} value={option.value}>
+                    {timeOptions.map((option, index) => (
+                      <Select.Item 
+                        key={option.value} 
+                        value={option.value} 
+                        index={index}
+                      >
                         <Select.ItemText>{option.label}</Select.ItemText>
                       </Select.Item>
                     ))}

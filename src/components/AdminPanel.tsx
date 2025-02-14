@@ -95,16 +95,12 @@ const EventSection = memo(({
   title, 
   events, 
   onCopy, 
-  onRSVP, 
-  onEdit, 
-  showEdit = true 
+  onRSVP
 }: {
   title: string
   events: EventWithTimestamp[]
   onCopy: (event: EventWithTimestamp) => void
   onRSVP: (id: string) => void
-  onEdit?: (id: string) => void
-  showEdit?: boolean
 }) => (
   <YStack space="$2" marginTop="$4">
     <Text fontSize="$5" fontWeight="bold" color="$textPrimary">

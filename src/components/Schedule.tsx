@@ -395,7 +395,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       isRSVPd={event.attendees?.includes(userEmail || '')}
                       attendeeCount={attendeeCounts[event.id] || 0}
                       onRSVP={() => handleRSVP(event)}
-                      onViewDetails={() => handleViewDetails(event)}
                     />
                   ))}
                   {upcomingEvents.length === 0 && (
@@ -418,7 +417,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       isRSVPd={event.attendees?.includes(userEmail || '')}
                       attendeeCount={attendeeCounts[event.id] || 0}
                       onRSVP={() => handleRSVP(event)}
-                      onViewDetails={() => handleViewDetails(event)}
                     />
                   ))}
                   {pastEvents.length === 0 && (
@@ -439,7 +437,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     isRSVPd={event.attendees?.includes(userEmail || '')}
                     attendeeCount={attendeeCounts[event.id] || 0}
                     onRSVP={() => handleRSVP(event)}
-                    onViewDetails={() => handleViewDetails(event)}
                   />
                 ))}
                 {filteredEvents.length === 0 && (
@@ -472,13 +469,12 @@ interface EventCardProps {
   isRSVPd: boolean | undefined;
   attendeeCount: number;
   onRSVP: () => void;
-  onViewDetails: () => void;
 }
 
 const EventCard = ({ 
   event, 
   attendeeCount, 
-  onViewDetails 
+  onRSVP
 }: EventCardProps) => {
   // Remove unused functions and variables
   const getSpotsText = () => {
