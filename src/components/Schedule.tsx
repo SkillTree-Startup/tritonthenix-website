@@ -614,6 +614,8 @@ const EventCard = ({
 
         {/* Right side content */}
         <YStack justifyContent="center" marginLeft="$4">
+          {/* Temporarily comment out or remove the Details button */}
+          {/* 
           <Button
             size="$3"
             backgroundColor="black"
@@ -627,6 +629,7 @@ const EventCard = ({
           >
             <Text color="white">Details</Text>
           </Button>
+          */}
 
           {/* Only show spots text if there's a limit */}
           {event.maxRSVPs && (

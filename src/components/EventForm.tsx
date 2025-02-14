@@ -50,13 +50,12 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate all required fields
+    // Validate required fields (remove additionalDetails check)
     const isValid = 
       formState.name.trim() !== '' && 
       formState.date !== '' && 
       formState.time !== '' && 
-      formState.description.trim() !== '' && 
-      formState.additionalDetails.trim() !== ''
+      formState.description.trim() !== ''
 
     if (!isValid) {
       setHasAttemptedSubmit(true)
@@ -84,7 +83,6 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
     date: hasAttemptedSubmit && !formState.date,
     time: hasAttemptedSubmit && !formState.time,
     description: hasAttemptedSubmit && !formState.description.trim(),
-    additionalDetails: hasAttemptedSubmit && !formState.additionalDetails.trim(),
   }), [hasAttemptedSubmit, formState])
 
   return (
@@ -204,18 +202,20 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
 
         {/* Additional Details */}
         <YStack space="$2">
-          <Text color="$color">Full Description *</Text>
+          <Text color="$textSecondary">Full Description (Coming Soon)</Text>
           <TextArea
             value={formState.additionalDetails}
             onChangeText={(text) => handleChange('additionalDetails', text)}
-            placeholder="Provide a more detailed description..."
+            placeholder="This feature is temporarily disabled"
             borderWidth={1}
-            borderColor={validationState.additionalDetails ? 'red' : '$borderColor'}
-            backgroundColor="white"
+            borderColor="$borderColor"
+            backgroundColor="$gray3"
             padding="$3"
-            color="#4A5568"
-            placeholderTextColor="#A0AEC0"
+            color="$textSecondary"
+            placeholderTextColor="$textSecondary"
             minHeight={100}
+            disabled={true}
+            opacity={0.5}
           />
         </YStack>
 

@@ -93,9 +93,9 @@ const dateOptions = generateDateOptions()
 const EventCard = memo(({ 
   event, 
   onCopy, 
-  onRSVP, 
-  onEdit, 
-  showEdit = true 
+  onRSVP,
+  onEdit,
+  showEdit = true
 }: { 
   event: EventWithTimestamp
   onCopy: (event: EventWithTimestamp) => void
@@ -136,24 +136,13 @@ const EventCard = memo(({
         </Button>
         <Button
           size="$2"
-          backgroundColor="$blue8"
+          backgroundColor="$red8"
           padding="$2"
           onPress={() => onRSVP(event.id)}
-          hoverStyle={{ backgroundColor: '$blue7' }}
+          hoverStyle={{ backgroundColor: '$red7' }}
         >
-          <Text color="white" fontSize="$3">RSVPs</Text>
+          <Text color="white" fontSize="$3">Delete</Text>
         </Button>
-        {showEdit && onEdit && (
-          <Button
-            size="$2"
-            backgroundColor="$gray8"
-            padding="$2"
-            onPress={() => onEdit(event.id)}
-            hoverStyle={{ backgroundColor: '$gray7' }}
-          >
-            <Text color="white" fontSize="$3">Edit</Text>
-          </Button>
-        )}
       </XStack>
     </XStack>
   </YStack>
@@ -348,21 +337,52 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
             title="Today"
             events={todayEvents}
             onCopy={handleCopy}
-            onRSVP={(id) => setRsvpEventId(id)}
+            onRSVP={async (id) => {
+              try {
+                if (window.confirm('Are you sure you want to delete this event?')) {
+                  await deleteDoc(doc(db, 'events', id))
+                  // Clear any selected event IDs to prevent popup rendering
+                  setSelectedEventId(null)
+                  setRsvpEventId(null)
+                }
+              } catch (error) {
+                console.error('Error deleting event:', error)
+              }
+            }}
             onEdit={(id) => setSelectedEventId(id)}
           />
           <EventSection
             title="Upcoming"
             events={upcomingEvents}
             onCopy={handleCopy}
-            onRSVP={(id) => setRsvpEventId(id)}
+            onRSVP={async (id) => {
+              try {
+                if (window.confirm('Are you sure you want to delete this event?')) {
+                  await deleteDoc(doc(db, 'events', id))
+                  setSelectedEventId(null)
+                  setRsvpEventId(null)
+                }
+              } catch (error) {
+                console.error('Error deleting event:', error)
+              }
+            }}
             onEdit={(id) => setSelectedEventId(id)}
           />
           <EventSection
             title="Past"
             events={pastEvents}
             onCopy={handleCopy}
-            onRSVP={(id) => setRsvpEventId(id)}
+            onRSVP={async (id) => {
+              try {
+                if (window.confirm('Are you sure you want to delete this event?')) {
+                  await deleteDoc(doc(db, 'events', id))
+                  setSelectedEventId(null)
+                  setRsvpEventId(null)
+                }
+              } catch (error) {
+                console.error('Error deleting event:', error)
+              }
+            }}
             showEdit={false}
           />
         </YStack>
