@@ -390,7 +390,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       userEmail={userEmail}
                       isRSVPd={event.attendees?.includes(userEmail || '')}
                       attendeeCount={attendeeCounts[event.id] || 0}
-                      onRSVP={() => handleRSVP(event)}
                     />
                   ))}
                   {upcomingEvents.length === 0 && (
@@ -412,7 +411,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                       userEmail={userEmail}
                       isRSVPd={event.attendees?.includes(userEmail || '')}
                       attendeeCount={attendeeCounts[event.id] || 0}
-                      onRSVP={() => handleRSVP(event)}
                     />
                   ))}
                   {pastEvents.length === 0 && (
@@ -432,7 +430,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     userEmail={userEmail}
                     isRSVPd={event.attendees?.includes(userEmail || '')}
                     attendeeCount={attendeeCounts[event.id] || 0}
-                    onRSVP={() => handleRSVP(event)}
                   />
                 ))}
                 {filteredEvents.length === 0 && (
@@ -464,13 +461,11 @@ interface EventCardProps {
   userEmail?: string;
   isRSVPd: boolean | undefined;
   attendeeCount: number;
-  onRSVP: () => void;
 }
 
 const EventCard = ({ 
   event, 
-  attendeeCount, 
-  onRSVP  // We'll keep this prop to avoid TypeScript errors, but won't use it
+  attendeeCount
 }: EventCardProps) => {
   const getSpotsText = () => {
     if (event.maxRSVPs) {
