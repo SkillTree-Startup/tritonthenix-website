@@ -117,6 +117,7 @@ export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
               backgroundColor="$background"
               borderWidth={1}
               borderColor="$borderColor"
+              position="relative"
             >
               <Image
                 source={{ uri: imageUrl || DEFAULT_PROFILE_IMAGE }}
@@ -125,7 +126,22 @@ export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
                 resizeMode="cover"
                 alt="Profile picture"
                 defaultSource={{ uri: DEFAULT_PROFILE_IMAGE }}
+                opacity={isUploading ? 0.5 : 1}
               />
+              {isUploading && (
+                <YStack
+                  position="absolute"
+                  top={0}
+                  left={0}
+                  right={0}
+                  bottom={0}
+                  justifyContent="center"
+                  alignItems="center"
+                  backgroundColor="rgba(0,0,0,0.3)"
+                >
+                  <Text color="white">Uploading...</Text>
+                </YStack>
+              )}
             </Stack>
             
             {/* Hidden file input */}
