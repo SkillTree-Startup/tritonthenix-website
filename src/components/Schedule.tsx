@@ -470,7 +470,7 @@ interface EventCardProps {
 const EventCard = ({ 
   event, 
   attendeeCount, 
-  onRSVP
+  onRSVP  // We'll keep this prop to avoid TypeScript errors, but won't use it
 }: EventCardProps) => {
   const getSpotsText = () => {
     if (event.maxRSVPs) {
@@ -605,21 +605,6 @@ const EventCard = ({
 
         {/* Right side content */}
         <YStack justifyContent="center" marginLeft="$4">
-          {/* Add RSVP button */}
-          <Button
-            size="$3"
-            backgroundColor="$blue8"
-            onPress={onRSVP}
-            minHeight={36}
-            width={100}
-            paddingHorizontal="$3"
-            alignItems="center"
-            justifyContent="center"
-            hoverStyle={{ backgroundColor: '$blue7' }}
-          >
-            <Text color="white">RSVP</Text>
-          </Button>
-
           {/* Only show spots text if there's a limit */}
           {event.maxRSVPs && (
             <Text 
