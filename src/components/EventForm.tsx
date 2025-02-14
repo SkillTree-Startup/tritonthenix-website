@@ -189,6 +189,8 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
             value={formState.description}
             onChangeText={(text) => handleChange('description', text)}
             placeholder="Short sentence about the workout/event"
+            minHeight={80}
+            maxHeight={120}
             borderWidth={1}
             borderColor={validationState.description ? 'red' : '$borderColor'}
             backgroundColor="white"
@@ -196,8 +198,6 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
             paddingVertical="$2"
             color="#4A5568"
             placeholderTextColor="#A0AEC0"
-            minHeight={40}
-            maxHeight={40}
             textAlignVertical="center"
           />
         </YStack>
@@ -242,13 +242,18 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
           </Text>
         )}
 
+        {/* Submit Button */}
         <Button
-          type="submit"
-          backgroundColor="$cardBackground"
-          color="$textPrimary"
+          backgroundColor="$blue8"
+          paddingVertical="$3"
+          paddingHorizontal="$4"
+          borderRadius="$2"
           marginTop="$4"
+          onPress={handleSubmit}
         >
-          <Text>Post</Text>
+          <Text color="white" fontWeight="bold">
+            Post
+          </Text>
         </Button>
       </YStack>
     </form>
