@@ -9,12 +9,10 @@ import { UserData } from '../types/Event';
 interface RoutesProps {
   userEmail: string;
   userName?: string;
-  tempAdminMode: boolean;
-  onTempAdminToggle: () => void;
   userData: UserData | null;
 }
 
-const AppRoutes = ({ userEmail, tempAdminMode, onTempAdminToggle, userData }: RoutesProps) => {
+const AppRoutes = ({ userEmail, userData }: RoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -32,8 +30,6 @@ const AppRoutes = ({ userEmail, tempAdminMode, onTempAdminToggle, userData }: Ro
         path="/profile" 
         element={
           <Profile 
-            tempAdminMode={tempAdminMode}
-            onTempAdminToggle={onTempAdminToggle}
             userData={userData}
           />
         } 
