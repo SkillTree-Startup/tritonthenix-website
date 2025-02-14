@@ -111,20 +111,20 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
         {/* Type Toggle */}
         <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
           <Button
-            type="button"
             flex={1}
             backgroundColor={formState.type === 'Workout' ? '$background' : 'transparent'}
             color="$textPrimary"
             onPress={() => handleChange('type', 'Workout')}
+            themeInverse
           >
             Workout
           </Button>
           <Button
-            type="button"
             flex={1}
             backgroundColor={formState.type === 'Event' ? '$background' : 'transparent'}
             color="$textPrimary"
             onPress={() => handleChange('type', 'Event')}
+            themeInverse
           >
             Event
           </Button>
@@ -145,8 +145,8 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
                 <Select.Content>
                   <Select.ScrollUpButton />
                   <Select.Viewport>
-                    {dateOptions.map((option) => (
-                      <Select.Item key={option.value} value={option.value}>
+                    {dateOptions.map((option, index) => (
+                      <Select.Item key={option.value} value={option.value} index={index}>
                         <Select.ItemText>{option.label}</Select.ItemText>
                       </Select.Item>
                     ))}
@@ -249,7 +249,10 @@ export const EventForm = memo(({ onSubmit, initialData }: EventFormProps) => {
           paddingHorizontal="$4"
           borderRadius="$2"
           marginTop="$4"
-          onPress={handleSubmit}
+          onPress={(e) => {
+            e.preventDefault?.()
+            handleSubmit(e as any)
+          }}
         >
           <Text color="white" fontWeight="bold">
             Post

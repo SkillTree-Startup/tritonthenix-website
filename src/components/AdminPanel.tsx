@@ -1,60 +1,11 @@
-import { YStack, Text, Input, Button, XStack, TextArea, Select, ScrollView } from 'tamagui'
-import { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react'
+import { YStack, Text, Button, XStack, ScrollView } from 'tamagui'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { RSVPListPopup } from './RSVPListPopup'
 import { EventEditPopup } from './EventEditPopup'
 import { Event, EventWithTimestamp } from '../types/Event'
-import { debounce } from 'lodash'
 import { EventForm } from './EventForm'
-
-// Add helper function to generate time options
-const generateTimeOptions = () => {
-  const times = []
-  for (let hour = 0; hour < 24; hour++) {
-    for (let minute of [0, 30]) {
-      const hourStr = hour.toString().padStart(2, '0')
-      const minStr = minute.toString().padStart(2, '0')
-      const timeStr = `${hourStr}:${minStr}`
-      const label = `${hour % 12 || 12}:${minStr} ${hour < 12 ? 'AM' : 'PM'}`
-      times.push({ value: timeStr, label })
-    }
-  }
-  return times
-}
-
-// Add this helper function next to generateTimeOptions
-const generateDateOptions = () => {
-  const dates = []
-  // Start with Pacific time
-  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
-  
-  for (let i = 0; i < 365; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i)
-    
-    // Force the date to be interpreted in Pacific time
-    const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
-    
-    // Format the date components
-    const year = pacificDate.getFullYear()
-    const month = String(pacificDate.getMonth() + 1).padStart(2, '0')
-    const day = String(pacificDate.getDate()).padStart(2, '0')
-    const value = `${year}-${month}-${day}`
-    
-    // Format the label
-    const label = pacificDate.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric',
-      timeZone: 'America/Los_Angeles'
-    })
-    
-    dates.push({ value, label })
-  }
-  return dates
-}
 
 // Add this helper function at the top of the file
 const formatEventDate = (dateStr: string) => {
@@ -85,23 +36,15 @@ const isEventToday = (eventDate: string) => {
   return date >= today && date < tomorrow
 }
 
-// Move timeOptions and dateOptions declarations before they're used
-const timeOptions = generateTimeOptions()
-const dateOptions = generateDateOptions()
-
 // Create memoized components for expensive parts
 const EventCard = memo(({ 
   event, 
   onCopy, 
-  onRSVP,
-  onEdit,
-  showEdit = true
+  onRSVP
 }: { 
   event: EventWithTimestamp
   onCopy: (event: EventWithTimestamp) => void
   onRSVP: (id: string) => void
-  onEdit?: (id: string) => void
-  showEdit?: boolean
 }) => (
   <YStack 
     backgroundColor="$cardBackground"
@@ -174,8 +117,6 @@ const EventSection = memo(({
           event={event}
           onCopy={onCopy}
           onRSVP={onRSVP}
-          onEdit={onEdit}
-          showEdit={showEdit}
         />
       ))
     ) : (
@@ -349,7 +290,6 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                 console.error('Error deleting event:', error)
               }
             }}
-            onEdit={(id) => setSelectedEventId(id)}
           />
           <EventSection
             title="Upcoming"
@@ -366,7 +306,6 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                 console.error('Error deleting event:', error)
               }
             }}
-            onEdit={(id) => setSelectedEventId(id)}
           />
           <EventSection
             title="Past"
@@ -383,7 +322,6 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
                 console.error('Error deleting event:', error)
               }
             }}
-            showEdit={false}
           />
         </YStack>
       </ScrollView>

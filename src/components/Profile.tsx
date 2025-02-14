@@ -13,8 +13,9 @@ interface ProfileProps {
 }
 
 export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
+  const [displayName, setDisplayName] = useState(userData?.name || '')
+  const [isEditing, setIsEditing] = useState(false)
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PROFILE_IMAGE)
-  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Update effect to use DEFAULT_PROFILE_IMAGE as fallback

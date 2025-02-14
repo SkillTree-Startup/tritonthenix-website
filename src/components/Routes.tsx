@@ -11,6 +11,8 @@ interface RoutesProps {
   userName?: string;
   userData: UserData | null;
   handleSignOut: () => void;
+  tempAdminMode?: boolean;
+  onTempAdminToggle?: () => void;
 }
 
 const AppRoutes = ({ userEmail, userData, handleSignOut }: RoutesProps) => {
