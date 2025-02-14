@@ -10,9 +10,10 @@ interface RoutesProps {
   userEmail: string;
   userName?: string;
   userData: UserData | null;
+  handleSignOut: () => void;
 }
 
-const AppRoutes = ({ userEmail, userData }: RoutesProps) => {
+const AppRoutes = ({ userEmail, userData, handleSignOut }: RoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -31,6 +32,7 @@ const AppRoutes = ({ userEmail, userData }: RoutesProps) => {
         element={
           <Profile 
             userData={userData}
+            handleSignOut={handleSignOut}
           />
         } 
       />

@@ -84,6 +84,7 @@ function App() {
                   tempAdminMode={tempAdminMode}
                   onTempAdminToggle={handleTempAdminToggle}
                   userData={userData}
+                  handleSignOut={handleSignOut}
                 />
               } />
             </Routes>

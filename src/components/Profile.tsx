@@ -9,18 +9,19 @@ const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiB
 
 interface ProfileProps {
   userData: UserData | null;
+  handleSignOut: () => void;
 }
 
-export const Profile = ({ userData }: ProfileProps) => {
-  const [imageUrl, setImageUrl] = useState<string>('')
+export const Profile = ({ userData, handleSignOut }: ProfileProps) => {
+  const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PROFILE_IMAGE)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Reset image URL when email changes or admin mode changes
+  // Update effect to use DEFAULT_PROFILE_IMAGE as fallback
   useEffect(() => {
     const fetchProfilePicture = async () => {
       if (!userData || !userData.email) {
-        setImageUrl('');
+        setImageUrl(DEFAULT_PROFILE_IMAGE);
         return;
       }
       
@@ -29,11 +30,11 @@ export const Profile = ({ userData }: ProfileProps) => {
         if (userDoc.exists() && userDoc.data().profilePicture) {
           setImageUrl(userDoc.data().profilePicture);
         } else {
-          setImageUrl(''); // Clear the image if none exists
+          setImageUrl(DEFAULT_PROFILE_IMAGE); // Use default image instead of empty string
         }
       } catch (error) {
         console.error('Error fetching profile picture:', error);
-        setImageUrl('');
+        setImageUrl(DEFAULT_PROFILE_IMAGE); // Use default image on error
       }
     };
 
@@ -49,10 +50,17 @@ export const Profile = ({ userData }: ProfileProps) => {
 
     try {
       setIsUploading(true)
-      console.log('Starting upload for:', userData.email)
       
-      const timestamp = new Date().getTime()
-      const storageRef = ref(storage, `profile-pictures/${userData.email}_${timestamp}`)
+      // Use a consistent storage path based on email
+      const storageRef = ref(storage, `profile-pictures/${userData.email}/profile`)
+      
+      // Delete old profile picture if it exists (using the consistent path)
+      try {
+        await deleteObject(storageRef)
+      } catch (error) {
+        // Ignore error if file doesn't exist
+        console.log('No existing profile picture to delete')
+      }
       
       console.log('Uploading file...')
       const snapshot = await uploadBytes(storageRef, file)
@@ -62,12 +70,14 @@ export const Profile = ({ userData }: ProfileProps) => {
       const url = await getDownloadURL(snapshot.ref)
       console.log('Download URL:', url)
       
-      // Save the image URL to Firestore
-      await setDoc(doc(db, 'users', userData.email), {
+      // Save the image URL and other user data to Firestore
+      const userDocRef = doc(db, 'users', userData.email)
+      await setDoc(userDocRef, {
         profilePicture: url,
-        name: userData.name,
+        name: userData.name || 'Anonymous',
         email: userData.email,
-      }, { merge: true });
+        updatedAt: new Date(),
+      }, { merge: true })
 
       setImageUrl(url)
     } catch (error) {
@@ -75,6 +85,7 @@ export const Profile = ({ userData }: ProfileProps) => {
       if (error instanceof Error) {
         console.error('Error details:', error.message)
       }
+      setImageUrl(DEFAULT_PROFILE_IMAGE)
     } finally {
       setIsUploading(false)
     }
@@ -89,33 +100,28 @@ export const Profile = ({ userData }: ProfileProps) => {
   }
 
   const handleRemovePicture = async () => {
-    if (!userData || !userData.email || !imageUrl) return
+    if (!userData?.email) return
 
     try {
-      // First, update Firestore to remove the profile picture URL
-      await setDoc(doc(db, 'users', userData.email), {
-        profilePicture: null,
-        name: userData.name,
-        email: userData.email,
-      }, { merge: true })
-
-      // Try to delete from Storage if possible
+      // Use the same consistent storage path
+      const storageRef = ref(storage, `profile-pictures/${userData.email}/profile`)
+      
       try {
-        // Get the file name from the URL
-        const fileName = imageUrl.split('profile-pictures%2F')[1]?.split('?')[0]
-        if (fileName) {
-          const storageRef = ref(storage, `profile-pictures/${fileName}`)
-          await deleteObject(storageRef)
-          console.log('File deleted from storage')
-        }
-      } catch (storageError) {
-        console.error('Error deleting from storage:', storageError)
-        // Continue even if storage deletion fails
+        await deleteObject(storageRef)
+      } catch (error) {
+        console.error('Error deleting from storage:', error)
       }
 
-      // Clear the image URL from state
-      setImageUrl('')
-      console.log('Profile picture removed successfully')
+      // Update Firestore
+      const userDocRef = doc(db, 'users', userData.email)
+      await setDoc(userDocRef, {
+        profilePicture: null,
+        name: userData.name || 'Anonymous',
+        email: userData.email,
+        updatedAt: new Date(),
+      }, { merge: true })
+
+      setImageUrl(DEFAULT_PROFILE_IMAGE)
     } catch (error) {
       console.error('Error removing profile picture:', error)
     }
@@ -154,6 +160,7 @@ export const Profile = ({ userData }: ProfileProps) => {
                 height="100%"
                 resizeMode="cover"
                 alt="Profile picture"
+                defaultSource={{ uri: DEFAULT_PROFILE_IMAGE }}
               />
             </Stack>
             
@@ -167,42 +174,27 @@ export const Profile = ({ userData }: ProfileProps) => {
             />
             
             {userData && userData.email ? (
-              <>
-                <XStack space="$2">
-                  <Button
-                    backgroundColor="$cardBackground"
-                    borderColor="$color"
-                    borderWidth={1}
-                    padding="$2"
-                    onPress={handleUploadClick}
-                    disabled={isUploading}
-                  >
-                    <Text color="$color">
-                      {isUploading ? 'Uploading...' : 'Upload Picture'}
-                    </Text>
-                  </Button>
+              <YStack space="$4" alignItems="center" width="100%">
+                <YStack space="$2" alignItems="center">
+                  <Text fontSize="$5" color="$textPrimary">
+                    {userData.name || 'Anonymous'}
+                  </Text>
+                  <Text fontSize="$4" color="$textSecondary">
+                    {userData.email}
+                  </Text>
+                </YStack>
 
-                  {imageUrl && (
-                    <Button
-                      backgroundColor="$cardBackground"
-                      borderColor="$color"
-                      borderWidth={1}
-                      padding="$2"
-                      onPress={handleRemovePicture}
-                    >
-                      <Text color="$color">
-                        Remove Picture
-                      </Text>
-                    </Button>
-                  )}
-                </XStack>
-                <Text fontSize="$5" color="$textPrimary">
-                  {userData.name || 'Anonymous'}
-                </Text>
-                <Text fontSize="$4" color="$textSecondary">
-                  {userData.email}
-                </Text>
-              </>
+                {/* Sign Out Button */}
+                <Button
+                  backgroundColor="$red8"
+                  paddingHorizontal="$4"
+                  paddingVertical="$2"
+                  onPress={handleSignOut}
+                  marginTop="$4"
+                >
+                  <Text color="white">Sign Out</Text>
+                </Button>
+              </YStack>
             ) : (
               <YStack space="$4" alignItems="center">
                 <Text fontSize="$4" color="$textSecondary" textAlign="center">
