@@ -252,20 +252,27 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
         <Text fontSize="$8" fontWeight="bold" color="$textPrimary">Schedule</Text>
 
         {/* Tabs */}
-        <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
+        <XStack 
+          backgroundColor="$gray3"  // Add light gray background
+          borderRadius="$4" 
+          overflow="hidden"
+          padding="$1"  // Add padding around the buttons
+        >
           <Button
             flex={1}
-            backgroundColor={activeTab === 'Workouts' ? '$background' : 'transparent'}
+            backgroundColor={activeTab === 'Workouts' ? 'white' : 'transparent'}
             color="$textPrimary"
             onPress={() => handleTabChange('Workouts')}
+            borderRadius="$3"  // Add border radius to buttons
           >
             Workouts
           </Button>
           <Button
             flex={1}
-            backgroundColor={activeTab === 'Events' ? '$background' : 'transparent'}
+            backgroundColor={activeTab === 'Events' ? 'white' : 'transparent'}
             color="$textPrimary"
             onPress={() => handleTabChange('Events')}
+            borderRadius="$3"  // Add border radius to buttons
           >
             Events
           </Button>
