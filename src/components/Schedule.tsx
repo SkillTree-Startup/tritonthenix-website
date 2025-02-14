@@ -203,10 +203,6 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
     setSelectedDate(newDate);
   };
 
-  const handleViewDetails = (event: Event) => {
-    setSelectedEvent(event);
-  };
-
   const handleRSVP = async (event: Event) => {
     // Check if user is logged in
     if (!userEmail) {
@@ -476,7 +472,6 @@ const EventCard = ({
   attendeeCount, 
   onRSVP
 }: EventCardProps) => {
-  // Remove unused functions and variables
   const getSpotsText = () => {
     if (event.maxRSVPs) {
       const spots = event.maxRSVPs - attendeeCount
@@ -610,23 +605,6 @@ const EventCard = ({
 
         {/* Right side content */}
         <YStack justifyContent="center" marginLeft="$4">
-          {/* Temporarily comment out or remove the Details button */}
-          {/* 
-          <Button
-            size="$3"
-            backgroundColor="black"
-            onPress={() => onViewDetails()}
-            minHeight={36}
-            width={100}
-            paddingHorizontal="$3"
-            alignItems="center"
-            justifyContent="center"
-            hoverStyle={{ backgroundColor: '$gray7' }}
-          >
-            <Text color="white">Details</Text>
-          </Button>
-          */}
-
           {/* Only show spots text if there's a limit */}
           {event.maxRSVPs && (
             <Text 
