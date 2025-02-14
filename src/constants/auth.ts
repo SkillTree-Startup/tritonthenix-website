@@ -4,6 +4,9 @@ export const WHITELISTED_EMAILS = [
   'cskeoch@ucsd.edu',
   'jweston@ucsd.edu',
   'r1wan@ucsd.edu',
+  'lseverino@ucsd.edu',
+  'socarvalho@ucsd.edu',
+  'jgh003@ucsd.edu',
 ]
 
 export const TEST_ADMIN_DATA = {
