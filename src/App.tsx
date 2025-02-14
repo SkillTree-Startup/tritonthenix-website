@@ -1,6 +1,6 @@
 import { TamaguiProvider, YStack } from 'tamagui'
 import config from './tamagui.config'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Routes, Route } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import AppRoutes from './components/Routes'
@@ -11,6 +11,7 @@ import Home from './components/Home'
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate()
+  const hasRedirected = useRef(false)
   
   const { 
     isSignedIn, 
@@ -27,6 +28,21 @@ function App() {
     navigate(path.startsWith('/') ? path : `/${path}`)
     setIsMenuOpen(false)
   }
+
+  // Update effect to handle admin navigation only once
+  useEffect(() => {
+    if (isAdmin && isSignedIn && !hasRedirected.current) {
+      hasRedirected.current = true
+      navigate('/admin')
+    }
+  }, [isAdmin, isSignedIn, navigate])
+
+  // Reset the redirect flag when user signs out
+  useEffect(() => {
+    if (!isSignedIn) {
+      hasRedirected.current = false
+    }
+  }, [isSignedIn])
 
   return (
     <TamaguiProvider config={config}>
