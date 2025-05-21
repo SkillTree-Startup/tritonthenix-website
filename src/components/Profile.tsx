@@ -1,5 +1,4 @@
-import { YStack, Text, Button, Image, Stack, XStack } from 'tamagui'
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'; // Import React
 import { storage, db } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
@@ -13,7 +12,7 @@ interface ProfileProps {
   userData: UserData | null;
 }
 
-export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, userData }: ProfileProps) => {
+export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => { }, userData }: ProfileProps) => {
   const [imageUrl, setImageUrl] = useState<string>('')
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -25,7 +24,7 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
         setImageUrl('');
         return;
       }
-      
+
       try {
         const userDoc = await getDoc(doc(db, 'users', userData.email));
         if (userDoc.exists() && userDoc.data().profilePicture) {
@@ -52,18 +51,18 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
     try {
       setIsUploading(true)
       console.log('Starting upload for:', userData.email)
-      
+
       const timestamp = new Date().getTime()
       const storageRef = ref(storage, `profile-pictures/${userData.email}_${timestamp}`)
-      
+
       console.log('Uploading file...')
       const snapshot = await uploadBytes(storageRef, file)
       console.log('File uploaded successfully')
-      
+
       console.log('Getting download URL...')
       const url = await getDownloadURL(snapshot.ref)
       console.log('Download URL:', url)
-      
+
       // Save the image URL to Firestore
       await setDoc(doc(db, 'users', userData.email), {
         profilePicture: url,
@@ -130,42 +129,43 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
   };
 
   return (
-    <YStack padding="$4" space="$4" alignItems="center">
-      <YStack space="$4" maxWidth={500} width="100%">
-        <Text fontSize="$8" fontWeight="bold" color="$textPrimary">
+    <div className="profile-container flex flex-col items-center" style={{ padding: 'var(--space-4)', gap: 'var(--space-4)' }}>
+      <div className="profile-content flex flex-col" style={{ gap: 'var(--space-4)', maxWidth: '500px', width: '100%' }}>
+        <h1 style={{ fontSize: 'var(--font-size-8)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
           Profile
-        </Text>
+        </h1>
 
         {/* Profile Info Card */}
-        <YStack 
-          backgroundColor="$cardBackground"
-          padding="$4"
-          borderRadius="$4"
-          space="$4"
-          borderWidth={1}
-          borderColor="$borderColor"
+        <div
+          className="profile-info-card flex flex-col"
+          style={{
+            backgroundColor: 'var(--card-background)',
+            padding: 'var(--space-4)',
+            borderRadius: 'var(--border-radius-medium)',
+            gap: 'var(--space-4)',
+            border: '1px solid var(--border-color)',
+          }}
         >
           {/* Profile Picture Section */}
-          <YStack space="$2" alignItems="center">
-            <Stack
-              width={120}
-              height={120}
-              borderRadius={60}
-              overflow="hidden"
-              backgroundColor="$background"
-              borderWidth={1}
-              borderColor="$borderColor"
+          <div className="profile-picture-section flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
+            <div
+              className="image-container"
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '60px',
+                overflow: 'hidden',
+                backgroundColor: 'var(--background)',
+                border: '1px solid var(--border-color)',
+              }}
             >
-              <Image
-                source={{ uri: imageUrl || DEFAULT_PROFILE_IMAGE }}
-                width="100%"
-                height="100%"
-                resizeMode="cover"
+              <img
+                src={imageUrl || DEFAULT_PROFILE_IMAGE}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 alt="Profile picture"
               />
-            </Stack>
-            
-            {/* Hidden file input */}
+            </div>
+
             <input
               type="file"
               ref={fileInputRef}
@@ -173,122 +173,120 @@ export const Profile = ({ tempAdminMode = false, onTempAdminToggle = () => {}, u
               accept="image/*"
               style={{ display: 'none' }}
             />
-            
+
             {userData && userData.email ? (
               <>
-                <XStack space="$2">
-                  <Button
-                    backgroundColor="$cardBackground"
-                    borderColor="$color"
-                    borderWidth={1}
-                    padding="$2"
-                    onPress={handleUploadClick}
+                <div className="buttons-row flex" style={{ gap: 'var(--space-2)' }}>
+                  <button
+                    className="upload-button"
+                    onClick={handleUploadClick}
                     disabled={isUploading}
+                    style={{
+                      backgroundColor: 'var(--card-background)',
+                      border: '1px solid var(--text-primary)', // Use text-primary for border
+                      padding: 'var(--space-2)',
+                      color: 'var(--text-primary)', // Use text-primary for text
+                    }}
                   >
-                    <Text color="$color">
-                      {isUploading ? 'Uploading...' : 'Upload Picture'}
-                    </Text>
-                  </Button>
+                    {isUploading ? 'Uploading...' : 'Upload Picture'}
+                  </button>
 
                   {imageUrl && (
-                    <Button
-                      backgroundColor="$cardBackground"
-                      borderColor="$color"
-                      borderWidth={1}
-                      padding="$2"
-                      onPress={handleRemovePicture}
+                    <button
+                      className="remove-button"
+                      onClick={handleRemovePicture}
+                      style={{
+                        backgroundColor: 'var(--card-background)',
+                        border: '1px solid var(--text-primary)',
+                        padding: 'var(--space-2)',
+                        color: 'var(--text-primary)',
+                      }}
                     >
-                      <Text color="$color">
-                        Remove Picture
-                      </Text>
-                    </Button>
+                      Remove Picture
+                    </button>
                   )}
-                </XStack>
-                <Text fontSize="$5" color="$textPrimary">
+                </div>
+                <p style={{ fontSize: 'var(--font-size-5)', color: 'var(--text-primary)' }}>
                   {userData.name || 'Anonymous'}
-                </Text>
-                <Text fontSize="$4" color="$textSecondary">
+                </p>
+                <p style={{ fontSize: 'var(--font-size-4)', color: 'var(--text-secondary)' }}>
                   {userData.email}
-                </Text>
+                </p>
               </>
             ) : (
-              <YStack space="$4" alignItems="center">
-                <Text fontSize="$4" color="$textSecondary" textAlign="center">
+              <div className="signin-prompt flex flex-col items-center" style={{ gap: 'var(--space-4)' }}>
+                <p style={{ fontSize: 'var(--font-size-4)', color: 'var(--text-secondary)', textAlign: 'center' }}>
                   Sign in to access your profile
-                </Text>
-                <XStack 
-                  space="$2" 
-                  alignItems="center"
-                  justifyContent="center"
-                  width="100%"
-                  $sm={{ display: 'none' }}
+                </p>
+                {/* Desktop Sign-in - hide on small screens via CSS */}
+                <div
+                  className="google-signin-profile-desktop flex items-center justify-center"
+                  style={{ width: '100%' /*, display: 'none' @sm via CSS */ }}
                 >
-                  <XStack
+                  <div
+                    id="googleSignInDivProfile"
+                    style={{
+                      backgroundColor: 'transparent',
+                      borderRadius: '20px',
+                      overflow: 'hidden',
+                      // transform: 'scale(1)', // @gtMd via CSS
+                      // transformOrigin: 'center',
+                    }}
+                  ></div>
+                </div>
+
+                {/* Mobile Sign-in - show only on small screens via CSS */}
+                <div
+                  className="google-signin-profile-mobile flex items-center justify-center"
+                  style={{ width: '100%' /*, display: 'flex' @sm via CSS, display: 'none' default */ }}
+                >
+                  <div
+                    id="googleSignInDivProfileMobile"
                     style={{
                       backgroundColor: 'transparent',
                       borderRadius: '20px',
                       overflow: 'hidden',
                     }}
-                    $gtMd={{ transform: 'scale(1)', transformOrigin: 'center' }}
-                  >
-                    <div id="googleSignInDivProfile"></div>
-                  </XStack>
-                </XStack>
-                
-                <XStack
-                  space="$2"
-                  alignItems="center"
-                  justifyContent="center"
-                  width="100%"
-                  display="none"
-                  $sm={{ display: 'flex' }}
-                >
-                  <XStack
-                    style={{
-                      backgroundColor: 'transparent',
-                      borderRadius: '20px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div id="googleSignInDivProfileMobile"></div>
-                  </XStack>
-                </XStack>
-              </YStack>
+                  ></div>
+                </div>
+              </div>
             )}
-          </YStack>
-        </YStack>
+          </div>
+        </div>
 
         {/* Developer Options Card */}
-        <YStack 
-          backgroundColor="$cardBackground"
-          padding="$4"
-          borderRadius="$4"
-          space="$4"
-          borderWidth={1}
-          borderColor="$borderColor"
+        <div
+          className="developer-options-card flex flex-col"
+          style={{
+            backgroundColor: 'var(--card-background)',
+            padding: 'var(--space-4)',
+            borderRadius: 'var(--border-radius-medium)',
+            gap: 'var(--space-4)',
+            border: '1px solid var(--border-color)',
+          }}
         >
-          <Text fontSize="$5" color="$textPrimary" fontWeight="bold">
+          <p style={{ fontSize: 'var(--font-size-5)', color: 'var(--text-primary)', fontWeight: 'bold' }}>
             Developer Options
-          </Text>
-          <XStack space="$2" alignItems="center">
-            <Button
-              backgroundColor={tempAdminMode ? '$red8' : '$blue8'}
-              onPress={handleAdminLogin}
-              paddingHorizontal="$4"
-              paddingVertical="$2"
+          </p>
+          <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+            <button
+              onClick={handleAdminLogin}
+              style={{
+                backgroundColor: tempAdminMode ? 'var(--red8)' : 'var(--blue8)',
+                padding: 'var(--space-2) var(--space-4)',
+                color: 'white',
+              }}
             >
-              <Text color="white">
-                {tempAdminMode ? 'Exit Admin Mode' : 'Log in as Admin'}
-              </Text>
-            </Button>
+              {tempAdminMode ? 'Exit Admin Mode' : 'Log in as Admin'}
+            </button>
             {tempAdminMode && (
-              <Text fontSize="$3" color="$textSecondary">
+              <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-secondary)' }}>
                 Logged in as Test Admin
-              </Text>
+              </p>
             )}
-          </XStack>
-        </YStack>
-      </YStack>
-    </YStack>
+          </div>
+        </div>
+      </div>
+    </div>
   );
-}; 
+};

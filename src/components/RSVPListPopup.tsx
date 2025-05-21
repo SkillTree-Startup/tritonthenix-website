@@ -1,9 +1,7 @@
-import { YStack, Text, Button, XStack, ScrollView, Dialog, TextArea, Input } from 'tamagui'
-import { X, Mail, Pencil } from '@tamagui/lucide-icons'
-import { useState, useEffect } from 'react'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { db } from '../firebase'
-import { Event } from '../types/Event'
+import React, { useState, useEffect } from 'react';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { Event } from '../types/Event';
 
 interface RSVPListPopupProps {
   event: Event
@@ -16,13 +14,13 @@ interface UserInfo {
 }
 
 export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
-  const [attendees, setAttendees] = useState<UserInfo[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [editingLimit, setEditingLimit] = useState(false)
-  const [showEmailDialog, setShowEmailDialog] = useState(false)
-  const [emailContent, setEmailContent] = useState('')
+  const [attendees, setAttendees] = useState<UserInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [maxRSVPs, setMaxRSVPs] = useState(event.maxRSVPs || 0);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editingLimit, setEditingLimit] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailContent, setEmailContent] = useState('');
 
   useEffect(() => {
     const fetchAttendees = async () => {
@@ -38,7 +36,6 @@ export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
         })
 
         const attendeeInfo = await Promise.all(attendeePromises)
-        console.log('Fetched attendees:', attendeeInfo)
         setAttendees(attendeeInfo)
       } catch (error) {
         console.error('Error fetching attendees:', error)
@@ -49,22 +46,21 @@ export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
 
     if (event.attendees?.length) {
       fetchAttendees()
+    } else {
+      setIsLoading(false); // No attendees to load
     }
   }, [event.attendees])
 
   const handleUpdateMaxRSVPs = async () => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await updateDoc(doc(db, 'events', event.id), {
         maxRSVPs: parseInt(maxRSVPs.toString()) || 0
       });
-      
-      // Update the event object locally
+
       event.maxRSVPs = parseInt(maxRSVPs.toString()) || 0;
-      
-      // Close edit mode
       setEditingLimit(false);
     } catch (error) {
       console.error('Error updating max RSVPs:', error);
@@ -74,197 +70,150 @@ export const RSVPListPopup = ({ event, onClose }: RSVPListPopupProps) => {
   };
 
   const handleSendEmail = () => {
-    // Log the email details to console
     console.log('Email would be sent with the following details:');
     console.log('To:', attendees.map(a => a.email).join(', '));
     console.log('Event:', event.name);
     console.log('Message:', emailContent);
-    
-    // Close the email dialog
+
     setShowEmailDialog(false);
-    // Reset the email content
     setEmailContent('');
   };
 
   return (
-    <YStack
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      backgroundColor="rgba(0,0,0,0.5)"
-      justifyContent="center"
-      alignItems="center"
-      zIndex={2000}
-      padding="$4"
-    >
-      <YStack
-        backgroundColor="$background"
-        borderRadius="$4"
-        padding="$4"
-        width="100%"
-        maxWidth={500}
-        space="$4"
-        elevation={20}
-        zIndex={2001}
-      >
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$6" fontWeight="bold" color="$textPrimary">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content flex flex-col" style={{ gap: 'var(--space-4)' }} onClick={(e) => e.stopPropagation()}>
+        <header className="flex justify-between items-center">
+          <h2 style={{ fontSize: 'var(--font-size-6)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             RSVPs ({attendees.length})
-          </Text>
-          <XStack space="$2">
+          </h2>
+          <div className="flex" style={{ gap: 'var(--space-2)' }}>
             {attendees.length > 0 && (
-              <Button
-                size="$3"
-                backgroundColor="$blue8"
-                onPress={() => setShowEmailDialog(true)}
-                hoverStyle={{ backgroundColor: '$blue7' }}
+              <button
+                className="button" // Basic button styling
+                style={{ backgroundColor: 'var(--blue8)', color: 'white' }}
+                onClick={() => setShowEmailDialog(true)}
+                onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--blue7)'}
+                onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--blue8)'}
               >
-                <Mail size={20} color="white" />
-              </Button>
+                📧 Mail
+              </button>
             )}
-            <Button
-              size="$3"
-              circular
-              backgroundColor="transparent"
-              onPress={onClose}
+            <button
+              className="button"
+              style={{ backgroundColor: 'transparent', borderRadius: 'var(--border-radius-round)', padding: 'var(--space-1)' }}
+              onClick={onClose}
             >
-              <X size={24} color="$color" />
-            </Button>
-          </XStack>
-        </XStack>
+              ❌
+            </button>
+          </div>
+        </header>
 
-        <YStack space="$2">
-          <XStack space="$2" alignItems="center">
-            <Text color="$textSecondary" fontSize="$3" fontWeight="bold">RSVP Limit:</Text>
+        <section className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-3)', fontWeight: 'bold' }}>RSVP Limit:</p>
             {editingLimit ? (
-              <XStack flex={1} space="$2">
-                <Input
-                  flex={1}
+              <div className="flex" style={{ flex: 1, gap: 'var(--space-2)' }}>
+                <input
+                  type="number"
+                  style={{ flex: 1 }} // Uses global input styles
                   value={maxRSVPs.toString()}
-                  onChangeText={(text) => setMaxRSVPs(parseInt(text) || 0)}
+                  onChange={(e) => setMaxRSVPs(parseInt(e.target.value) || 0)}
                   placeholder="Enter max RSVPs"
-                  keyboardType="numeric"
-                  backgroundColor="$background"
                 />
-                <Button
-                  backgroundColor="$blue8"
-                  onPress={handleUpdateMaxRSVPs}
+                <button
+                  className="button"
+                  style={{ backgroundColor: 'var(--blue8)', color: 'white', padding: 'var(--space-2)' }}
+                  onClick={handleUpdateMaxRSVPs}
                   disabled={isUpdating}
-                  padding="$2"
                 >
-                  <Text color="white">
-                    {isUpdating ? 'Saving...' : 'Save'}
-                  </Text>
-                </Button>
-              </XStack>
+                  {isUpdating ? 'Saving...' : 'Save'}
+                </button>
+              </div>
             ) : (
-              <XStack flex={1} space="$2" alignItems="center">
-                <Text color="$textPrimary">
+              <div className="flex items-center" style={{ flex: 1, gap: 'var(--space-2)' }}>
+                <p style={{ color: 'var(--text-primary)' }}>
                   {maxRSVPs ? `${maxRSVPs} spots` : 'Unlimited spots'}
-                </Text>
-                <Button
-                  size="$3"
-                  backgroundColor="$blue2"
-                  padding="$2"
-                  onPress={() => setEditingLimit(true)}
-                  hoverStyle={{ backgroundColor: '$blue3' }}
-                  borderRadius="$4"
+                </p>
+                <button
+                  className="button"
+                  style={{ backgroundColor: 'var(--blue2)', padding: 'var(--space-2)', borderRadius: 'var(--border-radius-medium)' }}
+                  onClick={() => setEditingLimit(true)}
+                  onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--blue3)'}
+                  onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--blue2)'}
                 >
-                  <Pencil size={18} color="$blue8" />
-                </Button>
-              </XStack>
+                  ✏️
+                </button>
+              </div>
             )}
-          </XStack>
-        </YStack>
+          </div>
+        </section>
 
         {isLoading ? (
-          <Text color="$textSecondary">Loading attendees...</Text>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading attendees...</p>
         ) : attendees.length === 0 ? (
-          <Text color="$textSecondary">No RSVPs yet</Text>
+          <p style={{ color: 'var(--text-secondary)' }}>No RSVPs yet</p>
         ) : (
-          <ScrollView maxHeight={400}>
-            <YStack space="$2">
+          <div className="scroll-view" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
               {attendees.map((attendee) => (
-                <XStack 
+                <div
                   key={attendee.email}
-                  backgroundColor="$backgroundHover"
-                  padding="$3"
-                  borderRadius="$2"
-                  space="$2"
+                  className="attendee-item flex" // Use flex for layout
+                  style={{
+                    backgroundColor: 'var(--gray8)', // Example hover/item background
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--border-radius-soft)',
+                    gap: 'var(--space-2)',
+                  }}
                 >
-                  <Text flex={1} color="$textPrimary">
+                  <p style={{ flex: 1, color: 'var(--text-primary)' }}>
                     {attendee.name || attendee.email}
-                  </Text>
-                  <Text color="$textSecondary" fontSize="$2">
+                  </p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-2)' }}>
                     {attendee.email}
-                  </Text>
-                </XStack>
+                  </p>
+                </div>
               ))}
-            </YStack>
-          </ScrollView>
+            </div>
+          </div>
         )}
-      </YStack>
+      </div>
 
       {showEmailDialog && (
-        <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-          <Dialog.Portal>
-            <Dialog.Overlay
-              key="overlay"
-              animation={null}
-              opacity={0.5}
-              enterStyle={{ opacity: 0 }}
-              exitStyle={{ opacity: 0 }}
+        <div className="modal-overlay" onClick={() => setShowEmailDialog(false)}>
+          <div className="modal-content flex flex-col" style={{ gap: 'var(--space-4)' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: 'var(--font-size-5)', color: 'var(--text-primary)' }}>
+              Message Attendees
+            </h3>
+            <textarea
+              value={emailContent}
+              onChange={(e) => setEmailContent(e.target.value)}
+              placeholder="Type your message here..."
+              style={{ minHeight: '150px' }} // Uses global textarea styles
             />
-            <Dialog.Content
-              bordered
-              elevate
-              key="content"
-              animation={null}
-              enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-              exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-              space
-            >
-              <YStack space="$4">
-                <Dialog.Title>
-                  <Text fontSize="$5" color="$textPrimary">
-                    Message Attendees
-                  </Text>
-                </Dialog.Title>
-
-                <TextArea
-                  value={emailContent}
-                  onChangeText={setEmailContent}
-                  placeholder="Type your message here..."
-                  minHeight={150}
-                  backgroundColor="$background"
-                  borderColor="$borderColor"
-                />
-
-                <XStack space="$3" justifyContent="flex-end">
-                  <Button
-                    backgroundColor="transparent"
-                    onPress={() => {
-                      setShowEmailDialog(false);
-                      setEmailContent('');
-                    }}
-                  >
-                    <Text color="$color">Cancel</Text>
-                  </Button>
-                  <Button
-                    backgroundColor="$blue8"
-                    onPress={handleSendEmail}
-                    disabled={!emailContent.trim()}
-                  >
-                    <Text color="white">Send</Text>
-                  </Button>
-                </XStack>
-              </YStack>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
+            <div className="flex justify-end" style={{ gap: 'var(--space-3)' }}>
+              <button
+                className="button"
+                style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
+                onClick={() => {
+                  setShowEmailDialog(false);
+                  setEmailContent('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="button"
+                style={{ backgroundColor: 'var(--blue8)', color: 'white' }}
+                onClick={handleSendEmail}
+                disabled={!emailContent.trim()}
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </YStack>
-  )
-} 
+    </div>
+  );
+};

@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { YStack, Text, XStack, Button, ScrollView, Stack, Image } from 'tamagui';
+import React, { useState, useEffect } from 'react'; // Import React
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { EventDetailsPopup } from './EventDetailsPopup'
 
 // Add the default profile image constant
-const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM5NDk0OTQiLz4KPC9zdmc+Cg=='
+const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9IiNEMUQxRDEiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4NSIgcj0iMzUiIGZpbGw9IiM5NDk0OTQiLz4KICA8cGF0aCBkPSJNMTAwIDE0MEMxMzYuMDQ0IDE0MCAxNjUgMTY4Ljk1NiAxNjUgMjA1SDE2NUgzNUgzNUMzNSAxNjguOTU2IDYzLjk1NiAxNDAgMTAwIDE0MFoiIGZpbGw9IiM9NDk0OTQiLz4KPC9zdmc+Cg=='
 
 interface Event {
   id: string;
@@ -50,11 +49,11 @@ const formatTime = (timeStr: string) => {
   try {
     // Parse the time string (assuming it's in 24hr format like "14:00")
     const [hours, minutes] = timeStr.split(':').map(Number)
-    
+
     // Convert to 12hr format
     const period = hours >= 12 ? 'PM' : 'AM'
     const hours12 = hours % 12 || 12 // Convert 0 to 12 for midnight
-    
+
     // Return formatted time
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`
   } catch {
@@ -96,7 +95,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   useEffect(() => {
     // Query events from Firebase
     const q = query(collection(db, 'events'), orderBy('date', 'asc'));
-    
+
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const eventsList: Event[] = [];
       querySnapshot.forEach((doc) => {
@@ -117,10 +116,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   useEffect(() => {
     const fetchAttendeeCounts = async () => {
       const counts: { [key: string]: number } = {}
-      
+
       // Combine all events
       const allEvents = [...events]
-      
+
       // Fetch counts for each event
       for (const event of allEvents) {
         try {
@@ -132,7 +131,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
           counts[event.id] = 0
         }
       }
-      
+
       setAttendeeCounts(counts)
     }
 
@@ -145,17 +144,17 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   today.setHours(0, 0, 0, 0); // Set to start of day
 
   const filteredEvents = events.filter(event => {
-    const isCorrectType = activeTab === 'Events' ? 
-      event.type === 'Event' : 
+    const isCorrectType = activeTab === 'Events' ?
+      event.type === 'Event' :
       event.type === 'Workout';
-    
+
     if (activeTab === 'Events') {
       return isCorrectType;
     } else {
       // For workouts, convert both dates to Pacific Time for comparison
       const eventDate = new Date(`${event.date}T00:00:00-08:00`);
       const selectedPacificDate = new Date(selectedDate.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-      return isCorrectType && 
+      return isCorrectType &&
         eventDate.toDateString() === selectedPacificDate.toDateString();
     }
   });
@@ -234,116 +233,114 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
   };
 
   return (
-    <YStack padding="$4" space="$4" width="100%" alignItems="center">
-      <YStack space="$4" maxWidth={800} width="100%">
-        <Text fontSize="$8" fontWeight="bold" color="$textPrimary">Schedule</Text>
+    <div className="schedule-container flex flex-col items-center" style={{ padding: 'var(--space-4)', width: '100%', gap: 'var(--space-4)' }}>
+      <div className="schedule-content flex flex-col" style={{ gap: 'var(--space-4)', maxWidth: '800px', width: '100%' }}>
+        <h1 style={{ fontSize: 'var(--font-size-8)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Schedule</h1>
 
         {/* Tabs */}
-        <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
-          <Button
-            flex={1}
-            backgroundColor={activeTab === 'Workouts' ? '$background' : 'transparent'}
-            color="$textPrimary"
-            onPress={() => handleTabChange('Workouts')}
+        <div className="tabs-container flex" style={{ backgroundColor: 'var(--card-background)', borderRadius: 'var(--border-radius-medium)', overflow: 'hidden' }}>
+          <button
+            className="tab-button"
+            style={{
+              flex: 1,
+              backgroundColor: activeTab === 'Workouts' ? 'var(--background)' : 'transparent',
+              color: 'var(--text-primary)',
+              padding: 'var(--space-3)'
+            }}
+            onClick={() => handleTabChange('Workouts')}
           >
             Workouts
-          </Button>
-          <Button
-            flex={1}
-            backgroundColor={activeTab === 'Events' ? '$background' : 'transparent'}
-            color="$textPrimary"
-            onPress={() => handleTabChange('Events')}
+          </button>
+          <button
+            className="tab-button"
+            style={{
+              flex: 1,
+              backgroundColor: activeTab === 'Events' ? 'var(--background)' : 'transparent',
+              color: 'var(--text-primary)',
+              padding: 'var(--space-3)'
+            }}
+            onClick={() => handleTabChange('Events')}
           >
             Events
-          </Button>
-        </XStack>
+          </button>
+        </div>
 
         {/* Date Selector - Only show for Workouts */}
         {activeTab === 'Workouts' && (
-          <XStack 
-            backgroundColor="$cardBackground" 
-            borderRadius="$4" 
-            padding="$2"
-            space="$2"
-            alignItems="center"
-            pressStyle={{ backgroundColor: 'transparent' }}
+          <div
+            className="date-selector flex items-center"
+            style={{
+              backgroundColor: 'var(--card-background)',
+              borderRadius: 'var(--border-radius-medium)',
+              padding: 'var(--space-2)',
+              gap: 'var(--space-2)',
+            }}
           >
-            <Button
-              size="$2"
-              onPress={() => navigateWeek('prev')}
-              backgroundColor="transparent"
+            <button
+              className="nav-button"
+              style={{ padding: 'var(--space-2)', backgroundColor: 'transparent', color: 'var(--text-primary)' }}
+              onClick={() => navigateWeek('prev')}
             >
               ←
-            </Button>
+            </button>
             {weekDates.map((date) => {
               const formattedDate = formatDate(date);
               const isSelected = date.toDateString() === selectedDate.toDateString();
               const isToday = date.toDateString() === new Date().toDateString();
-              
+
               return (
-                <Button
+                <button
                   key={date.toISOString()}
-                  onPress={() => handleDateSelect(date)}
-                  backgroundColor={isSelected ? '$color' : 'transparent'}
-                  borderRadius="$4"
-                  padding="$2"
-                  flex={1}
-                  hoverStyle={isToday ? {
-                    borderColor: '$color',
-                    borderWidth: 1
-                  } : undefined}
-                  borderWidth={0}
+                  onClick={() => handleDateSelect(date)}
+                  className="date-button"
+                  style={{
+                    backgroundColor: isSelected ? 'var(--text-primary)' : 'transparent', // Use text-primary for selected background
+                    color: isSelected ? 'var(--background)' : 'var(--text-primary)', // Text color contrast
+                    borderRadius: 'var(--border-radius-medium)',
+                    padding: 'var(--space-2)',
+                    flex: 1,
+                    border: isToday && !isSelected ? `1px solid var(--text-primary)` : '1px solid transparent',
+                  }}
                 >
-                  <YStack alignItems="center" space="$1">
-                    <Text 
-                      color={isSelected ? 'white' : '$color'} 
-                      fontSize="$2"
-                    >
+                  <div className="flex flex-col items-center" style={{ gap: 'var(--space-1)' }}>
+                    <span style={{ fontSize: 'var(--font-size-2)' }}>
                       {formattedDate.weekday}
-                    </Text>
-                    <Text 
-                      color={isSelected ? 'white' : '$color'} 
-                      fontSize="$4" 
-                      fontWeight="bold"
-                    >
+                    </span>
+                    <span style={{ fontSize: 'var(--font-size-4)', fontWeight: 'bold' }}>
                       {formattedDate.day}
-                    </Text>
+                    </span>
                     {isToday && (
-                      <Text 
-                        color={isSelected ? 'white' : '$color'} 
-                        fontSize="$2"
-                      >
+                      <span style={{ fontSize: 'var(--font-size-2)' }}>
                         Today
-                      </Text>
+                      </span>
                     )}
-                  </YStack>
-                </Button>
+                  </div>
+                </button>
               );
             })}
-            <Button
-              size="$2"
-              onPress={() => navigateWeek('next')}
-              backgroundColor="transparent"
+            <button
+              className="nav-button"
+              style={{ padding: 'var(--space-2)', backgroundColor: 'transparent', color: 'var(--text-primary)' }}
+              onClick={() => navigateWeek('next')}
             >
               →
-            </Button>
-          </XStack>
+            </button>
+          </div>
         )}
 
         {/* Events List */}
-        <ScrollView height={600} width="100%">
-          <YStack space="$8">
+        <div className="events-scroll-view" style={{ height: '600px', width: '100%', overflowY: 'auto' }}>
+          <div className="flex flex-col" style={{ gap: 'var(--space-8)' }}>
             {activeTab === 'Events' ? (
-              // Events View
               <>
                 {/* Upcoming Events */}
-                <YStack space="$8">
-                  <Text fontSize="$6" fontWeight="bold" color="$color">
+                <section className="flex flex-col" style={{ gap: 'var(--space-8)' }}>
+                  <h2 style={{ fontSize: 'var(--font-size-6)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     Upcoming Events
-                  </Text>
+                  </h2>
                   {upcomingEvents.map(event => (
-                    <EventCard 
-                      key={event.id} 
+                    <EventCard
+                      key={event.id}
                       event={event}
                       userEmail={userEmail}
                       isRSVPd={event.attendees?.includes(userEmail || '')}
@@ -353,20 +350,20 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     />
                   ))}
                   {upcomingEvents.length === 0 && (
-                    <Text color="$color" textAlign="center">
+                    <p style={{ color: 'var(--text-primary)', textAlign: 'center' }}>
                       No upcoming events scheduled
-                    </Text>
+                    </p>
                   )}
-                </YStack>
+                </section>
 
                 {/* Past Events */}
-                <YStack space="$8" marginTop="$8">
-                  <Text fontSize="$6" fontWeight="bold" color="$color">
+                <section className="flex flex-col" style={{ gap: 'var(--space-8)', marginTop: 'var(--space-8)' }}>
+                  <h2 style={{ fontSize: 'var(--font-size-6)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     Past Events
-                  </Text>
+                  </h2>
                   {pastEvents.map(event => (
-                    <EventCard 
-                      key={event.id} 
+                    <EventCard
+                      key={event.id}
                       event={event}
                       userEmail={userEmail}
                       isRSVPd={event.attendees?.includes(userEmail || '')}
@@ -376,18 +373,18 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     />
                   ))}
                   {pastEvents.length === 0 && (
-                    <Text color="$color" textAlign="center">
+                    <p style={{ color: 'var(--text-primary)', textAlign: 'center' }}>
                       No past events
-                    </Text>
+                    </p>
                   )}
-                </YStack>
+                </section>
               </>
             ) : (
               // Workouts View
-              <YStack space="$8">
+              <section className="flex flex-col" style={{ gap: 'var(--space-8)' }}>
                 {filteredEvents.map(event => (
-                  <EventCard 
-                    key={event.id} 
+                  <EventCard
+                    key={event.id}
                     event={event}
                     userEmail={userEmail}
                     isRSVPd={event.attendees?.includes(userEmail || '')}
@@ -397,17 +394,16 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                   />
                 ))}
                 {filteredEvents.length === 0 && (
-                  <Text color="$color" textAlign="center">
+                  <p style={{ color: 'var(--text-primary)', textAlign: 'center' }}>
                     No workouts scheduled for this date
-                  </Text>
+                  </p>
                 )}
-              </YStack>
+              </section>
             )}
-          </YStack>
-        </ScrollView>
-      </YStack>
+          </div>
+        </div>
+      </div>
 
-      {/* Add the EventDetailsPopup at the root level */}
       {selectedEvent && (
         <EventDetailsPopup
           event={selectedEvent}
@@ -416,7 +412,7 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
           isRSVPd={selectedEvent.attendees?.includes(userEmail || '') || false}
         />
       )}
-    </YStack>
+    </div>
   );
 };
 
@@ -429,10 +425,10 @@ interface EventCardProps {
   onViewDetails: () => void;
 }
 
-const EventCard = ({ 
-  event, 
-  attendeeCount, 
-  onViewDetails 
+const EventCard = ({
+  event,
+  attendeeCount,
+  onViewDetails
 }: EventCardProps) => {
   // Remove unused functions and variables
   const getSpotsText = () => {
@@ -458,146 +454,150 @@ const EventCard = ({
   };
 
   return (
-    <YStack
-      backgroundColor="$cardBackground"
-      padding="$4"
-      borderRadius="$4"
-      borderWidth={1}
-      borderColor="$borderColor"
-      space="$2"
+    <article
+      className="event-card flex flex-col"
+      style={{
+        backgroundColor: 'var(--card-background)',
+        padding: 'var(--space-4)',
+        borderRadius: 'var(--border-radius-medium)',
+        border: '1px solid var(--border-color)',
+        gap: 'var(--space-2)',
+      }}
     >
-      <XStack>
+      <div className="flex"> {/* Replaces XStack */}
         {/* Date display for events */}
         {event.type === 'Event' && (
-          <YStack
-            width={50}
-            alignItems="center"
-            justifyContent="center"
-            marginRight="$4"
-            padding="$2"
+          <div
+            className="date-display flex flex-col items-center justify-center"
+            style={{
+              width: '50px',
+              marginRight: 'var(--space-4)',
+              padding: 'var(--space-2)',
+            }}
           >
-            <Text 
-              color="$textSecondary"
-              fontSize="$3"
-              fontWeight="500"
+            <p
+              style={{
+                color: 'var(--text-secondary)',
+                fontSize: 'var(--font-size-3)',
+                fontWeight: '500',
+              }}
             >
               {formatEventDateDisplay(event.date).month}
-            </Text>
-            <Text 
-              color="$textPrimary"
-              fontSize="$6"
-              fontWeight="bold"
+            </p>
+            <p
+              style={{
+                color: 'var(--text-primary)',
+                fontSize: 'var(--font-size-6)',
+                fontWeight: 'bold',
+              }}
             >
               {formatEventDateDisplay(event.date).day}
-            </Text>
-            <Text 
-              color="$textSecondary"
-              fontSize="$3"
-              marginTop="$1"
+            </p>
+            <p
+              style={{
+                color: 'var(--text-secondary)',
+                fontSize: 'var(--font-size-3)',
+                marginTop: 'var(--space-1)',
+              }}
             >
               {formatTime(event.time)}
-            </Text>
-          </YStack>
+            </p>
+          </div>
         )}
 
         {/* Left side content */}
-        <YStack flex={1} space="$2">
+        <div className="event-info flex flex-col" style={{ flex: 1, gap: 'var(--space-2)' }}>
           {event.type === 'Workout' ? (
-            <XStack space="$2" alignItems="center">
-              <Stack
-                width={32}
-                height={32}
-                borderRadius={16}
-                overflow="hidden"
-                backgroundColor="$background"
-                borderWidth={1}
-                borderColor="$borderColor"
+            <div className="creator-info flex items-center" style={{ gap: 'var(--space-2)' }}>
+              <div
+                className="profile-picture-container"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  backgroundColor: 'var(--background)',
+                  border: '1px solid var(--border-color)',
+                }}
               >
-                <Image
-                  source={{ uri: event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE }}
-                  width="100%"
-                  height="100%"
-                  resizeMode="cover"
+                <img
+                  src={event.creatorProfilePicture || DEFAULT_PROFILE_IMAGE}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   alt={`${getFirstName(event.creatorName)}'s profile picture`}
                 />
-              </Stack>
-              
-              <YStack>
-                <Text fontSize="$3" color="$textSecondary">
+              </div>
+
+              <div className="flex flex-col">
+                <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-secondary)' }}>
                   {getFirstName(event.creatorName)}
-                </Text>
-                <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+                </p>
+                <p style={{ fontWeight: 'bold', fontSize: 'var(--font-size-5)', color: 'var(--text-primary)' }}>
                   {event.name}
-                </Text>
-              </YStack>
-            </XStack>
+                </p>
+              </div>
+            </div>
           ) : (
-            <Text fontWeight="bold" fontSize="$5" color="$textPrimary">
+            <p style={{ fontWeight: 'bold', fontSize: 'var(--font-size-5)', color: 'var(--text-primary)' }}>
               {event.name}
-            </Text>
+            </p>
           )}
 
-          {/* Remove date/time from here for Events */}
-          <XStack space={event.type === 'Event' ? '$2' : '$0'} alignItems="center">
+          <div className="event-meta flex items-center" style={{ gap: event.type === 'Event' ? 'var(--space-2)' : '0' }}>
             {event.type === 'Workout' && (
-              <Text 
-                color="$color"
-                marginLeft={event.type === 'Workout' ? '$0' : undefined}
-              >
+              <p style={{ color: 'var(--text-primary)', marginLeft: event.type === 'Workout' ? '0' : undefined }}>
                 {formatTime(event.time)}
-              </Text>
+              </p>
             )}
-            <Text 
-              color="$color"
-              marginLeft="$2"
-            >
+            <p style={{ color: 'var(--text-primary)', marginLeft: 'var(--space-2' }}>
               {event.instructor}
-            </Text>
-          </XStack>
+            </p>
+          </div>
 
           {event.subLocation && (
-            <Text color="$color" opacity={0.8}>
+            <p style={{ color: 'var(--text-primary)', opacity: 0.8 }}>
               {event.subLocation}
-            </Text>
+            </p>
           )}
 
-          <Text color="$textSecondary">
+          <p style={{ color: 'var(--text-secondary)' }}>
             {event.description}
-          </Text>
-        </YStack>
+          </p>
+        </div>
 
         {/* Right side content */}
-        <YStack justifyContent="center" marginLeft="$4">
-          <Button
-            size="$3"
-            backgroundColor="$gray8"
-            onPress={() => onViewDetails()}
-            minHeight={36}
-            width={100}
-            paddingHorizontal="$3"
-            alignItems="center"
-            justifyContent="center"
-            hoverStyle={{ backgroundColor: '$gray7' }}
+        <div className="actions flex flex-col justify-center" style={{ marginLeft: 'var(--space-4)' }}>
+          <button
+            className="details-button"
+            onClick={() => onViewDetails()}
+            style={{
+              backgroundColor: 'var(--gray8)',
+              minHeight: '36px',
+              width: '100px',
+              padding: '0 var(--space-3)',
+              color: 'white',
+              // hoverStyle handled by global button:hover or specific class
+            }}
           >
-            <Text color="white">Details</Text>
-          </Button>
+            Details
+          </button>
 
-          {/* Only show spots text if there's a limit */}
           {event.maxRSVPs && (
-            <Text 
-              fontSize="$3" 
-              color="$textSecondary" 
-              textAlign="center" 
-              marginTop="$1"
-              width={100}
+            <p
+              style={{
+                fontSize: 'var(--font-size-3)',
+                color: 'var(--text-secondary)',
+                textAlign: 'center',
+                marginTop: 'var(--space-1)',
+                width: '100px',
+              }}
             >
               {getSpotsText()}
-            </Text>
+            </p>
           )}
-        </YStack>
-      </XStack>
-    </YStack>
+        </div>
+      </div>
+    </article>
   );
 };
 
-export default Schedule; 
+export default Schedule;

@@ -1,16 +1,14 @@
-import { createTamagui } from 'tamagui'
-import { shorthands } from '@tamagui/shorthands'
-import { tokens, themes } from '@tamagui/themes'
-import { createDialogScope } from '@tamagui/dialog'
+// This file is largely deprecated as Tamagui components are being replaced.
+// Values from themes (light/dark) can be used as a reference for CSS variables in index.css.
 
-// Create dialog scope
-export const DialogScope = createDialogScope()
+// Create dialog scope - This might not be needed if Dialogs are custom HTML/CSS
+// export const DialogScope = createDialogScope() // Potentially remove
 
-const config = createTamagui({
+const config = { // Simplified, as createTamagui is not the core anymore
   defaultTheme: 'dark',
   themes: {
     light: {
-      ...themes.light,
+      // ... (keep for reference for CSS variables)
       background: '#FFFFFF',
       color: '#000000',
       borderColor: '#e2e8f0',
@@ -21,7 +19,7 @@ const config = createTamagui({
       headerBackground: 'rgba(255,255,255,0.9)',
     },
     dark: {
-      ...themes.dark,
+      // ... (keep for reference for CSS variables)
       background: '#000000',
       color: '#FFFFFF',
       borderColor: '#2d3748',
@@ -32,35 +30,13 @@ const config = createTamagui({
       headerBackground: 'rgba(0,0,0,0.9)',
     }
   },
-  tokens,
-  shorthands,
-  media: {
-    xs: { maxWidth: 480 },
-    sm: { maxWidth: 767 },
-    md: { maxWidth: 1023 },
-    lg: { maxWidth: 1279 },
-    xl: { minWidth: 1280 },
-    gtXs: { minWidth: 481 },
-    gtSm: { minWidth: 768 },
-    gtMd: { minWidth: 1024 },
-    gtLg: { minWidth: 1280 },
-    portrait: { orientation: 'portrait' },
-    landscape: { orientation: 'landscape' }
-  },
-  // Add dialog configuration
-  dialogScope: DialogScope,
-  // Add default props for Dialog
-  defaultProps: {
-    Dialog: {
-      modal: true,
-      allowPinchZoom: true,
-    }
-  }
-})
+  // tokens, shorthands, media can be kept for reference or removed
+  // dialogScope, defaultProps for Dialog are no longer applicable
+};
 
-export type AppConfig = typeof config
-declare module '@tamagui/core' {
-  interface TamaguiCustomConfig extends AppConfig {}
-}
+// export type AppConfig = typeof config // Potentially remove
+// declare module '@tamagui/core' { // Remove
+//   interface TamaguiCustomConfig extends AppConfig {}
+// }
 
-export default config
+export default config // Exporting this might still be useful for theme value access, or remove

@@ -1,6 +1,4 @@
-import { YStack, Text, Button, XStack, Stack, Image } from 'tamagui'
-import { X } from '@tamagui/lucide-icons'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Event } from '../types/Event'
@@ -14,15 +12,13 @@ interface EventDetailsPopupProps {
 }
 
 const formatEventDate = (dateStr: string) => {
-  // Add Pacific Time zone offset to ensure correct date
   const date = new Date(`${dateStr}T00:00:00-08:00`)
   return date.toLocaleDateString()
 }
 
 export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDetailsPopupProps) => {
   const [attendeeCount, setAttendeeCount] = useState(event.attendees?.length || 0)
-  
-  // Fetch current attendee count
+
   useEffect(() => {
     const fetchAttendeeCount = async () => {
       try {
@@ -36,114 +32,97 @@ export const EventDetailsPopup = ({ event, onClose, onRSVP, isRSVPd }: EventDeta
     }
 
     fetchAttendeeCount()
-  }, [event.id])
+  }, [event.id, event.attendees]) // Add event.attendees to dependency array to refetch if it changes externally
 
   return (
-    <YStack
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      backgroundColor="rgba(0,0,0,0.5)"
-      justifyContent="center"
-      alignItems="center"
-      zIndex={1000}
-      padding="$4"
-    >
-      <YStack
-        backgroundColor="$background"
-        borderRadius="$4"
-        padding="$4"
-        width="100%"
-        maxWidth={500}
-        space="$4"
-      >
+    <div className="modal-overlay" onClick={onClose}> {/* Use modal-overlay from index.css */}
+      <div className="modal-content flex flex-col" style={{ gap: 'var(--space-4)' }} onClick={(e) => e.stopPropagation()}> {/* Use modal-content */}
         {/* Header with close button */}
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$6" fontWeight="bold" color="$textPrimary">
+        <header className="flex justify-between items-center">
+          <h2 style={{ fontSize: 'var(--font-size-6)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             {event.name}
-          </Text>
-          <Button
-            size="$3"
-            circular
-            backgroundColor="transparent"
-            onPress={onClose}
+          </h2>
+          <button
+            className="button" // Basic button styling
+            style={{ backgroundColor: 'transparent', borderRadius: 'var(--border-radius-round)', padding: 'var(--space-1)' }}
+            onClick={onClose}
           >
-            <X size={24} color="$color" />
-          </Button>
-        </XStack>
+            {/* Replace X icon */}
+            ❌
+          </button>
+        </header>
 
         {/* Event details */}
-        <YStack space="$4">
-          {/* Only show creator info if it's not an Event type */}
+        <section className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
           {event.type !== 'Event' && (
-            <XStack space="$2" alignItems="center">
+            <div className="creator-info flex items-center" style={{ gap: 'var(--space-2)' }}>
               {event.creatorProfilePicture && (
-                <Stack
-                  width={40}
-                  height={40}
-                  borderRadius={20}
-                  overflow="hidden"
+                <div
+                  className="profile-image-container"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '20px', // 50% of width/height
+                    overflow: 'hidden',
+                  }}
                 >
-                  <Image
-                    source={{ uri: event.creatorProfilePicture }}
-                    width="100%"
-                    height="100%"
-                    resizeMode="cover"
+                  <img
+                    src={event.creatorProfilePicture}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     alt="Creator's profile"
                   />
-                </Stack>
+                </div>
               )}
-              <YStack>
-                <Text fontSize="$3" color="$textSecondary">
+              <div className="flex flex-col">
+                <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-secondary)' }}>
                   Posted by {event.creatorName || 'Anonymous'}
-                </Text>
-                <Text fontSize="$4" color="$color">
+                </p>
+                <p style={{ fontSize: 'var(--font-size-4)', color: 'var(--text-primary)' }}> {/* Use text-primary */}
                   {formatEventDate(event.date)} at {event.time}
-                </Text>
-              </YStack>
-            </XStack>
+                </p>
+              </div>
+            </div>
           )}
 
-          {/* Always show date/time for Event type */}
           {event.type === 'Event' && (
-            <Text fontSize="$4" color="$color">
+            <p style={{ fontSize: 'var(--font-size-4)', color: 'var(--text-primary)' }}> {/* Use text-primary */}
               {formatEventDate(event.date)} at {event.time}
-            </Text>
+            </p>
           )}
 
-          <Text color="$textPrimary">
+          <p style={{ color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
             {event.additionalDetails || event.description}
-          </Text>
+          </p>
 
           {event.tags && (
-            <Text color="$color" fontSize="$3" opacity={0.7}>
+            <p style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-3)', opacity: 0.7 }}> {/* Use text-primary */}
               Tags: {event.tags}
-            </Text>
+            </p>
           )}
 
           {/* RSVP section */}
-          <YStack space="$2" marginTop="$2">
-            <Button
-              backgroundColor={isRSVPd ? '$red8' : '$blue8'}
-              onPress={onRSVP}
-              disabled={isRSVPd ? false : (event.maxRSVPs ? attendeeCount >= event.maxRSVPs : false)}
+          <div className="rsvp-section flex flex-col" style={{ gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+            <button
+              className="button" // Basic button styling
+              style={{
+                backgroundColor: isRSVPd ? 'var(--red8)' : 'var(--blue8)',
+                color: 'white',
+                width: '100%' // Make button full width
+              }}
+              onClick={onRSVP}
+              disabled={isRSVPd ? false : (event.maxRSVPs != null ? attendeeCount >= event.maxRSVPs : false)}
             >
-              <Text color="white">
-                {isRSVPd ? 'Cancel RSVP' : 'RSVP'}
-              </Text>
-            </Button>
-            
-            {/* Only show spots remaining if there's a limit */}
-            {event.maxRSVPs && (
-              <Text fontSize="$3" color="$textSecondary" textAlign="center">
-                {event.maxRSVPs ? `${event.maxRSVPs - attendeeCount} spots remaining` : null}
-              </Text>
+              {isRSVPd ? 'Cancel RSVP' : 'RSVP'}
+            </button>
+
+            {event.maxRSVPs != null && ( // Check for null or undefined explicitly
+              <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                {`${event.maxRSVPs - attendeeCount} spots remaining`}
+              </p>
             )}
-          </YStack>
-        </YStack>
-      </YStack>
-    </YStack>
+          </div>
+        </section>
+      </div>
+    </div>
   )
-} 
+}

@@ -1,14 +1,12 @@
-import { TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack } from 'tamagui'
-import config from './tamagui.config'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react' // Import React
 import logoSvg from './assets/logo.svg'
 import backgroundImage from './assets/image.png'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AppRoutes from './components/Routes'
-import { Moon, Sun } from '@tamagui/lucide-icons'
 import { jwtDecode } from 'jwt-decode'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
+// Removed Tamagui imports: TamaguiProvider, Theme, XStack, YStack, Image, Button, Text, Stack
 
 // Whitelist of emails with special privileges
 const WHITELISTED_EMAILS = [
@@ -42,6 +40,7 @@ interface MenuItemProps {
   label: string;
   page?: string;
   onClick?: () => void;
+  className?: string; // Allow passing className
 }
 
 // Add this constant for the test admin data
@@ -60,7 +59,13 @@ function App() {
   const [tempAdminMode, setTempAdminMode] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  // Theme state can be used to toggle a class on the body for CSS variable changes
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+
+  useEffect(() => {
+    // Apply theme class to body
+    document.body.className = theme;
+  }, [theme]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -190,11 +195,10 @@ function App() {
   };
 
   // Update MenuItem component
-  const MenuItem = ({ label, page, onClick }: MenuItemProps) => (
-    <Button
-      backgroundColor="transparent"
-      padding="$4"
-      onPress={() => {
+  const MenuItem = ({ label, page, onClick, className }: MenuItemProps) => (
+    <button
+      className={`menu-item ${className || ''}`}
+      onClick={() => {
         if (onClick) {
           onClick();
         } else if (page) {
@@ -202,17 +206,25 @@ function App() {
         }
         setIsMenuOpen(false);
       }}
-      width="100%"
-      justifyContent="flex-start"
-      hoverStyle={{ backgroundColor: '$gray4' }}
+      style={{
+        backgroundColor: 'transparent',
+        padding: 'var(--space-4)',
+        width: '100%',
+        textAlign: 'left',
+        color: 'var(--text-primary)',
+      }}
     >
-      <Text color="$color">{label}</Text>
-    </Button>
+      {label}
+    </button>
   )
 
   // Add theme toggle handler
   const handleThemeToggle = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      return newTheme;
+    });
   }
 
   // Update the temp admin toggle handler
@@ -234,582 +246,420 @@ function App() {
   const isAdmin = tempAdminMode || WHITELISTED_EMAILS.includes(userData?.email || '');
 
   return (
-    <TamaguiProvider config={config}>
-      <Theme name={theme}>
-        <YStack 
-          backgroundColor="$background"  // Revert to using theme token
-          minHeight="100vh"
-          position="relative"
-          width="100vw"
-          overflow="hidden"
+    // TamaguiProvider and Theme removed
+    <div
+      className="app-container"
+      style={{
+        backgroundColor: 'var(--background)',
+        minHeight: '100vh',
+        position: 'relative',
+        width: '100vw',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Background Image - Conditionally render or use CSS */}
+      {theme === 'dark' && ( // This logic can be moved to CSS if preferred
+        <div
+          className="background-image-container"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflow: 'hidden',
+            width: '100vw',
+            height: '100vh',
+          }}
         >
-          {/* Background Image - Only show in dark mode */}
-          {theme === 'dark' && (
-            <YStack
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
-              overflow="hidden"
-              width="100vw"
-              height="100vh"
+          <img
+            src={backgroundImage}
+            alt="Background"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              objectFit: 'cover',
+              opacity: 0.7,
+            }}
+          />
+          <div
+            className="background-overlay"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Navigation Bar */}
+      <header
+        className="navigation-bar flex justify-between items-center"
+        style={{
+          padding: 'var(--space-4)',
+          position: 'relative',
+          zIndex: 2,
+          backgroundColor: 'var(--header-background)', // Use CSS variable
+          height: '70px',
+        }}
+      >
+        {/* Left side: Logo */}
+        <button
+          onClick={() => handleNavigate('')}
+          aria-label="Go to home"
+          className="logo-button"
+          style={{ background: 'transparent', padding: 0, border: 'none' }}
+        >
+          <img
+            src={logoSvg}
+            alt="TritonThenix Logo"
+            style={{ width: '150px', height: '40px', objectFit: 'contain' }}
+          />
+        </button>
+
+        {/* Center: Main Navigation - Use CSS for responsive display */}
+        <nav
+          className="main-navigation flex space-x-8 items-center"
+          style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            // display: 'none', // Handled by CSS media queries
+          }}
+        // $xl={{ display: 'flex' }} // Replace with CSS: @media (min-width: 1280px) { .main-navigation { display: flex; } }
+        >
+          <button
+            onClick={() => handleNavigate('schedule/workouts')}
+            className={`nav-link ${isActiveRoute('workouts') ? 'active' : ''}`}
+            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'white', fontSize: 'var(--font-size-3)' }}
+          >
+            WORKOUTS
+          </button>
+          <button
+            onClick={() => handleNavigate('schedule/events')}
+            className={`nav-link ${isActiveRoute('events') ? 'active' : ''}`}
+            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'white', fontSize: 'var(--font-size-3)' }}
+          >
+            EVENTS
+          </button>
+        </nav>
+
+        {/* Right side: Auth Buttons + Theme Toggle */}
+        <div
+          className="auth-section flex items-center"
+        // $sm={{ space: '$0' }} // Replace with CSS
+        >
+          {/* Theme Toggle Button */}
+          <button
+            onClick={handleThemeToggle}
+            aria-label="Toggle theme"
+            className="theme-toggle-button"
+            style={{ background: 'transparent', padding: 'var(--space-2)' /* $sm reduce padding via CSS */ }}
+          >
+            {theme === 'dark' ? (
+              // <Sun size={24} color="white" /> Replace with SVG or text
+              <span style={{ color: 'white', fontSize: '24px' }}>☀️</span>
+            ) : (
+              // <Moon size={24} color="white" /> Replace with SVG or text
+              <span style={{ color: 'white', fontSize: '24px' }}>🌙</span>
+            )}
+          </button>
+
+          {!isSignedIn ? (
+            <div
+              className="google-signin-container-desktop"
+            // $sm={{ display: 'none' }} // Hide on mobile via CSS
             >
-              <Image
-                source={{ uri: backgroundImage }}
-                alt="Background"
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
+              <div
+                id="googleSignInDiv"
                 style={{
-                  width: '100vw',
-                  height: '100vh',
-                  objectFit: 'cover',
-                  opacity: 0.7,
+                  backgroundColor: 'transparent',
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  // $gtMd={{ transform: 'scale(1)' }}
+                  // $md={{ transform: 'scale(0.8)' }} // Handle scaling via CSS
                 }}
-              />
-              <YStack
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                backgroundColor="rgba(0,0,0,0.6)"
-              />
-            </YStack>
+              ></div>
+            </div>
+          ) : (
+            <p style={{ color: 'var(--text-primary)', marginRight: 'var(--space-2)', fontSize: 'var(--font-size-3)' }}>
+              {userData?.email}
+            </p>
           )}
 
-          {/* Navigation Bar - Always Black */}
-          <XStack
-            padding="$4"
-            justifyContent="space-between"
-            alignItems="center"
-            position="relative"
-            zIndex={2}
-            backgroundColor="rgba(0,0,0,0.9)"
-            height={70}
+          {/* Hamburger Menu Button */}
+          <button
+            onClick={handleMenuToggle}
+            aria-label="Menu"
+            className="hamburger-button"
+            style={{ background: 'transparent', padding: 'var(--space-2)' /* $sm reduce padding via CSS */ }}
           >
-            {/* Left side: Logo */}
-            <Button
-              backgroundColor="transparent"
-              padding={0}
-              pressStyle={{ backgroundColor: 'transparent' }}
-              hoverStyle={{ backgroundColor: 'transparent' }}
-              onPress={() => handleNavigate('')}
-              aria-label="Go to home"
-              className="logo-button"
-            >
-              <Image
-                source={{ uri: logoSvg }}
-                alt="TritonThenix Logo"
-                width={150}
-                height={40}
-                resizeMode="contain"
-              />
-            </Button>
+            <div className="flex flex-col space-y-1"> {/* Simplified hamburger icon structure */}
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
+            </div>
+          </button>
+        </div>
+      </header>
 
-            {/* Center: Main Navigation - Only show on XL screens */}
-            <XStack 
-              space="$8" 
-              alignItems="center"
-              position="absolute"
-              left="50%"
-              style={{ transform: 'translateX(-50%)' }}
-              display="none"
-              $xl={{ display: 'flex' }}  // Only show on XL screens
-            >
-              <Button
-                backgroundColor="transparent"
-                padding="$2"
-                pressStyle={{ backgroundColor: 'transparent' }}
-                hoverStyle={{ backgroundColor: 'transparent' }}
-                onPress={() => handleNavigate('schedule/workouts')}
-                className={`nav-link ${isActiveRoute('workouts') ? 'active' : ''}`}
-              >
-                <Text 
-                  color="white" 
-                  fontSize="$3" 
-                  className={`nav-text ${isActiveRoute('workouts') ? 'active' : ''}`}
-                >
-                  WORKOUTS
-                </Text>
-              </Button>
-              <Button
-                backgroundColor="transparent"
-                padding="$2"
-                pressStyle={{ backgroundColor: 'transparent' }}
-                hoverStyle={{ backgroundColor: 'transparent' }}
-                onPress={() => handleNavigate('schedule/events')}
-                className={`nav-link ${isActiveRoute('events') ? 'active' : ''}`}
-              >
-                <Text 
-                  color="white" 
-                  fontSize="$3" 
-                  className={`nav-text ${isActiveRoute('events') ? 'active' : ''}`}
-                >
-                  EVENTS
-                </Text>
-              </Button>
-            </XStack>
+      {/* Menu Items */}
+      {isMenuOpen && (
+        <div
+          className="menu-dropdown flex flex-col space-y-1"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: '70px', // Below header
+            width: '250px',
+            backgroundColor: 'var(--card-background)', // Use card background
+            borderRadius: 'var(--border-radius-medium)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.2)', // elevation
+            padding: 'var(--space-2)',
+            zIndex: 3,
+            // $sm={{ width: '100%', right: 0 }} // Handle responsive width via CSS
+          }}
+        >
+          {isSignedIn ? (
+            <>
+              {/* Mobile Navigation Items - Use CSS for $xl display none */}
+              <div className="mobile-nav-items">
+                <MenuItem
+                  label="Workouts"
+                  onClick={() => handleNavigate('/schedule/workouts')}
+                />
+                <MenuItem
+                  label="Events"
+                  onClick={() => handleNavigate('/schedule/events')}
+                />
+                <MenuItem
+                  label="Profile"
+                  page="profile"
+                />
+              </div>
 
-            {/* Right side: Auth Buttons + Theme Toggle */}
-            <XStack 
-              space="$2" 
-              alignItems="center"
-              $sm={{ space: '$0' }} // Remove space on mobile
-            >
-              {/* Theme Toggle Button */}
-              <Button
-                backgroundColor="transparent"
-                padding="$2"
-                onPress={handleThemeToggle}
-                aria-label="Toggle theme"
-                hoverStyle={{ opacity: 0.8 }}
-                $sm={{ padding: '$1' }} // Reduce padding on mobile
-              >
-                {theme === 'dark' ? (
-                  <Sun size={24} color="white" />
-                ) : (
-                  <Moon size={24} color="white" />
-                )}
-              </Button>
-
-              {!isSignedIn ? (
-                <XStack 
-                  space="$2" 
-                  alignItems="center"
-                  $sm={{ display: 'none' }}  // Hide on mobile
-                >
-                  <XStack
-                    style={{
-                      backgroundColor: 'transparent',
-                      borderRadius: '20px',
-                      overflow: 'hidden',
-                    }}
-                    $gtMd={{ transform: 'scale(1)', transformOrigin: 'right center' }}
-                    $md={{ transform: 'scale(0.8)', transformOrigin: 'right center' }}
-                  >
-                    <div id="googleSignInDiv"></div>
-                  </XStack>
-                </XStack>
-              ) : (
-                <Text color={theme === 'dark' ? 'white' : 'black'} marginRight="$2" fontSize="$3">
-                  {userData?.email}
-                </Text>
+              {isAdmin && (
+                <MenuItem label="Admin Panel" page="/admin" />
               )}
 
-              {/* Hamburger Menu Button */}
-              <Button
-                backgroundColor="transparent"
-                padding="$2"
-                onPress={handleMenuToggle}
-                aria-label="Menu"
-                $sm={{ padding: '$1' }} // Reduce padding on mobile
+              <MenuItem label="Privacy Policy" page="privacy" />
+
+              <div
+                className="sign-out-section"
+                style={{
+                  borderTop: '1px solid var(--border-color)',
+                  marginTop: 'var(--space-2)',
+                  paddingTop: 'var(--space-2)',
+                }}
               >
-                <YStack space="$1.5">
-                  <Stack height={2} width={24} backgroundColor="white" />
-                  <Stack height={2} width={24} backgroundColor="white" />
-                  <Stack height={2} width={24} backgroundColor="white" />
-                </YStack>
-              </Button>
-            </XStack>
-          </XStack>
+                <MenuItem
+                  label="Sign Out"
+                  onClick={handleSignOut}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Show Google Sign-In in menu only on mobile - Use CSS for $sm display flex */}
+              <div
+                className="google-signin-container-mobile"
+                style={{
+                  // display: 'none', // $sm display flex via CSS
+                  justifyContent: 'center',
+                  padding: 'var(--space-2) 0',
+                }}
+              >
+                <div
+                  id="googleSignInDivMobile"
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: '20px',
+                    overflow: 'hidden'
+                  }}
+                ></div>
+              </div>
 
-          {/* Updated Menu Items */}
-          {isMenuOpen && (
-            <YStack
-              position="absolute"
-              right={0}
-              top={70}
-              width={250}
-              backgroundColor="$background"
-              borderRadius="$4"
-              borderWidth={1}
-              borderColor="$borderColor"
-              elevation={10}
-              padding="$2"
-              zIndex={3}
-              space="$1"
-              $sm={{ width: '100%', right: 0 }}
-            >
-              {isSignedIn ? (
-                <>
-                  {/* Mobile Navigation Items */}
-                  <YStack $xl={{ display: 'none' }}>
-                    <MenuItem 
-                      label="Workouts" 
-                      onClick={() => handleNavigate('/schedule/workouts')} 
-                    />
-                    <MenuItem 
-                      label="Events" 
-                      onClick={() => handleNavigate('/schedule/events')} 
-                    />
-                    <MenuItem 
-                      label="Profile"
-                      page="profile" 
-                    />
-                  </YStack>
-
-                  {/* Admin Panel (if admin) */}
-                  {isAdmin && (
-                    <MenuItem label="Admin Panel" page="/admin" />
-                  )}
-                  
-                  <MenuItem label="Privacy Policy" page="privacy" />
-                  
-                  {/* Sign Out Button */}
-                  <YStack 
-                    borderTopWidth={1} 
-                    borderTopColor="$borderColor"
-                    marginTop="$2"
-                    paddingTop="$2"
-                  >
-                    <MenuItem 
-                      label="Sign Out" 
-                      onClick={handleSignOut}
-                    />
-                  </YStack>
-                </>
-              ) : (
-                <>
-                  {/* Show Google Sign-In in menu only on mobile */}
-                  <XStack 
-                    display="none" 
-                    $sm={{ display: 'flex' }}
-                    justifyContent="center"
-                    paddingVertical="$2"
-                  >
-                    <div 
-                      id="googleSignInDivMobile"
-                      style={{
-                        backgroundColor: 'transparent',
-                        borderRadius: '20px',
-                        overflow: 'hidden'
-                      }}
-                    ></div>
-                  </XStack>
-                  
-                  {/* Rest of the signed out menu items */}
-                  <YStack $xl={{ display: 'none' }}>
-                    <MenuItem 
-                      label="Workouts" 
-                      onClick={() => handleNavigate('/schedule/workouts')} 
-                    />
-                    <MenuItem 
-                      label="Events" 
-                      onClick={() => handleNavigate('/schedule/events')} 
-                    />
-                    <MenuItem label="Profile" page="profile" />
-                  </YStack>
-                  <MenuItem label="Privacy Policy" page="privacy" />
-                </>
-              )}
-            </YStack>
+              {/* Rest of the signed out menu items - Use CSS for $xl display none */}
+              <div className="mobile-nav-items-signedout">
+                <MenuItem
+                  label="Workouts"
+                  onClick={() => handleNavigate('/schedule/workouts')}
+                />
+                <MenuItem
+                  label="Events"
+                  onClick={() => handleNavigate('/schedule/events')}
+                />
+                <MenuItem label="Profile" page="profile" />
+              </div>
+              <MenuItem label="Privacy Policy" page="privacy" />
+            </>
           )}
+        </div>
+      )}
 
-          {/* Enhanced Raindrop Effect Container */}
-          <YStack
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            overflow="hidden"
-            zIndex={1}
+      {/* Raindrop Effect Container */}
+      <div
+        className="raindrop-container"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden',
+          zIndex: 1,
+        }}
+      >
+        {[...Array(100)].map((_, i) => (
+          <div // Replaced Stack with div
+            key={i}
+            className="raindrop" // Add class for styling via existing CSS in <style>
+            style={{
+              position: 'absolute',
+              // backgroundColor: 'white', // Or use CSS - CSS handles this now
+              width: '2px',
+              height: '3px',
+              opacity: 0.7,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `raindrop ${Math.random() * 2 + 1.5}s linear infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+              boxShadow: '0 0 8px rgba(255,255,255,0.8)',
+              background: 'linear-gradient(transparent, rgba(255,255,255,0.8))',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* App Routes */}
+      <main
+        className="app-content"
+        style={{
+          flex: 1,
+          width: '100%',
+          position: 'relative',
+          zIndex: 2,
+          backgroundColor: 'transparent', // Content area background
+        }}
+      >
+        <AppRoutes
+          userEmail={userData?.email || ''}
+          userName={userData?.name}
+          tempAdminMode={tempAdminMode}
+          onTempAdminToggle={handleTempAdminToggle}
+          userData={userData}
+        />
+      </main>
+
+      {/* EST. SINCE 2022 Text */}
+      <div
+        className="est-since-text-container flex items-center space-x-2"
+        style={{
+          position: 'absolute',
+          bottom: 'var(--space-4)',
+          right: 'var(--space-6)',
+          zIndex: 2,
+        }}
+      >
+        <div // Replaced Stack with div
+          className="vertical-line"
+          style={{
+            width: '1px',
+            height: '40px',
+            backgroundColor: 'rgba(255,255,255,0.4)',
+            marginRight: 'var(--space-3)',
+          }}
+        />
+        <div> {/* Replaced YStack with div */}
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '12px',
+              letterSpacing: '2px',
+              fontFamily: 'Open Sans',
+              textTransform: 'uppercase',
+              animation: 'fadeIn 2s ease-in',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            }}
           >
-            {/* Generate more raindrops with enhanced visibility */}
-            {[...Array(100)].map((_, i) => (
-              <Stack
-                key={i}
-                position="absolute"
-                backgroundColor="white"
-                width={2}
-                height={3}
-                opacity={0.7}  // Increased opacity
-                top={`${Math.random() * 100}%`}
-                left={`${Math.random() * 100}%`}
-                style={{
-                  animation: `raindrop ${Math.random() * 2 + 1.5}s linear infinite`,  // Faster animation
-                  animationDelay: `${Math.random() * 2}s`,
-                  boxShadow: '0 0 8px rgba(255,255,255,0.8)',  // Enhanced glow
-                  background: 'linear-gradient(transparent, rgba(255,255,255,0.8))',  // Gradient effect
-                }}
-              />
-            ))}
-          </YStack>
-
-          {/* Add Routes after the header */}
-          <YStack 
-            flex={1} 
-            width="100%" 
-            position="relative" 
-            zIndex={2}
-            backgroundColor="transparent"
+            Est.
+          </p>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: '24px',
+              fontWeight: '300',
+              letterSpacing: '4px',
+              fontFamily: 'Open Sans',
+              animation: 'fadeIn 2s ease-in',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            }}
           >
-            <AppRoutes 
-              userEmail={userData?.email || ''} 
-              userName={userData?.name}
-              tempAdminMode={tempAdminMode}
-              onTempAdminToggle={handleTempAdminToggle}
-              userData={userData}
-            />
-          </YStack>
-
-          {/* EST. SINCE 2022 Text */}
-          <XStack
-            position="absolute"
-            bottom="$4"
-            right="$6"
-            zIndex={2}
-            alignItems="center"
-            space="$2"
-          >
-            <Stack
-              width={1}
-              height={40}
-              backgroundColor="rgba(255,255,255,0.4)"
-              marginRight="$3"
-            />
-            <YStack>
-              <Text
-                color="rgba(255,255,255,0.7)"
-                fontSize={12}
-                letterSpacing={2}
-                fontFamily="Open Sans"
-                style={{
-                  textTransform: 'uppercase',
-                  animation: 'fadeIn 2s ease-in',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                Est.
-              </Text>
-              <Text
-                color="rgba(255,255,255,0.9)"
-                fontSize={24}
-                fontWeight="300"
-                letterSpacing={4}
-                fontFamily="Open Sans"
-                style={{
-                  animation: 'fadeIn 2s ease-in',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                2022
-              </Text>
-            </YStack>
-          </XStack>
-        </YStack>
-      </Theme>
-
-      {/* Updated animation styles */}
-      <style>
-        {`
-          @keyframes raindrop {
-            0% {
-              transform: translateY(-100px) scale(1);
-              opacity: 0;
-            }
-            10% {
-              opacity: 0.7;
-            }
-            50% {
-              opacity: 0.8;
-              transform: translateY(400px) scale(1.2);  // Added scale effect
-            }
-            100% {
-              transform: translateY(800px) scale(0.4);
-              opacity: 0;
-            }
-          }
-
-          /* Create a shimmering effect for raindrops */
-          @keyframes shimmer {
-            0% {
-              box-shadow: 0 0 4px rgba(255,255,255,0.4);
-            }
-            50% {
-              box-shadow: 0 0 12px rgba(255,255,255,0.8);
-            }
-            100% {
-              box-shadow: 0 0 4px rgba(255,255,255,0.4);
-            }
-          }
-
-          /* Add a trail effect */
-          .raindrop::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 15px;
-            background: linear-gradient(transparent, rgba(255,255,255,0.3));
-            transform: translateY(-100%);
-          }
-
-          /* Existing animations remain the same */
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          .text-hover {
-            transition: all 0.3s ease;
-          }
-          .text-hover:hover {
-            text-shadow: 0 0 15px rgba(255,255,255,0.5);
-          }
-
-          .nav-link {
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            perspective: 1000px;
-            background: transparent !important;
-          }
-
-          .nav-text {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          }
-
-          /* Active state styling */
-          .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 50%;
-            width: 30px;
-            height: 2px;
-            background: white;
-            transform: translateX(-50%);
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-          }
-
-          .nav-text.active {
-            font-weight: 500;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
-          }
-
-          /* Hover effects */
-          .nav-link:hover {
-            animation: float 2s ease-in-out infinite;
-            background: transparent !important;
-          }
-
-          .nav-link:hover .nav-text {
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-          }
-
-          /* Don't apply float animation to active link */
-          .nav-link.active:hover {
-            animation: none;
-            transform: none;
-          }
-
-          @keyframes float {
-            0% {
-              transform: translateY(-8px) scale(1.15);
-            }
-            50% {
-              transform: translateY(-12px) scale(1.15);
-            }
-            100% {
-              transform: translateY(-8px) scale(1.15);
-            }
-          }
-
-          /* Transition for page changes */
-          .page-transition {
-            transition: opacity 0.3s ease;
-          }
-
-          .page-transition-enter {
-            opacity: 0;
-          }
-
-          .page-transition-enter-active {
-            opacity: 1;
-          }
-
-          .page-transition-exit {
-            opacity: 1;
-          }
-
-          .page-transition-exit-active {
-            opacity: 0;
-          }
-
-          /* Add subtle hover effect for the EST text */
-          .est-text {
-            transition: all 0.3s ease;
-          }
-
-          .est-text:hover {
-            transform: translateY(-2px);
-            text-shadow: 0 4px 8px rgba(0,0,0,0.4);
-          }
-
-          @keyframes subtlePulse {
-            0% {
-              opacity: 0.7;
-            }
-            50% {
-              opacity: 0.9;
-            }
-            100% {
-              opacity: 0.7;
-            }
-          }
-
-          /* Add subtle animation to the vertical line */
-          .vertical-line {
-            animation: subtlePulse 3s infinite ease-in-out;
-          }
-
-          /* Logo with float effect */
-          .logo-button {
-            background: transparent !important;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            perspective: 1000px;
-          }
-
-          .logo-button:hover {
-            animation: logoFloat 2s ease-in-out infinite;
-            background: transparent !important;
-          }
-
-          @keyframes logoFloat {
-            0% {
-              transform: translateY(-4px) scale(1.05);
-            }
-            50% {
-              transform: translateY(-8px) scale(1.05);
-            }
-            100% {
-              transform: translateY(-4px) scale(1.05);
-            }
-          }
-        `}
-      </style>
-    </TamaguiProvider>
+            2022
+          </p>
+        </div>
+      </div>
+    </div>
+    // TamaguiProvider and Theme removed
   )
 }
 
 export default App
+// Keep the <style> block with animations as it's already standard CSS.
+// Make sure to add CSS classes for responsive styles previously handled by Tamagui's $sm, $xl, etc.
+// e.g. in your index.css or App.css:
+/*
+@media (max-width: 767px) { // sm breakpoint
+  .auth-section { gap: 0; }
+  .theme-toggle-button { padding: var(--space-1); }
+  .google-signin-container-desktop { display: none; }
+  .menu-dropdown { width: 100%; right: 0; }
+  .google-signin-container-mobile { display: flex; }
+}
+@media (min-width: 1280px) { // xl breakpoint
+  .main-navigation { display: flex; }
+  .mobile-nav-items, .mobile-nav-items-signedout { display: none; }
+}
+*/
+// Add the following CSS to your App.css or index.css for the responsive styles previously handled by Tamagui
+// This is just an example, you might need to adjust based on your actual breakpoints
+/*
+.main-navigation { display: none; } // Hide by default
+@media (min-width: 1280px) { .main-navigation { display: flex; } }
+
+.auth-section .google-signin-container-desktop { display: flex; }
+@media (max-width: 767px) {
+  .auth-section { gap: var(--space-0); }
+  .auth-section .theme-toggle-button { padding: var(--space-1); }
+  .auth-section .google-signin-container-desktop { display: none; }
+  .auth-section .hamburger-button { padding: var(--space-1); }
+}
+
+.menu-dropdown {
+  // existing styles
+}
+@media (max-width: 767px) {
+  .menu-dropdown {
+    width: 100%;
+    right: 0;
+  }
+  .menu-dropdown .google-signin-container-mobile { display: flex; }
+}
+@media (min-width: 1280px) {
+  .menu-dropdown .mobile-nav-items,
+  .menu-dropdown .mobile-nav-items-signedout {
+    display: none;
+  }
+}
+.menu-dropdown .google-signin-container-mobile { display: none; } // Hide by default
+*/

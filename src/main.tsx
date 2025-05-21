@@ -1,8 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import '@tamagui/core/reset.css'
-import './index.css'
+import './index.css' // Ensure this contains your global styles and CSS reset if any
 import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

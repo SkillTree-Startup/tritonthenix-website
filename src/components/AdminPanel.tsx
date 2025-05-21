@@ -1,5 +1,4 @@
-import { YStack, Text, Input, Button, XStack, TextArea, Select, ScrollView } from 'tamagui'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { RSVPListPopup } from './RSVPListPopup'
@@ -26,29 +25,29 @@ const generateDateOptions = () => {
   const dates = []
   // Start with Pacific time
   const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
-  
+
   for (let i = 0; i < 365; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
-    
+
     // Force the date to be interpreted in Pacific time
     const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
-    
+
     // Format the date components
     const year = pacificDate.getFullYear()
     const month = String(pacificDate.getMonth() + 1).padStart(2, '0')
     const day = String(pacificDate.getDate()).padStart(2, '0')
     const value = `${year}-${month}-${day}`
-    
+
     // Format the label
-    const label = pacificDate.toLocaleDateString('en-US', { 
+    const label = pacificDate.toLocaleDateString('en-US', {
       weekday: 'short',
-      month: 'short', 
+      month: 'short',
       day: 'numeric',
       year: 'numeric',
       timeZone: 'America/Los_Angeles'
     })
-    
+
     dates.push({ value, label })
   }
   return dates
@@ -98,7 +97,7 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
   // Add useEffect to fetch and listen to events
   useEffect(() => {
     const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'))
-    
+
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const events: EventWithTimestamp[] = []
       querySnapshot.forEach((doc) => {
@@ -137,8 +136,8 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
 
   const handleSubmit = async () => {
     // Validate required fields including additionalDetails
-    if (!eventData.name.trim() || !eventData.date || !eventData.time || 
-        !eventData.description.trim() || !eventData.additionalDetails?.trim()) {
+    if (!eventData.name.trim() || !eventData.date || !eventData.time ||
+      !eventData.description.trim() || !eventData.additionalDetails?.trim()) {
       setHasAttemptedSubmit(true)
       return
     }
@@ -230,432 +229,416 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
     today.setHours(0, 0, 0, 0)  // Reset time to start of day
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
+
     const date = new Date(`${eventDate}T00:00:00-08:00`)
     return date >= today && date < tomorrow
   }
 
   return (
-    <YStack 
-      padding="$4" 
-      space="$4" 
-      width="100%" 
-      alignItems="center"
+    <div
+      className="admin-panel-container flex flex-col items-center"
+      style={{ padding: 'var(--space-4)', width: '100%', gap: 'var(--space-4)' }}
     >
       {/* Form Panel */}
-      <YStack space="$4" maxWidth={500} width="100%">
-        <Text 
-          fontSize="$8" 
-          fontWeight="bold" 
-          color="$color"
+      <div
+        className="form-panel flex flex-col"
+        style={{ gap: 'var(--space-4)', maxWidth: '500px', width: '100%' }}
+      >
+        <h1
+          style={{
+            fontSize: 'var(--font-size-8)',
+            fontWeight: 'bold',
+            color: 'var(--text-primary)'
+          }}
         >
           Admin Panel
-        </Text>
+        </h1>
 
         {/* Name Input */}
-        <YStack space="$2">
-          <Text color="$color">Name *</Text>
-          <Input
+        <div className="form-group flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <label htmlFor="eventName" style={{ color: 'var(--text-primary)' }}>Name *</label>
+          <input
+            type="text"
+            id="eventName"
             value={eventData.name}
-            onChangeText={(text) => setEventData(prev => ({ ...prev, name: text }))}
+            onChange={(e) => setEventData(prev => ({ ...prev, name: e.target.value }))}
             placeholder={`Enter ${eventData.type.toLowerCase()} name`}
-            borderWidth={1}
-            borderColor={!eventData.name.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
-            backgroundColor="white"
-            padding="$3"
-            color="#4A5568"
-            placeholderTextColor="#A0AEC0"
+            style={{
+              border: `1px solid ${!eventData.name.trim() && hasAttemptedSubmit ? 'red' : 'var(--border-color)'}`,
+              // backgroundColor: 'var(--input-background)', // Covered by global input style
+              // padding: 'var(--space-3)', // Covered by global input style
+              // color: 'var(--input-text-color)', // Covered by global input style
+            }}
+          // placeholderTextColor handled by ::placeholder in CSS
           />
-        </YStack>
+        </div>
 
         {/* Type Toggle */}
-        <XStack backgroundColor="$cardBackground" borderRadius="$4" overflow="hidden">
-          <Button
-            flex={1}
-            backgroundColor={eventData.type === 'Workout' ? '$background' : 'transparent'}
-            color="$textPrimary"
-            onPress={() => setEventData(prev => ({ ...prev, type: 'Workout' }))}
+        <div
+          className="type-toggle flex"
+          style={{ backgroundColor: 'var(--card-background)', borderRadius: 'var(--border-radius-medium)', overflow: 'hidden' }}
+        >
+          <button
+            style={{
+              flex: 1,
+              backgroundColor: eventData.type === 'Workout' ? 'var(--background)' : 'transparent',
+              color: 'var(--text-primary)',
+              padding: 'var(--space-3)',
+            }}
+            onClick={() => setEventData(prev => ({ ...prev, type: 'Workout' }))}
           >
             Workout
-          </Button>
-          <Button
-            flex={1}
-            backgroundColor={eventData.type === 'Event' ? '$background' : 'transparent'}
-            color="$textPrimary"
-            onPress={() => setEventData(prev => ({ ...prev, type: 'Event' }))}
+          </button>
+          <button
+            style={{
+              flex: 1,
+              backgroundColor: eventData.type === 'Event' ? 'var(--background)' : 'transparent',
+              color: 'var(--text-primary)',
+              padding: 'var(--space-3)',
+            }}
+            onClick={() => setEventData(prev => ({ ...prev, type: 'Event' }))}
           >
             Event
-          </Button>
-        </XStack>
+          </button>
+        </div>
 
         {/* Date/Time Selection */}
-        <YStack space="$2">
-          <Text color="$color">Date/Time *</Text>
-          <XStack space="$4" width="100%">
+        <div className="form-group flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <label style={{ color: 'var(--text-primary)' }}>Date/Time *</label>
+          <div className="flex" style={{ gap: 'var(--space-4)', width: '100%' }}>
             {/* Date Input */}
-            <YStack flex={1}>
-              <Select
+            <div style={{ flex: 1 }}>
+              <select
                 value={eventData.date}
-                onValueChange={(value) => setEventData(prev => ({ ...prev, date: value }))}
+                onChange={(e) => setEventData(prev => ({ ...prev, date: e.target.value }))}
+              // Basic styling, can be enhanced with .custom-select-container if needed
               >
-                <Select.Trigger>
-                  <Select.Value placeholder="Select Date" />
-                </Select.Trigger>
-                <Select.Content>
-                  <Select.ScrollUpButton />
-                  <Select.Viewport>
-                    <Select.Group>
-                      {dateOptions.map((option, index) => (
-                        <Select.Item 
-                          key={option.value} 
-                          value={option.value}
-                          index={index}
-                        >
-                          <Select.ItemText>{option.label}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Group>
-                  </Select.Viewport>
-                  <Select.ScrollDownButton />
-                </Select.Content>
-              </Select>
-            </YStack>
+                <option value="">Select Date</option>
+                {dateOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Time Input */}
-            <YStack flex={1}>
-              <Select
+            <div style={{ flex: 1 }}>
+              <select
                 value={eventData.time}
-                onValueChange={(value) => setEventData(prev => ({ ...prev, time: value }))}
+                onChange={(e) => setEventData(prev => ({ ...prev, time: e.target.value }))}
               >
-                <Select.Trigger>
-                  <Select.Value 
-                    placeholder="Select Time"
-                  />
-                </Select.Trigger>
-                <Select.Content>
-                  <Select.ScrollUpButton />
-                  <Select.Viewport>
-                    <Select.Group>
-                      {timeOptions.map((option, index) => (
-                        <Select.Item 
-                          key={option.value} 
-                          value={option.value}
-                          index={index}
-                        >
-                          <Select.ItemText>{option.label}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Group>
-                  </Select.Viewport>
-                  <Select.ScrollDownButton />
-                </Select.Content>
-              </Select>
-            </YStack>
-          </XStack>
-        </YStack>
+                <option value="">Select Time</option>
+                {timeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
 
         {/* Description */}
-        <YStack space="$2">
-          <Text color="$color">Description *</Text>
-          <TextArea
+        <div className="form-group flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <label htmlFor="eventDescription" style={{ color: 'var(--text-primary)' }}>Description *</label>
+          <textarea
+            id="eventDescription"
             value={eventData.description}
-            onChangeText={(text) => setEventData(prev => ({ ...prev, description: text }))}
+            onChange={(e) => setEventData(prev => ({ ...prev, description: e.target.value }))}
             placeholder="Short sentence about the workout/event"
-            borderWidth={1}
-            borderColor={!eventData.description.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
-            backgroundColor="white"
-            padding="$3"
-            paddingVertical="$2"
-            color="#4A5568"
-            placeholderTextColor="#A0AEC0"
-            minHeight={40}
-            maxHeight={40}
-            textAlignVertical="center"
+            style={{
+              border: `1px solid ${!eventData.description.trim() && hasAttemptedSubmit ? 'red' : 'var(--border-color)'}`,
+              minHeight: '40px',
+              maxHeight: '40px', // This might be tricky with standard textarea, consider fixed height or JS resize
+              // padding: 'var(--space-3)', // Covered by global
+              // paddingVertical: 'var(--space-2)', // Adjust padding if needed
+              // textAlignVertical: 'center', // CSS: display:flex; align-items:center for wrapper or padding
+            }}
           />
-        </YStack>
+        </div>
 
         {/* Additional Details Field */}
-        <YStack space="$2">
-          <Text color="$color">Full Description *</Text>
-          <TextArea
+        <div className="form-group flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <label htmlFor="eventAdditionalDetails" style={{ color: 'var(--text-primary)' }}>Full Description *</label>
+          <textarea
+            id="eventAdditionalDetails"
             value={eventData.additionalDetails}
-            onChangeText={(text) => setEventData(prev => ({ ...prev, additionalDetails: text }))}
-            placeholder="Provide a more detailed description of the workout/event along with any additional information"
-            borderWidth={1}
-            borderColor={!eventData.additionalDetails?.trim() && hasAttemptedSubmit ? 'red' : '$borderColor'}
-            backgroundColor="white"
-            padding="$3"
-            color="#4A5568"
-            placeholderTextColor="#A0AEC0"
-            minHeight={100}
+            onChange={(e) => setEventData(prev => ({ ...prev, additionalDetails: e.target.value }))}
+            placeholder="Provide a more detailed description..."
+            style={{
+              border: `1px solid ${!eventData.additionalDetails?.trim() && hasAttemptedSubmit ? 'red' : 'var(--border-color)'}`,
+              minHeight: '100px',
+            }}
           />
-        </YStack>
+        </div>
 
         {/* Tags */}
-        <YStack space="$2">
-          <Text color="$color">Tags (Optional)</Text>
-          <Input
+        <div className="form-group flex flex-col" style={{ gap: 'var(--space-2)' }}>
+          <label htmlFor="eventTags" style={{ color: 'var(--text-primary)' }}>Tags (Optional)</label>
+          <input
+            type="text"
+            id="eventTags"
             value={eventData.tags}
-            onChangeText={(text) => setEventData(prev => ({ ...prev, tags: text }))}
+            onChange={(e) => setEventData(prev => ({ ...prev, tags: e.target.value }))}
             placeholder="(core, upper, beginner-friendly)"
-            borderWidth={1}
-            borderColor="$borderColor"
-            backgroundColor="white"
-            padding="$3"
-            color="#4A5568"
-            placeholderTextColor="#A0AEC0"
+          // Basic styling from global input style
           />
-        </YStack>
+        </div>
 
-        {/* Error message only shows if submit was attempted and fields are missing */}
-        {hasAttemptedSubmit && 
-         (!eventData.name.trim() || !eventData.date || !eventData.time || 
-          !eventData.description.trim() || !eventData.additionalDetails?.trim()) && (
-          <Text color="red" textAlign="center">
-            Please fill out all required fields
-          </Text>
-        )}
+        {hasAttemptedSubmit &&
+          (!eventData.name.trim() || !eventData.date || !eventData.time ||
+            !eventData.description.trim() || !eventData.additionalDetails?.trim()) && (
+            <p style={{ color: 'red', textAlign: 'center' }}>
+              Please fill out all required fields
+            </p>
+          )}
 
         {/* Submit Button */}
-        <Button
-          backgroundColor="$cardBackground"
-          color="$textPrimary"
-          onPress={handleSubmit}
-          marginTop="$4"
+        <button
+          onClick={handleSubmit}
+          style={{
+            backgroundColor: 'var(--card-background)',
+            color: 'var(--text-primary)',
+            marginTop: 'var(--space-4)',
+            padding: 'var(--space-3)', // Ensure button class provides this
+          }}
         >
-          <Text>Post</Text>
-        </Button>
-      </YStack>
+          Post
+        </button>
+      </div>
 
-      {/* History Panel - Desktop: Absolute position, Mobile: Below form */}
-      <YStack 
-        width={isDesktop ? 400 : "100%"}
-        maxWidth={500}
-        backgroundColor="$background" 
-        borderRadius="$4" 
-        borderWidth={1} 
-        borderColor="$borderColor"
-        {...(isDesktop ? {
-          position: "absolute",
-          right: "$4",
-          top: "$4"
-        } : {
-          marginTop: "$4"
-        })}
+      {/* History Panel */}
+      <div
+        className="history-panel flex flex-col"
+        style={{
+          width: isDesktop ? '400px' : '100%',
+          maxWidth: '500px',
+          backgroundColor: 'var(--background)',
+          borderRadius: 'var(--border-radius-medium)',
+          border: '1px solid var(--border-color)',
+          position: isDesktop ? 'absolute' : 'relative',
+          right: isDesktop ? 'var(--space-4)' : undefined,
+          top: isDesktop ? 'var(--space-4)' : undefined,
+          marginTop: isDesktop ? undefined : 'var(--space-4)',
+        }}
       >
-        <Text 
-          fontSize="$6" 
-          fontWeight="bold" 
-          color="$textPrimary"
-          padding="$4"
-          borderBottomWidth={1}
-          borderBottomColor="$borderColor"
+        <h2
+          style={{
+            fontSize: 'var(--font-size-6)',
+            fontWeight: 'bold',
+            color: 'var(--text-primary)',
+            padding: 'var(--space-4)',
+            borderBottom: '1px solid var(--border-color)',
+          }}
         >
           Schedule Management
-        </Text>
-        <ScrollView 
-          height={isDesktop ? 600 : 400} 
-          padding="$4"
+        </h2>
+        <div
+          className="scroll-view"
+          style={{
+            height: isDesktop ? '600px' : '400px',
+            overflowY: 'auto',
+            padding: 'var(--space-4)',
+          }}
         >
-          <YStack space="$4">
+          <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
             {/* Today's Events Section */}
-            <YStack space="$2">
-              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+            <section className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: 'var(--font-size-5)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 Today
-              </Text>
+              </h3>
               {eventHistory
                 .filter(event => isEventToday(event.date))
                 .map((event) => (
-                  <YStack 
+                  <article
                     key={event.id}
-                    backgroundColor="$cardBackground"
-                    padding="$3"
-                    borderRadius="$2"
-                    borderWidth={1}
-                    borderColor="$borderColor"
-                    space="$1"
+                    className="event-card flex flex-col"
+                    style={{
+                      backgroundColor: 'var(--card-background)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--border-radius-soft)',
+                      border: '1px solid var(--border-color)',
+                      gap: 'var(--space-1)',
+                    }}
                   >
-                    <XStack justifyContent="space-between" alignItems="flex-start">
-                      <YStack flex={1} space="$1">
-                        <Text fontWeight="bold" color="$textPrimary">
+                    <div className="flex justify-between items-start">
+                      <div style={{ flex: 1, gap: 'var(--space-1)' }} className="flex flex-col">
+                        <p style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
                           {event.type}: {event.name}
-                        </Text>
-                        <Text color="$textPrimary" fontSize="$3">
+                        </p>
+                        <p style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-3)' }}>
                           {formatEventDate(event.date)} at {event.time}
-                        </Text>
-                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                        </p>
+                        <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-primary)', opacity: 0.7 }}>
                           Created: {event.createdAt.toLocaleString()}
-                        </Text>
-                      </YStack>
+                        </p>
+                      </div>
 
-                      <XStack space="$2">
-                        <Button
-                          size="$2"
-                          padding="$2"
-                          backgroundColor="transparent"
-                          onPress={() => handleCopyEvent(event)}
-                          hoverStyle={{ backgroundColor: '$gray4' }}
+                      <div className="flex" style={{ gap: 'var(--space-2)' }}>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'transparent', fontSize: 'var(--font-size-3)', color: 'var(--text-primary)' }}
+                          onClick={() => handleCopyEvent(event)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--gray4)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                        </Button>
-                        <Button
-                          size="$2"
-                          backgroundColor="$blue8"
-                          padding="$2"
-                          onPress={() => setRsvpEventId(event.id)}
-                          hoverStyle={{ backgroundColor: '$blue7' }}
+                          Copy
+                        </button>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'var(--blue8)', fontSize: 'var(--font-size-3)', color: 'white' }}
+                          onClick={() => setRsvpEventId(event.id)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--blue7)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--blue8)'}
                         >
-                          <Text color="white" fontSize="$3">RSVPs</Text>
-                        </Button>
-                        <Button
-                          size="$2"
-                          backgroundColor="$gray8"
-                          padding="$2"
-                          onPress={() => setSelectedEventId(event.id)}
-                          hoverStyle={{ backgroundColor: '$gray7' }}
+                          RSVPs
+                        </button>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'var(--gray8)', fontSize: 'var(--font-size-3)', color: 'white' }}
+                          onClick={() => setSelectedEventId(event.id)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--gray7)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--gray8)'}
                         >
-                          <Text color="white" fontSize="$3">Edit</Text>
-                        </Button>
-                      </XStack>
-                    </XStack>
-                  </YStack>
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </article>
                 ))}
               {!eventHistory.some(event => isEventToday(event.date)) && (
-                <Text color="$textSecondary" fontSize="$3">
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-3)' }}>
                   Nothing scheduled for today
-                </Text>
+                </p>
               )}
-            </YStack>
+            </section>
 
-            {/* Upcoming Events Section */}
-            <YStack space="$2" marginTop="$4">
-              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+            {/* Upcoming Events Section (similar structure to Today) */}
+            <section className="flex flex-col" style={{ gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+              <h3 style={{ fontSize: 'var(--font-size-5)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 Upcoming
-              </Text>
+              </h3>
               {eventHistory
                 .filter(event => !isEventPast(event.date) && !isEventToday(event.date))
                 .map((event) => (
-                  <YStack 
+                  <article
                     key={event.id}
-                    backgroundColor="$cardBackground"
-                    padding="$3"
-                    borderRadius="$2"
-                    borderWidth={1}
-                    borderColor="$borderColor"
-                    space="$1"
+                    className="event-card flex flex-col"
+                    style={{
+                      backgroundColor: 'var(--card-background)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--border-radius-soft)',
+                      border: '1px solid var(--border-color)',
+                      gap: 'var(--space-1)',
+                    }}
                   >
-                    <XStack justifyContent="space-between" alignItems="flex-start">
-                      <YStack flex={1} space="$1">
-                        <Text fontWeight="bold" color="$textPrimary">
+                    <div className="flex justify-between items-start">
+                      <div style={{ flex: 1, gap: 'var(--space-1)' }} className="flex flex-col">
+                        <p style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
                           {event.type}: {event.name}
-                        </Text>
-                        <Text color="$textPrimary" fontSize="$3">
+                        </p>
+                        <p style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-3)' }}>
                           {formatEventDate(event.date)} at {event.time}
-                        </Text>
-                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                        </p>
+                        <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-primary)', opacity: 0.7 }}>
                           Created: {event.createdAt.toLocaleString()}
-                        </Text>
-                      </YStack>
+                        </p>
+                      </div>
 
-                      <XStack space="$2">
-                        <Button
-                          size="$2"
-                          padding="$2"
-                          backgroundColor="transparent"
-                          onPress={() => handleCopyEvent(event)}
-                          hoverStyle={{ backgroundColor: '$gray4' }}
+                      <div className="flex" style={{ gap: 'var(--space-2)' }}>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'transparent', fontSize: 'var(--font-size-3)', color: 'var(--text-primary)' }}
+                          onClick={() => handleCopyEvent(event)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--gray4)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                        </Button>
-                        <Button
-                          size="$2"
-                          backgroundColor="$blue8"
-                          padding="$2"
-                          onPress={() => setRsvpEventId(event.id)}
-                          hoverStyle={{ backgroundColor: '$blue7' }}
+                          Copy
+                        </button>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'var(--blue8)', fontSize: 'var(--font-size-3)', color: 'white' }}
+                          onClick={() => setRsvpEventId(event.id)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--blue7)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--blue8)'}
                         >
-                          <Text color="white" fontSize="$3">RSVPs</Text>
-                        </Button>
-                        <Button
-                          size="$2"
-                          backgroundColor="$gray8"
-                          padding="$2"
-                          onPress={() => setSelectedEventId(event.id)}
-                          hoverStyle={{ backgroundColor: '$gray7' }}
+                          RSVPs
+                        </button>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'var(--gray8)', fontSize: 'var(--font-size-3)', color: 'white' }}
+                          onClick={() => setSelectedEventId(event.id)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--gray7)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--gray8)'}
                         >
-                          <Text color="white" fontSize="$3">Edit</Text>
-                        </Button>
-                      </XStack>
-                    </XStack>
-                  </YStack>
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </article>
                 ))}
               {!eventHistory.some(event => !isEventPast(event.date) && !isEventToday(event.date)) && (
-                <Text color="$textSecondary" fontSize="$3">
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-3)' }}>
                   Nothing scheduled for the future
-                </Text>
+                </p>
               )}
-            </YStack>
+            </section>
 
-            {/* Past Events Section */}
-            <YStack space="$2" marginTop="$4">
-              <Text fontSize="$5" fontWeight="bold" color="$textPrimary">
+            {/* Past Events Section (similar structure to Today) */}
+            <section className="flex flex-col" style={{ gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+              <h3 style={{ fontSize: 'var(--font-size-5)', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 Past
-              </Text>
+              </h3>
               {eventHistory
                 .filter(event => isEventPast(event.date))
                 .map((event) => (
-                  <YStack 
+                  <article
                     key={event.id}
-                    backgroundColor="$cardBackground"
-                    padding="$3"
-                    borderRadius="$2"
-                    borderWidth={1}
-                    borderColor="$borderColor"
-                    space="$1"
-                    opacity={0.7}  // Dim past events
+                    className="event-card flex flex-col"
+                    style={{
+                      backgroundColor: 'var(--card-background)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--border-radius-soft)',
+                      border: '1px solid var(--border-color)',
+                      gap: 'var(--space-1)',
+                      opacity: 0.7,  // Dim past events
+                    }}
                   >
-                    <XStack justifyContent="space-between" alignItems="flex-start">
-                      <YStack flex={1} space="$1">
-                        <Text fontWeight="bold" color="$textPrimary">
+                    <div className="flex justify-between items-start">
+                      <div style={{ flex: 1, gap: 'var(--space-1)' }} className="flex flex-col">
+                        <p style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
                           {event.type}: {event.name}
-                        </Text>
-                        <Text color="$textPrimary" fontSize="$3">
+                        </p>
+                        <p style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-3)' }}>
                           {formatEventDate(event.date)} at {event.time}
-                        </Text>
-                        <Text fontSize="$3" color="$textPrimary" opacity={0.7}>
+                        </p>
+                        <p style={{ fontSize: 'var(--font-size-3)', color: 'var(--text-primary)', opacity: 0.7 }}>
                           Created: {event.createdAt.toLocaleString()}
-                        </Text>
-                      </YStack>
+                        </p>
+                      </div>
 
-                      <XStack space="$2">
-                        <Button
-                          size="$2"
-                          padding="$2"
-                          backgroundColor="transparent"
-                          onPress={() => handleCopyEvent(event)}
-                          hoverStyle={{ backgroundColor: '$gray4' }}
+                      <div className="flex" style={{ gap: 'var(--space-2)' }}>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'transparent', fontSize: 'var(--font-size-3)', color: 'var(--text-primary)' }}
+                          onClick={() => handleCopyEvent(event)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--gray4)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <Text color="$textPrimary" fontSize="$3">Copy</Text>
-                        </Button>
-                        <Button
-                          size="$2"
-                          backgroundColor="$blue8"
-                          padding="$2"
-                          onPress={() => setRsvpEventId(event.id)}
-                          hoverStyle={{ backgroundColor: '$blue7' }}
+                          Copy
+                        </button>
+                        <button
+                          style={{ padding: 'var(--space-2)', backgroundColor: 'var(--blue8)', fontSize: 'var(--font-size-3)', color: 'white' }}
+                          onClick={() => setRsvpEventId(event.id)}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--blue7)'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--blue8)'}
                         >
-                          <Text color="white" fontSize="$3">RSVPs</Text>
-                        </Button>
-                      </XStack>
-                    </XStack>
-                  </YStack>
+                          RSVPs
+                        </button>
+                      </div>
+                    </div>
+                  </article>
                 ))}
-            </YStack>
-          </YStack>
-        </ScrollView>
-      </YStack>
+            </section>
+          </div>
+        </div>
+      </div>
 
-      {/* Update the popup */}
+      {/* Popups - Assuming these are refactored to use HTML/CSS modals */}
       {selectedEventId && (
         <EventEditPopup
           event={eventHistory.find(e => e.id === selectedEventId)!}
@@ -670,6 +653,6 @@ export const AdminPanel = ({ userEmail = '' }: AdminPanelProps) => {
           onClose={() => setRsvpEventId(null)}
         />
       )}
-    </YStack>
+    </div>
   )
-} 
+}
