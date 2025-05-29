@@ -60,11 +60,11 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
   // Theme state can be used to toggle a class on the body for CSS variable changes
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark') // Default is already dark
 
   useEffect(() => {
-    // Apply theme class to body
-    document.body.className = theme;
+    // Apply theme attribute to html element
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   useEffect(() => {
@@ -340,14 +340,14 @@ function App() {
           <button
             onClick={() => handleNavigate('schedule/workouts')}
             className={`nav-link ${isActiveRoute('workouts') ? 'active' : ''}`}
-            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'white', fontSize: 'var(--font-size-3)' }}
+            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'var(--text-primary)', fontSize: 'var(--font-size-3)' }}
           >
             WORKOUTS
           </button>
           <button
             onClick={() => handleNavigate('schedule/events')}
             className={`nav-link ${isActiveRoute('events') ? 'active' : ''}`}
-            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'white', fontSize: 'var(--font-size-3)' }}
+            style={{ background: 'transparent', padding: 'var(--space-2)', color: 'var(--text-primary)', fontSize: 'var(--font-size-3)' }}
           >
             EVENTS
           </button>
@@ -366,11 +366,9 @@ function App() {
             style={{ background: 'transparent', padding: 'var(--space-2)' /* $sm reduce padding via CSS */ }}
           >
             {theme === 'dark' ? (
-              // <Sun size={24} color="white" /> Replace with SVG or text
-              <span style={{ color: 'white', fontSize: '24px' }}>☀️</span>
+              <span style={{ color: 'var(--text-primary)', fontSize: '24px' }}>☀️</span>
             ) : (
-              // <Moon size={24} color="white" /> Replace with SVG or text
-              <span style={{ color: 'white', fontSize: '24px' }}>🌙</span>
+              <span style={{ color: 'var(--text-primary)', fontSize: '24px' }}>🌙</span>
             )}
           </button>
 
@@ -404,9 +402,9 @@ function App() {
             style={{ background: 'transparent', padding: 'var(--space-2)' /* $sm reduce padding via CSS */ }}
           >
             <div className="flex flex-col space-y-1"> {/* Simplified hamburger icon structure */}
-              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
-              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
-              <span style={{ height: '2px', width: '24px', backgroundColor: 'white', display: 'block' }}></span>
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'var(--text-primary)', display: 'block' }}></span>
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'var(--text-primary)', display: 'block' }}></span>
+              <span style={{ height: '2px', width: '24px', backgroundColor: 'var(--text-primary)', display: 'block' }}></span>
             </div>
           </button>
         </div>
@@ -534,8 +532,8 @@ function App() {
               left: `${Math.random() * 100}%`,
               animation: `raindrop ${Math.random() * 2 + 1.5}s linear infinite`,
               animationDelay: `${Math.random() * 2}s`,
-              boxShadow: '0 0 8px rgba(255,255,255,0.8)',
-              background: 'linear-gradient(transparent, rgba(255,255,255,0.8))',
+              boxShadow: '0 0 8px var(--color)', // Use theme color for shadow
+              background: 'linear-gradient(transparent, var(--color))', // Use theme color for gradient
             }}
           />
         ))}
@@ -561,54 +559,56 @@ function App() {
         />
       </main>
 
-      {/* EST. SINCE 2022 Text */}
-      <div
-        className="est-since-text-container flex items-center space-x-2"
-        style={{
-          position: 'absolute',
-          bottom: 'var(--space-4)',
-          right: 'var(--space-6)',
-          zIndex: 2,
-        }}
-      >
-        <div // Replaced Stack with div
-          className="vertical-line"
+      {/* EST. SINCE 2022 Text - Conditionally render based on route */}
+      {location.pathname === '/' && (
+        <div
+          className="est-since-text-container flex items-center space-x-2"
           style={{
-            width: '1px',
-            height: '40px',
-            backgroundColor: 'rgba(255,255,255,0.4)',
-            marginRight: 'var(--space-3)',
+            position: 'absolute',
+            bottom: 'var(--space-4)',
+            right: 'var(--space-6)',
+            zIndex: 2,
           }}
-        />
-        <div> {/* Replaced YStack with div */}
-          <p
+        >
+          <div // Replaced Stack with div
+            className="vertical-line"
             style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '12px',
-              letterSpacing: '2px',
-              fontFamily: 'Open Sans',
-              textTransform: 'uppercase',
-              animation: 'fadeIn 2s ease-in',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              width: '1px',
+              height: '40px',
+              backgroundColor: 'var(--text-secondary)', // Use a theme-aware secondary color
+              marginRight: 'var(--space-3)',
             }}
-          >
-            Est.
-          </p>
-          <p
-            style={{
-              color: 'rgba(255,255,255,0.9)',
-              fontSize: '24px',
-              fontWeight: '300',
-              letterSpacing: '4px',
-              fontFamily: 'Open Sans',
-              animation: 'fadeIn 2s ease-in',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            }}
-          >
-            2022
-          </p>
+          />
+          <div> {/* Replaced YStack with div */}
+            <p
+              style={{
+                color: 'var(--text-secondary)', // Use a theme-aware secondary color
+                fontSize: '12px',
+                letterSpacing: '2px',
+                fontFamily: 'Open Sans',
+                textTransform: 'uppercase',
+                animation: 'fadeIn 2s ease-in',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)', // This shadow might need theme adjustment if too dark/light
+              }}
+            >
+              Est.
+            </p>
+            <p
+              style={{
+                color: 'var(--text-primary)', // Use a theme-aware primary color
+                fontSize: '24px',
+                fontWeight: '300',
+                letterSpacing: '4px',
+                fontFamily: 'Open Sans',
+                animation: 'fadeIn 2s ease-in',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)', // This shadow might need theme adjustment
+              }}
+            >
+              2022
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
     // TamaguiProvider and Theme removed
   )

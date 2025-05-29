@@ -7,29 +7,26 @@
   /* Default to dark theme variables */
   --background: #000000;
   --color: #FFFFFF;
-  /* Default text color */
   --border-color: #2d3748;
   --text-primary: #FFFFFF;
   --text-secondary: #A0AEC0;
   --card-background: #1A202C;
   --header-background: rgba(0, 0, 0, 0.9);
-  --input-background: white;
-  --input-text-color: #4A5568;
-  --input-placeholder-color: #A0AEC0;
+  --input-background: #2D3748;
+  --input-text-color: #E2E8F0;
+  --input-placeholder-color: #718096;
 
   --blue2: #0c2b4d;
   --blue3: #0f3a68;
   --blue7: #1d6fd1;
   --blue8: #1a5fb4;
-  /* Tamagui blue8 */
+
   --gray4: #374151;
-  /* Tamagui gray4 */
   --gray7: #4b5563;
   --gray8: #374151;
-  /* Tamagui gray8 */
+
   --red7: #e53e3e;
   --red8: #c53030;
-  /* Tamagui red8 */
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -75,13 +72,42 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Apply dark theme by default to body */
+/* Light theme overrides */
+[data-theme="light"] {
+  --background: #FFFFFF;
+  --color: #000000;
+  --border-color: #D1D5DB;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --card-background: #F9FAFB;
+  --header-background: rgba(255, 255, 255, 0.9);
+  --input-background: #FFFFFF;
+  --input-text-color: #111827;
+  --input-placeholder-color: #9CA3AF;
+
+  --blue2: #EFF6FF;
+  --blue3: #DBEAFE;
+  --blue7: #3B82F6;
+  --blue8: #2563EB;
+
+  --gray4: #D1D5DB;
+  --gray7: #4B5563;
+  --gray8: #E5E7EB;
+
+  --red7: #EF4444;
+  --red8: #DC2626;
+}
+
+
+/* Apply theme by default to body */
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   background-color: var(--background);
   color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Smooth theme transition */
 }
 
 a {
@@ -274,6 +300,7 @@ textarea::placeholder {
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
   color: var(--text-primary);
+  /* Ensure text color uses variable */
 }
 
 .custom-select-option:hover {
@@ -309,6 +336,11 @@ textarea::placeholder {
   letter-spacing: 3px;
   /* Default for xl and up */
   animation: fadeIn 2s ease-in;
+  /* Default text shadow for dark mode */
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(255, 255, 255, 0.1);
 }
 
 .home-subtitle-container {
@@ -332,6 +364,8 @@ textarea::placeholder {
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
   letter-spacing: 0.5px;
+  /* Default text shadow for dark mode */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive styles for Home Page */
