@@ -309,11 +309,10 @@ const Schedule = ({ defaultTab = 'Workouts', userEmail }: ScheduleProps & { user
                     <span style={{ fontSize: 'var(--font-size-4)', fontWeight: 'bold' }}>
                       {formattedDate.day}
                     </span>
-                    {isToday && (
-                      <span style={{ fontSize: 'var(--font-size-2)' }}>
-                        Today
-                      </span>
-                    )}
+                    {/* Ensure this span always contributes to height */}
+                    <span style={{ fontSize: 'var(--font-size-2)', minHeight: '1.2em' /* Approximate height of text */ }}>
+                      {isToday ? 'Today' : <>&nbsp;</>} {/* Use &nbsp; to maintain space */}
+                    </span>
                   </div>
                 </button>
               );
